@@ -14,7 +14,7 @@ import {
   StatusBadge,
 } from "@/components/ui/design-system";
 import {
-  allPlatformFeatures,
+  packageAssignablePlatformFeatures,
   type PlatformPlan,
 } from "@/lib/platform/admin-data";
 import {
@@ -49,7 +49,7 @@ function featureTitle(featureId: string, categoryId?: string) {
   if (featureId === "cashier") {
     return categoryId === "events_conferences" ? "بوابة الدخول" : "الكاشير";
   }
-  return allPlatformFeatures.find((feature) => feature.id === featureId)?.title ?? featureId;
+  return packageAssignablePlatformFeatures.find((feature) => feature.id === featureId)?.title ?? featureId;
 }
 
 function planHasFeature(plan: PlatformPlan | null | undefined, featureId: string) {
@@ -348,7 +348,7 @@ export function SubscriptionPageClient({
                     </div>
 
                     <ul className="mt-4 flex-1 space-y-1.5">
-                      {allPlatformFeatures.map((feature) => {
+                      {packageAssignablePlatformFeatures.map((feature) => {
                         const on = plan.features.includes(feature.id);
                         return (
                           <li
@@ -511,7 +511,7 @@ export function SubscriptionPageClient({
                 ))}
               </div>
               <div className="mt-4 grid gap-2">
-                {allPlatformFeatures.map((feature) => {
+                {packageAssignablePlatformFeatures.map((feature) => {
                   const on = selectedPlan.features.includes(feature.id);
                   return (
                     <div

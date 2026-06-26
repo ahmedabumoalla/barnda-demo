@@ -35,11 +35,13 @@ import type { CafeSettings } from "@/lib/mock/cafe-settings";
 import type { AppNotification } from "@/lib/mock/notifications";
 import { getCafeDisplayDomain, getCafePublicUrl } from "@/lib/platform/cafe-domain";
 import { logoutBarndaksaAuth } from "@/lib/platform/auth";
-import { dashboardPlatformFeatures, type PlatformFeature, type PlatformPlan } from "@/lib/platform/admin-data";
+import type { PlatformPlan } from "@/lib/platform/admin-data";
+import { getSidebarFeaturesForBrand } from "@/lib/platform/feature-access";
+import type { PlatformFeature } from "@/lib/platform/admin-data";
 import { cafeHasFeature } from "@/lib/platform/permissions";
 import { getBusinessCopy } from "@/lib/platform/business-copy";
 
-const featureIcons: Record<PlatformFeature, React.ElementType> = {
+const featureIcons: Partial<Record<PlatformFeature, React.ElementType>> = {
   all: Star,
   home: Home,
   menu: Package,
@@ -58,15 +60,9 @@ const featureIcons: Record<PlatformFeature, React.ElementType> = {
   orders: ShoppingBag,
   settings: Settings,
   theme: Palette,
+  domains: Settings,
   subscription: CreditCard,
 };
-
-const links = dashboardPlatformFeatures.map((feature) => ({
-  title: feature.title,
-  href: feature.href,
-  icon: featureIcons[feature.id],
-  feature: feature.id,
-}));
 
 type SidebarProps = {
   onNavigate?: () => void;
@@ -168,12 +164,15 @@ export function DashboardSidebar({ onNavigate }: SidebarProps = {}) {
     return pathname === href || pathname.startsWith(`${href}/`);
   }
 
-  const visibleLinks = links.filter((link) =>
-    link.feature === "cashier" ||
-    link.feature === "branda_finance" ||
-    cafeHasFeature(link.feature, { planId: activePlanId, plans })
-  );
-  const linkTitle = (item: (typeof links)[number]) => {
+  const visibleLinks = getSidebarFeaturesForBrand({ planId: activePlanId, plans }).map(({ feature, access }) => ({
+    title: feature.titleAr,
+    href: feature.route,
+    icon: featureIcons[feature.id] ?? Star,
+    feature: feature.id,
+    access,
+  }));
+
+  const linkTitle = (item: (typeof visibleLinks)[number]) => {
     if (item.href === "/dashboard/menu" && copy.kind === "events") return "التذاكر والباقات";
     if (item.href === "/dashboard/orders" && copy.kind === "events") return "طلبات التذاكر";
     if (item.href === "/dashboard/reservations" && copy.kind === "events") return "حجوزات الحضور";
@@ -281,7 +280,7 @@ export function DashboardSidebar({ onNavigate }: SidebarProps = {}) {
         {visibleLinks.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.href);
-          const locked = item.feature !== "branda_finance" && !cafeHasFeature(item.feature, { planId: activePlanId, plans });
+          const locked = !cafeHasFeature(item.feature, { planId: activePlanId, plans });
           const href = locked ? "/dashboard/subscription" : item.href;
           const showOperationsLabel = item.feature === "cashier";
 

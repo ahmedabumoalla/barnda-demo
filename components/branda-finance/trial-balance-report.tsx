@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, BarChart3 } from "lucide-react";
-import { TrialBalanceTable } from "@/components/branda-finance/trial-balance-table";
-import { TrialBalanceToolbar } from "@/components/branda-finance/trial-balance-toolbar";
+import { TrialBalanceWorkspace } from "@/components/branda-finance/trial-balance-workspace";
 
 export function TrialBalanceReport() {
   return (
@@ -45,8 +44,7 @@ export function TrialBalanceReport() {
           </div>
         </header>
 
-        <TrialBalanceToolbar />
-        <TrialBalanceTable />
+        <TrialBalanceWorkspace />
       </div>
     </main>
   );

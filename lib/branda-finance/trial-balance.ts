@@ -3,8 +3,9 @@ export type TrialBalanceAmount = number;
 export type TrialBalanceRow = {
   accountNumber: string;
   accountName: string;
-  primaryCategory: string;
+  mainCategory: string;
   subCategory: string;
+  revaluedBalances: TrialBalanceAmount;
   openingDebit: TrialBalanceAmount;
   openingCredit: TrialBalanceAmount;
   movementDebit: TrialBalanceAmount;
@@ -18,8 +19,23 @@ export type TrialBalanceOption = {
   label: string;
 };
 
-export type TrialBalanceColumn = TrialBalanceOption & {
-  defaultEnabled: boolean;
+export type TrialBalanceColumnId = keyof TrialBalanceRow;
+
+export type TrialBalanceColumnGroup = "opening" | "movement" | "closing" | "valuation";
+
+export type TrialBalanceColumn = {
+  id: TrialBalanceColumnId;
+  label: string;
+  group?: TrialBalanceColumnGroup;
+  defaultVisible: boolean;
+  defaultOrder: number;
+  align: "start" | "end" | "center";
+  valueKey: TrialBalanceColumnId;
+};
+
+export type TrialBalanceColumnState = {
+  id: TrialBalanceColumnId;
+  visible: boolean;
 };
 
 export const trialBalanceDateRanges: TrialBalanceOption[] = [
@@ -45,17 +61,101 @@ export const trialBalanceFilters: TrialBalanceOption[] = [
 ];
 
 export const trialBalanceColumns: TrialBalanceColumn[] = [
-  { id: "account-number", label: "رقم الحساب", defaultEnabled: true },
-  { id: "account-name", label: "اسم الحساب", defaultEnabled: true },
-  { id: "primary-category", label: "التصنيف الرئيسي", defaultEnabled: true },
-  { id: "sub-category", label: "التصنيف الفرعي", defaultEnabled: true },
-  { id: "revalued-balances", label: "الأرصدة المعاد تقييمها", defaultEnabled: false },
-  { id: "opening-debit", label: "الرصيد الافتتاحي مدين", defaultEnabled: true },
-  { id: "opening-credit", label: "الرصيد الافتتاحي دائن", defaultEnabled: true },
-  { id: "movement-debit", label: "الحركات مدين", defaultEnabled: true },
-  { id: "movement-credit", label: "الحركات دائن", defaultEnabled: true },
-  { id: "closing-debit", label: "الرصيد الختامي مدين", defaultEnabled: true },
-  { id: "closing-credit", label: "الرصيد الختامي دائن", defaultEnabled: true },
+  {
+    id: "accountNumber",
+    label: "رقم الحساب",
+    defaultVisible: true,
+    defaultOrder: 10,
+    align: "start",
+    valueKey: "accountNumber",
+  },
+  {
+    id: "accountName",
+    label: "اسم الحساب",
+    defaultVisible: true,
+    defaultOrder: 20,
+    align: "start",
+    valueKey: "accountName",
+  },
+  {
+    id: "mainCategory",
+    label: "التصنيف الرئيسي",
+    defaultVisible: true,
+    defaultOrder: 30,
+    align: "start",
+    valueKey: "mainCategory",
+  },
+  {
+    id: "subCategory",
+    label: "التصنيف الفرعي",
+    defaultVisible: true,
+    defaultOrder: 40,
+    align: "start",
+    valueKey: "subCategory",
+  },
+  {
+    id: "revaluedBalances",
+    label: "الأرصدة المعاد تقييمها",
+    group: "valuation",
+    defaultVisible: false,
+    defaultOrder: 50,
+    align: "end",
+    valueKey: "revaluedBalances",
+  },
+  {
+    id: "openingDebit",
+    label: "الرصيد الافتتاحي مدين",
+    group: "opening",
+    defaultVisible: true,
+    defaultOrder: 60,
+    align: "end",
+    valueKey: "openingDebit",
+  },
+  {
+    id: "openingCredit",
+    label: "الرصيد الافتتاحي دائن",
+    group: "opening",
+    defaultVisible: true,
+    defaultOrder: 70,
+    align: "end",
+    valueKey: "openingCredit",
+  },
+  {
+    id: "movementDebit",
+    label: "الحركات مدين",
+    group: "movement",
+    defaultVisible: true,
+    defaultOrder: 80,
+    align: "end",
+    valueKey: "movementDebit",
+  },
+  {
+    id: "movementCredit",
+    label: "الحركات دائن",
+    group: "movement",
+    defaultVisible: true,
+    defaultOrder: 90,
+    align: "end",
+    valueKey: "movementCredit",
+  },
+  {
+    id: "closingDebit",
+    label: "الرصيد الختامي مدين",
+    group: "closing",
+    defaultVisible: true,
+    defaultOrder: 100,
+    align: "end",
+    valueKey: "closingDebit",
+  },
+  {
+    id: "closingCredit",
+    label: "الرصيد الختامي دائن",
+    group: "closing",
+    defaultVisible: true,
+    defaultOrder: 110,
+    align: "end",
+    valueKey: "closingCredit",
+  },
 ];
 
 export const trialBalanceExportOptions: TrialBalanceOption[] = [
@@ -65,12 +165,21 @@ export const trialBalanceExportOptions: TrialBalanceOption[] = [
   { id: "excel-en", label: "إلى Excel في الإنجليزي" },
 ];
 
+export const defaultTrialBalanceColumnState: TrialBalanceColumnState[] = trialBalanceColumns
+  .slice()
+  .sort((a, b) => a.defaultOrder - b.defaultOrder)
+  .map((column) => ({
+    id: column.id,
+    visible: column.defaultVisible,
+  }));
+
 export const trialBalanceRows: TrialBalanceRow[] = [
   {
     accountNumber: "1001",
     accountName: "النقدية في الصندوق",
-    primaryCategory: "الأصول",
+    mainCategory: "الأصول",
     subCategory: "الأصول المتداولة",
+    revaluedBalances: 0,
     openingDebit: 12500,
     openingCredit: 0,
     movementDebit: 32000,
@@ -81,8 +190,9 @@ export const trialBalanceRows: TrialBalanceRow[] = [
   {
     accountNumber: "1010",
     accountName: "الحساب البنكي",
-    primaryCategory: "الأصول",
+    mainCategory: "الأصول",
     subCategory: "النقد وما في حكمه",
+    revaluedBalances: 0,
     openingDebit: 85500,
     openingCredit: 0,
     movementDebit: 123000,
@@ -93,8 +203,9 @@ export const trialBalanceRows: TrialBalanceRow[] = [
   {
     accountNumber: "1200",
     accountName: "العملاء",
-    primaryCategory: "الأصول",
+    mainCategory: "الأصول",
     subCategory: "الذمم المدينة",
+    revaluedBalances: 0,
     openingDebit: 46200,
     openingCredit: 0,
     movementDebit: 78000,
@@ -105,8 +216,9 @@ export const trialBalanceRows: TrialBalanceRow[] = [
   {
     accountNumber: "1400",
     accountName: "المخزون",
-    primaryCategory: "الأصول",
+    mainCategory: "الأصول",
     subCategory: "مخزون البضاعة",
+    revaluedBalances: 0,
     openingDebit: 33100,
     openingCredit: 0,
     movementDebit: 52000,
@@ -117,8 +229,9 @@ export const trialBalanceRows: TrialBalanceRow[] = [
   {
     accountNumber: "2000",
     accountName: "الموردون",
-    primaryCategory: "الالتزامات",
+    mainCategory: "الالتزامات",
     subCategory: "الذمم الدائنة",
+    revaluedBalances: 0,
     openingDebit: 0,
     openingCredit: 38400,
     movementDebit: 41000,
@@ -129,8 +242,9 @@ export const trialBalanceRows: TrialBalanceRow[] = [
   {
     accountNumber: "3000",
     accountName: "رأس المال",
-    primaryCategory: "حقوق الملكية",
+    mainCategory: "حقوق الملكية",
     subCategory: "رأس المال المدفوع",
+    revaluedBalances: 0,
     openingDebit: 0,
     openingCredit: 138900,
     movementDebit: 0,
@@ -141,8 +255,9 @@ export const trialBalanceRows: TrialBalanceRow[] = [
   {
     accountNumber: "4000",
     accountName: "المبيعات",
-    primaryCategory: "الإيرادات",
+    mainCategory: "الإيرادات",
     subCategory: "إيرادات النشاط",
+    revaluedBalances: 0,
     openingDebit: 0,
     openingCredit: 0,
     movementDebit: 0,
@@ -153,8 +268,9 @@ export const trialBalanceRows: TrialBalanceRow[] = [
   {
     accountNumber: "5000",
     accountName: "تكلفة المبيعات",
-    primaryCategory: "تكلفة الإيرادات",
+    mainCategory: "تكلفة الإيرادات",
     subCategory: "تكلفة المنتجات",
+    revaluedBalances: 0,
     openingDebit: 0,
     openingCredit: 0,
     movementDebit: 104000,
@@ -165,8 +281,9 @@ export const trialBalanceRows: TrialBalanceRow[] = [
   {
     accountNumber: "6000",
     accountName: "المصروفات التشغيلية",
-    primaryCategory: "المصروفات",
+    mainCategory: "المصروفات",
     subCategory: "مصروفات عامة وإدارية",
+    revaluedBalances: 0,
     openingDebit: 0,
     openingCredit: 0,
     movementDebit: 41500,
@@ -177,8 +294,9 @@ export const trialBalanceRows: TrialBalanceRow[] = [
   {
     accountNumber: "6100",
     accountName: "الرواتب والأجور",
-    primaryCategory: "المصروفات",
+    mainCategory: "المصروفات",
     subCategory: "تكلفة الموظفين",
+    revaluedBalances: 0,
     openingDebit: 0,
     openingCredit: 0,
     movementDebit: 28500,
@@ -192,6 +310,7 @@ export function getTrialBalanceTotals(rows: TrialBalanceRow[] = trialBalanceRows
   return rows.reduce<TrialBalanceRow>(
     (totals, row) => ({
       ...totals,
+      revaluedBalances: totals.revaluedBalances + row.revaluedBalances,
       openingDebit: totals.openingDebit + row.openingDebit,
       openingCredit: totals.openingCredit + row.openingCredit,
       movementDebit: totals.movementDebit + row.movementDebit,
@@ -202,8 +321,9 @@ export function getTrialBalanceTotals(rows: TrialBalanceRow[] = trialBalanceRows
     {
       accountNumber: "",
       accountName: "إجمالي",
-      primaryCategory: "",
+      mainCategory: "",
       subCategory: "",
+      revaluedBalances: 0,
       openingDebit: 0,
       openingCredit: 0,
       movementDebit: 0,
@@ -212,4 +332,16 @@ export function getTrialBalanceTotals(rows: TrialBalanceRow[] = trialBalanceRows
       closingCredit: 0,
     },
   );
+}
+
+export function getTrialBalanceColumnsByState(columnState: TrialBalanceColumnState[]) {
+  const byId = new Map(trialBalanceColumns.map((column) => [column.id, column]));
+  return columnState
+    .map((state) => ({
+      state,
+      column: byId.get(state.id),
+    }))
+    .filter((entry): entry is { state: TrialBalanceColumnState; column: TrialBalanceColumn } =>
+      Boolean(entry.column),
+    );
 }

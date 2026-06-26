@@ -1,15 +1,34 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, Columns3, Download, Filter, Search, SlidersHorizontal } from "lucide-react";
 import {
-  trialBalanceColumns,
+  ChevronDown,
+  Columns3,
+  Download,
+  Filter,
+  GripVertical,
+  Search,
+  SlidersHorizontal,
+  MoveDown,
+  MoveUp,
+} from "lucide-react";
+import {
+  getTrialBalanceColumnsByState,
   trialBalanceDateRanges,
   trialBalanceExportOptions,
   trialBalanceFilters,
+  type TrialBalanceColumnId,
+  type TrialBalanceColumnState,
 } from "@/lib/branda-finance/trial-balance";
 
 type OpenMenu = "date" | "filter" | "columns" | "export" | null;
+
+type TrialBalanceToolbarProps = {
+  columnState: TrialBalanceColumnState[];
+  onToggleColumn: (columnId: TrialBalanceColumnId) => void;
+  onMoveColumn: (columnId: TrialBalanceColumnId, direction: "up" | "down") => void;
+  onResetColumns: () => void;
+};
 
 const buttonClass =
   "inline-flex min-h-11 items-center justify-center gap-2 rounded-2xl border border-[#E3CFB0] bg-[#FFFDF8] px-4 py-2.5 text-sm font-black text-[#4C2D1E] shadow-[0_8px_20px_rgba(86,52,31,0.08)] transition hover:border-[#C99A4D] hover:bg-[#FFF9F0] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B88334]";
@@ -24,7 +43,7 @@ function DropdownShell({
   return (
     <div
       className={`absolute right-0 top-full z-30 mt-2 max-h-[70vh] overflow-y-auto rounded-[22px] border border-[#E3CFB0] bg-[#FFFDF8] p-3 text-right shadow-[0_24px_60px_rgba(86,52,31,0.18)] ${
-        wide ? "w-[min(92vw,420px)]" : "w-[min(88vw,300px)]"
+        wide ? "w-[min(94vw,500px)]" : "w-[min(88vw,300px)]"
       }`}
     >
       {children}
@@ -32,27 +51,18 @@ function DropdownShell({
   );
 }
 
-export function TrialBalanceToolbar() {
+export function TrialBalanceToolbar({
+  columnState,
+  onToggleColumn,
+  onMoveColumn,
+  onResetColumns,
+}: TrialBalanceToolbarProps) {
   const [openMenu, setOpenMenu] = useState<OpenMenu>(null);
   const [selectedRange, setSelectedRange] = useState("التاريخ إلى 31 مايو 2026");
-  const [enabledColumns, setEnabledColumns] = useState(() =>
-    new Set(trialBalanceColumns.filter((column) => column.defaultEnabled).map((column) => column.id)),
-  );
+  const orderedColumns = getTrialBalanceColumnsByState(columnState);
 
   function toggleMenu(menu: OpenMenu) {
     setOpenMenu((current) => (current === menu ? null : menu));
-  }
-
-  function toggleColumn(columnId: string) {
-    setEnabledColumns((current) => {
-      const next = new Set(current);
-      if (next.has(columnId)) {
-        next.delete(columnId);
-      } else {
-        next.add(columnId);
-      }
-      return next;
-    });
   }
 
   return (
@@ -125,8 +135,8 @@ export function TrialBalanceToolbar() {
                 <h3 className="text-base font-black text-[#3B2417]">كل الأعمدة</h3>
                 <button
                   type="button"
-                  onClick={() => setEnabledColumns(new Set(trialBalanceColumns.filter((column) => column.defaultEnabled).map((column) => column.id)))}
-                  className="text-xs font-black text-[#8A5B24] hover:text-[#4C2D1E]"
+                  onClick={onResetColumns}
+                  className="rounded-xl bg-[#F6E9D4] px-3 py-2 text-xs font-black text-[#6B3F22] transition hover:bg-[#E9D0A4]"
                 >
                   إعادة الضبط
                 </button>
@@ -139,33 +149,76 @@ export function TrialBalanceToolbar() {
 
               <div className="mt-4">
                 <p className="mb-2 text-xs font-black text-[#7A4D1F]">أعمدة أخرى</p>
-                <div className="grid gap-1">
-                  {trialBalanceColumns.map((column) => {
-                    const enabled = enabledColumns.has(column.id);
+                <div className="grid gap-2">
+                  {orderedColumns.map(({ column, state }, index) => {
+                    const first = index === 0;
+                    const last = index === orderedColumns.length - 1;
                     return (
-                      <button
+                      <div
                         key={column.id}
-                        type="button"
-                        onClick={() => toggleColumn(column.id)}
-                        className="flex items-center justify-between gap-3 rounded-2xl px-3 py-2.5 text-right transition hover:bg-[#FBF5EC]"
+                        className={`rounded-2xl border px-3 py-2.5 transition ${
+                          state.visible
+                            ? "border-[#E6D5BD] bg-white"
+                            : "border-[#E6D5BD]/70 bg-[#FBF5EC] opacity-70"
+                        }`}
                       >
-                        <span className="text-sm font-bold text-[#4C2D1E]">{column.label}</span>
-                        <span
-                          className={`relative h-6 w-11 rounded-full transition ${
-                            enabled ? "bg-[#B88334]" : "bg-[#E6D5BD]"
-                          }`}
-                        >
-                          <span
-                            className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow transition ${
-                              enabled ? "right-6" : "right-1"
+                        <div className="flex items-center gap-2">
+                          <GripVertical aria-hidden="true" className="h-4 w-4 shrink-0 text-[#A89077]" />
+                          <button
+                            type="button"
+                            onClick={() => onToggleColumn(column.id)}
+                            className={`relative h-6 w-11 shrink-0 rounded-full transition ${
+                              state.visible ? "bg-[#B88334]" : "bg-[#E6D5BD]"
                             }`}
-                          />
-                        </span>
-                      </button>
+                            aria-label={state.visible ? "إخفاء" : "إظهار"}
+                            title={state.visible ? "إخفاء" : "إظهار"}
+                          >
+                            <span
+                              className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow transition ${
+                                state.visible ? "right-6" : "right-1"
+                              }`}
+                            />
+                          </button>
+
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-black text-[#4C2D1E]">{column.label}</p>
+                            <p className="mt-0.5 text-[11px] font-bold text-[#8F765F]">
+                              {state.visible ? "إظهار" : "إخفاء"}
+                            </p>
+                          </div>
+
+                          <div className="flex shrink-0 gap-1">
+                            <button
+                              type="button"
+                              onClick={() => onMoveColumn(column.id, "up")}
+                              disabled={first}
+                              aria-label="تحريك للأعلى"
+                              title="تحريك للأعلى"
+                              className="rounded-xl border border-[#E6D5BD] bg-[#FBF5EC] p-2 text-[#6B3F22] transition hover:bg-[#F6E9D4] disabled:cursor-not-allowed disabled:opacity-35"
+                            >
+                              <MoveUp aria-hidden="true" className="h-4 w-4" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => onMoveColumn(column.id, "down")}
+                              disabled={last}
+                              aria-label="تحريك للأسفل"
+                              title="تحريك للأسفل"
+                              className="rounded-xl border border-[#E6D5BD] bg-[#FBF5EC] p-2 text-[#6B3F22] transition hover:bg-[#F6E9D4] disabled:cursor-not-allowed disabled:opacity-35"
+                            >
+                              <MoveDown aria-hidden="true" className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
                     );
                   })}
                 </div>
               </div>
+
+              <p className="mt-4 rounded-2xl border border-[#E6D5BD] bg-[#FBF5EC] px-3 py-2 text-xs font-bold text-[#806851]">
+                سيتم حفظ تفضيلات الأعمدة لكل علامة لاحقًا
+              </p>
             </DropdownShell>
           ) : null}
         </div>

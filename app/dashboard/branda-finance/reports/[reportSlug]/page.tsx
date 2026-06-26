@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, FileText } from "lucide-react";
+import { TrialBalanceReport } from "@/components/branda-finance/trial-balance-report";
 import {
   brandaFinanceReports,
   getBrandaFinanceReportBySlug,
@@ -21,6 +22,10 @@ export default async function BrandaFinanceReportPlaceholderPage({
   const report = getBrandaFinanceReportBySlug(reportSlug);
 
   if (!report) notFound();
+
+  if (reportSlug === "trial-balance") {
+    return <TrialBalanceReport />;
+  }
 
   return (
     <main dir="rtl" className="min-h-screen bg-[#F7EFE4] px-4 py-6 text-right sm:px-6 lg:px-8">

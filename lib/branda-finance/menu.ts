@@ -21,12 +21,13 @@ export type BrandaFinanceMenuItem = {
   title: string;
   icon: BrandaFinanceIconKey;
   description: string;
+  href?: string;
 };
 
 const comingSoonLine = "قريبًا بنشغلها وحدة وحدة";
 
 export const brandaFinanceMenuItems: BrandaFinanceMenuItem[] = [
-  { title: "التقارير المالية", icon: "reports", description: comingSoonLine },
+  { title: "التقارير المالية", icon: "reports", description: comingSoonLine, href: "/dashboard/branda-finance/reports" },
   { title: "المبيعات", icon: "sales", description: comingSoonLine },
   { title: "المشتريات", icon: "purchases", description: comingSoonLine },
   { title: "العملاء والموردين", icon: "contacts", description: comingSoonLine },

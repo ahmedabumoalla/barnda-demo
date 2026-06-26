@@ -13,6 +13,7 @@ export type PlatformFeature =
   | "marketing"
   | "experience_reviews"
   | "cashier"
+  | "branda_finance"
   | "orders"
   | "settings"
   | "theme"
@@ -142,6 +143,7 @@ export const dashboardPlatformFeatures: { id: PlatformFeature; title: string; hr
   { id: "marketing", title: "الأدوات التسويقية", href: "/dashboard/marketing" },
   { id: "experience_reviews", title: "مراجعة توثيق التجارب", href: "/dashboard/experience-reviews" },
   { id: "cashier", title: "الكاشير", href: "/dashboard/cashier" },
+  { id: "branda_finance", title: "برندة المالية", href: "/dashboard/branda-finance" },
   { id: "orders", title: "طلبات العلامة", href: "/dashboard/orders" },
   { id: "settings", title: "إعدادات العلامة", href: "/dashboard/settings" },
   { id: "theme", title: "ثيم العلامة", href: "/dashboard/theme" },

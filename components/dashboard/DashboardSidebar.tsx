@@ -12,6 +12,7 @@ import {
   FileText,
   Gift,
   Home,
+  Landmark,
   LockKeyhole,
   LogOut,
   MapPin,
@@ -53,6 +54,7 @@ const featureIcons: Record<PlatformFeature, React.ElementType> = {
   marketing: Megaphone,
   experience_reviews: BadgeCheck,
   cashier: DoorOpen,
+  branda_finance: Landmark,
   orders: ShoppingBag,
   settings: Settings,
   theme: Palette,
@@ -168,6 +170,7 @@ export function DashboardSidebar({ onNavigate }: SidebarProps = {}) {
 
   const visibleLinks = links.filter((link) =>
     link.feature === "cashier" ||
+    link.feature === "branda_finance" ||
     cafeHasFeature(link.feature, { planId: activePlanId, plans })
   );
   const linkTitle = (item: (typeof links)[number]) => {
@@ -178,6 +181,7 @@ export function DashboardSidebar({ onNavigate }: SidebarProps = {}) {
     if (item.href === "/dashboard/experience-reviews" && copy.kind === "events") return "مكافآت التوثيق";
     if (item.href === "/dashboard/cashier" && copy.kind === "events") return "بوابة الدخول";
     if (item.href === "/dashboard/cashier") return "الكاشير";
+    if (item.href === "/dashboard/branda-finance") return "برندة المالية";
     if (item.href === "/dashboard/reports" && copy.kind === "events") return "تقارير الفعالية";
     if (item.href === "/dashboard/orders") return `طلبات ${copy.casualNoun}`;
     if (item.href === "/dashboard/settings") return `إعدادات ${copy.casualNoun}`;
@@ -277,7 +281,7 @@ export function DashboardSidebar({ onNavigate }: SidebarProps = {}) {
         {visibleLinks.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.href);
-          const locked = !cafeHasFeature(item.feature, { planId: activePlanId, plans });
+          const locked = item.feature !== "branda_finance" && !cafeHasFeature(item.feature, { planId: activePlanId, plans });
           const href = locked ? "/dashboard/subscription" : item.href;
           const showOperationsLabel = item.feature === "cashier";
 

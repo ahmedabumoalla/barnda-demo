@@ -55,7 +55,7 @@ export const brandaFinanceReportSections: BrandaFinanceReportSection[] = [
     description: "تقارير مراجعة وتدقيق تساعد المحاسب على تتبع القيود والحسابات.",
     reports: [
       report("accountant", "للمحاسب", "trial-balance", "ميزان المراجعة", "ملخص أرصدة الحسابات المدينة والدائنة خلال فترة محددة."),
-      report("accountant", "للمحاسب", "account-statement", "كشف الحساب", "حركة حساب محدد مع الرصيد الافتتاحي والختامي."),
+      report("accountant", "للمحاسب", "statement-of-account", "كشف الحساب", "حركة حساب محدد مع الرصيد الافتتاحي والختامي."),
       report("accountant", "للمحاسب", "general-ledger", "دفتر الأستاذ العام", "تفاصيل القيود والحركات المحاسبية حسب الحساب."),
       report("accountant", "للمحاسب", "audit-log", "سجل التدقيق", "تتبع التغييرات المالية والعمليات الحساسة داخل الوحدة."),
       report("accountant", "للمحاسب", "bank-reconciliation", "تقرير تسوية مصرفية", "مطابقة أرصدة البنك مع الحركات المسجلة في النظام."),

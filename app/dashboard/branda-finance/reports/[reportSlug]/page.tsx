@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, FileText } from "lucide-react";
+import { StatementAccountReport } from "@/components/branda-finance/statement-account-report";
 import { TrialBalanceReport } from "@/components/branda-finance/trial-balance-report";
+import type { StatementAccountView } from "@/lib/branda-finance/statement-account";
 import {
   brandaFinanceReports,
   getBrandaFinanceReportBySlug,
@@ -15,16 +17,27 @@ export function generateStaticParams() {
 
 export default async function BrandaFinanceReportPlaceholderPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ reportSlug: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const { reportSlug } = await params;
+  const resolvedSearchParams = await searchParams;
+  const rawView = Array.isArray(resolvedSearchParams.view)
+    ? resolvedSearchParams.view[0]
+    : resolvedSearchParams.view;
+  const statementAccountView: StatementAccountView = rawView === "details" ? "details" : "summary";
   const report = getBrandaFinanceReportBySlug(reportSlug);
 
   if (!report) notFound();
 
   if (reportSlug === "trial-balance") {
     return <TrialBalanceReport />;
+  }
+
+  if (reportSlug === "statement-of-account") {
+    return <StatementAccountReport view={statementAccountView} />;
   }
 
   return (

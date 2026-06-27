@@ -5,7 +5,7 @@ import { useRef, type PointerEvent } from "react";
 import { SecureQrCode } from "@/components/loyalty/secure-qr-code";
 import type { LoyaltyCardDesign, LoyaltyProgressIcon } from "@/lib/loyalty/types";
 
-type DraggableLayer = "logo" | "points" | "barcode";
+export type LoyaltyDesignerLayer = "logo" | "points" | "barcode";
 
 type Props = {
   card: LoyaltyCardDesign;
@@ -13,6 +13,8 @@ type Props = {
   pointValueSar?: number;
   compact?: boolean;
   editable?: boolean;
+  activeLayer?: LoyaltyDesignerLayer | null;
+  onActiveLayerChange?: (layer: LoyaltyDesignerLayer) => void;
   onCardChange?: (card: LoyaltyCardDesign) => void;
 };
 
@@ -61,6 +63,8 @@ export function LoyaltyCardPreview({
   pointValueSar = 0.25,
   compact = false,
   editable = false,
+  activeLayer = null,
+  onActiveLayerChange,
   onCardChange,
 }: Props) {
   const ProgressIcon = progressIcons[card.progressIcon];
@@ -70,8 +74,20 @@ export function LoyaltyCardPreview({
   const logoVisible = Boolean(card.logoPreviewUrl);
   const showPoints = card.pointsBadgeVisible;
 
-  function startDrag(event: PointerEvent<HTMLDivElement>, layer: DraggableLayer) {
+  function activeRing(layer: LoyaltyDesignerLayer) {
+    if (!editable) return "";
+    return activeLayer === layer
+      ? "cursor-move ring-2 ring-[#F6C35B] shadow-[0_0_0_4px_rgba(246,195,91,0.18)]"
+      : "cursor-move ring-2 ring-[#D9A33F]/45";
+  }
+
+  function selectLayer(layer: LoyaltyDesignerLayer) {
+    onActiveLayerChange?.(layer);
+  }
+
+  function startDrag(event: PointerEvent<HTMLDivElement>, layer: LoyaltyDesignerLayer) {
     if (!editable || !onCardChange) return;
+    selectLayer(layer);
     const target = event.currentTarget;
     target.setPointerCapture(event.pointerId);
 
@@ -155,8 +171,9 @@ export function LoyaltyCardPreview({
         <div
           role={editable ? "button" : undefined}
           tabIndex={editable ? 0 : undefined}
+          onClick={() => selectLayer("logo")}
           onPointerDown={(event) => startDrag(event, "logo")}
-          className={`absolute z-20 rounded-xl ${editable ? "cursor-move ring-2 ring-[#D9A33F]/60" : ""}`}
+          className={`absolute z-20 rounded-xl ${activeRing("logo")}`}
           style={layerStyle(card.logoX, card.logoY, card.logoWidth, card.logoHeight)}
         >
           <img src={card.logoPreviewUrl} alt="" className="h-full w-full object-contain" />
@@ -167,9 +184,10 @@ export function LoyaltyCardPreview({
         <div
           role={editable ? "button" : undefined}
           tabIndex={editable ? 0 : undefined}
+          onClick={() => selectLayer("points")}
           onPointerDown={(event) => startDrag(event, "points")}
           className={`absolute z-20 flex flex-col justify-center rounded-xl border border-white/15 bg-white/90 px-3 text-[#17100d] shadow-lg ${
-            editable ? "cursor-move ring-2 ring-[#D9A33F]/60" : ""
+            activeRing("points")
           }`}
           style={layerStyle(card.pointsBadgeX, card.pointsBadgeY, card.pointsBadgeWidth, card.pointsBadgeHeight)}
         >
@@ -183,8 +201,9 @@ export function LoyaltyCardPreview({
         <div
           role={editable ? "button" : undefined}
           tabIndex={editable ? 0 : undefined}
+          onClick={() => selectLayer("barcode")}
           onPointerDown={(event) => startDrag(event, "barcode")}
-          className={`absolute z-20 ${editable ? "cursor-move ring-2 ring-[#D9A33F]/60" : ""}`}
+          className={`absolute z-20 ${activeRing("barcode")}`}
           style={layerStyle(card.barcodeX, card.barcodeY, card.barcodeWidth, card.barcodeHeight)}
         >
           <LoyaltyBarcode value={card.sampleCode} />

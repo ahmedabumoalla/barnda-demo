@@ -22,13 +22,28 @@ export type LoyaltyCardDesign = {
   cardForeground: string;
   cardAccent: string;
   logoPreviewUrl?: string;
+  logoRemoveLightBackground: boolean;
+  logoBackgroundTolerance: number;
   logoPlacement: LoyaltyLogoPlacement;
   logoSize: number;
   logoOffsetX: number;
   logoOffsetY: number;
+  logoX: number;
+  logoY: number;
+  logoWidth: number;
+  logoHeight: number;
   progressIcon: LoyaltyProgressIcon;
   customIconPreviewUrl?: string;
   barcodeVisible: boolean;
+  barcodeX: number;
+  barcodeY: number;
+  barcodeWidth: number;
+  barcodeHeight: number;
+  pointsBadgeVisible: boolean;
+  pointsBadgeX: number;
+  pointsBadgeY: number;
+  pointsBadgeWidth: number;
+  pointsBadgeHeight: number;
   sampleCode: string;
 };
 

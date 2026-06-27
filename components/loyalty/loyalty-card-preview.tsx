@@ -1,14 +1,19 @@
 "use client";
 
 import { Crown, Gift, Heart, Star, Trophy, WalletCards } from "lucide-react";
+import { useRef, type PointerEvent } from "react";
 import { SecureQrCode } from "@/components/loyalty/secure-qr-code";
 import type { LoyaltyCardDesign, LoyaltyProgressIcon } from "@/lib/loyalty/types";
+
+type DraggableLayer = "logo" | "points" | "barcode";
 
 type Props = {
   card: LoyaltyCardDesign;
   pointsBalance?: number;
   pointValueSar?: number;
   compact?: boolean;
+  editable?: boolean;
+  onCardChange?: (card: LoyaltyCardDesign) => void;
 };
 
 const progressIcons: Record<LoyaltyProgressIcon, typeof Star> = {
@@ -19,107 +24,182 @@ const progressIcons: Record<LoyaltyProgressIcon, typeof Star> = {
   crown: Crown,
 };
 
-function logoPosition(card: LoyaltyCardDesign) {
-  const base = {
-    width: card.logoSize,
-    height: card.logoSize,
-    transform: `translate(${card.logoOffsetX}px, ${card.logoOffsetY}px)`,
-  };
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
 
-  if (card.logoPlacement === "top-left") return { ...base, left: 18, top: 18 };
-  if (card.logoPlacement === "center") return { ...base, left: "50%", top: 18, transform: `translate(calc(-50% + ${card.logoOffsetX}px), ${card.logoOffsetY}px)` };
-  if (card.logoPlacement === "bottom-right") return { ...base, right: 18, bottom: 18 };
-  if (card.logoPlacement === "custom") return { ...base, right: 18 + card.logoOffsetX, top: 18 + card.logoOffsetY, transform: "none" };
-  return { ...base, right: 18, top: 18 };
+function layerStyle(x: number, y: number, width: number, height: number) {
+  return {
+    left: `${x}%`,
+    top: `${y}%`,
+    width: `${width}%`,
+    height: `${height}%`,
+  };
 }
 
 export function LoyaltyBarcode({ value, dark = false }: { value: string; dark?: boolean }) {
   return (
-    <div className={`rounded-xl border p-3 ${dark ? "border-white/15 bg-white/90" : "border-[#E7D7C6] bg-white"}`}>
+    <div className={`h-full min-h-[64px] rounded-xl border p-2 ${dark ? "border-white/15 bg-white/90" : "border-[#E7D7C6] bg-white"}`}>
       <div
-        className="h-12 w-full rounded-md"
+        className="h-[62%] w-full rounded-md"
         style={{
           background:
             "repeating-linear-gradient(90deg,#17100d 0 2px,transparent 2px 5px,#17100d 5px 8px,transparent 8px 12px,#17100d 12px 13px,transparent 13px 17px)",
         }}
         aria-hidden="true"
       />
-      <p className="mt-2 truncate text-center font-mono text-[11px] font-black tracking-[0.18em] text-[#17100d]">
+      <p className="mt-1 truncate text-center font-mono text-[10px] font-black tracking-[0.14em] text-[#17100d]">
         {value}
       </p>
     </div>
   );
 }
 
-export function LoyaltyCardPreview({ card, pointsBalance = 320, pointValueSar = 0.25, compact = false }: Props) {
+export function LoyaltyCardPreview({
+  card,
+  pointsBalance = 320,
+  pointValueSar = 0.25,
+  compact = false,
+  editable = false,
+  onCardChange,
+}: Props) {
   const ProgressIcon = progressIcons[card.progressIcon];
+  const cardRef = useRef<HTMLDivElement | null>(null);
   const earnedValue = Math.round(pointsBalance * pointValueSar * 100) / 100;
   const stamps = Array.from({ length: Math.max(1, card.stampsRequired) });
+  const logoVisible = Boolean(card.logoPreviewUrl);
+  const showPoints = card.pointsBadgeVisible;
+
+  function startDrag(event: PointerEvent<HTMLDivElement>, layer: DraggableLayer) {
+    if (!editable || !onCardChange) return;
+    const target = event.currentTarget;
+    target.setPointerCapture(event.pointerId);
+
+    const rect = cardRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const activeRect = rect;
+    const updateCard = onCardChange;
+
+    const width =
+      layer === "logo" ? card.logoWidth : layer === "points" ? card.pointsBadgeWidth : card.barcodeWidth;
+    const height =
+      layer === "logo" ? card.logoHeight : layer === "points" ? card.pointsBadgeHeight : card.barcodeHeight;
+
+    function move(moveEvent: globalThis.PointerEvent) {
+      const nextX = clamp(((moveEvent.clientX - activeRect.left) / activeRect.width) * 100 - width / 2, 0, 100 - width);
+      const nextY = clamp(((moveEvent.clientY - activeRect.top) / activeRect.height) * 100 - height / 2, 0, 100 - height);
+
+      if (layer === "logo") updateCard({ ...card, logoX: nextX, logoY: nextY });
+      if (layer === "points") updateCard({ ...card, pointsBadgeX: nextX, pointsBadgeY: nextY });
+      if (layer === "barcode") updateCard({ ...card, barcodeX: nextX, barcodeY: nextY });
+    }
+
+    function stop() {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", stop);
+    }
+
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", stop);
+  }
 
   return (
     <div
-      className={`relative overflow-hidden rounded-[18px] border border-black/10 p-5 shadow-[0_24px_70px_rgba(49,25,18,0.20)] ${compact ? "max-w-[420px]" : "w-full"}`}
+      ref={cardRef}
+      className={`relative mx-auto aspect-[1.58/1] w-full overflow-hidden rounded-[18px] border border-black/10 p-5 text-right shadow-[0_24px_70px_rgba(49,25,18,0.20)] ${
+        compact ? "max-w-[440px]" : "max-w-[860px]"
+      } ${editable ? "select-none ring-2 ring-[#D9A33F]/25" : ""}`}
       style={{ background: card.cardBackground, color: card.cardForeground }}
       dir="rtl"
     >
-      {card.logoPreviewUrl ? (
-        <img
-          src={card.logoPreviewUrl}
-          alt=""
-          className="absolute rounded-xl bg-white/90 object-contain p-1 shadow-lg"
-          style={logoPosition(card)}
-        />
-      ) : null}
-
-      <div className="flex items-start justify-between gap-4 pe-20">
-        <div className="min-w-0">
-          <p className="text-xs font-black opacity-75">{card.brandName}</p>
-          <h3 className="mt-2 text-2xl font-black leading-tight">{card.cardTitle}</h3>
-          <p className="mt-2 max-w-sm text-sm font-bold leading-6 opacity-80">{card.subtitle}</p>
+      <div className="relative z-10 flex h-full flex-col">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0 pe-16">
+            <p className="text-[11px] font-black opacity-75">{card.brandName}</p>
+            <h3 className={compact ? "mt-1 text-xl font-black leading-tight" : "mt-2 text-3xl font-black leading-tight"}>
+              {card.cardTitle}
+            </h3>
+            <p className="mt-1 max-w-[56%] text-xs font-bold leading-5 opacity-80 sm:text-sm">{card.subtitle}</p>
+          </div>
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl" style={{ background: card.cardAccent, color: card.cardBackground }}>
+            <WalletCards className="h-5 w-5" />
+          </div>
         </div>
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl" style={{ background: card.cardAccent, color: card.cardBackground }}>
-          <WalletCards className="h-6 w-6" />
-        </div>
-      </div>
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-[minmax(0,1fr)_132px] sm:items-stretch">
-        <div className="rounded-[14px] bg-white/12 p-4">
-          <p className="text-sm font-black" style={{ color: card.cardAccent }}>{card.rewardTitle}</p>
-          <p className="mt-1 text-xs font-bold leading-5 opacity-80">{card.supportingText}</p>
-          <div className="mt-4 grid grid-cols-4 gap-2 sm:grid-cols-8">
+        <div className="mt-auto max-w-[55%] rounded-[14px] bg-white/12 p-3">
+          <p className="text-xs font-black sm:text-sm" style={{ color: card.cardAccent }}>{card.rewardTitle}</p>
+          <div className="mt-3 grid grid-cols-4 gap-1.5 sm:grid-cols-8">
             {stamps.map((_, index) => {
               const filled = index < card.completedStamps;
               return (
                 <span
                   key={index}
-                  className={`flex aspect-square items-center justify-center rounded-xl border text-xs font-black ${
+                  className={`flex aspect-square items-center justify-center rounded-lg border text-[10px] font-black ${
                     filled ? "border-transparent" : "border-white/20 bg-white/10 opacity-70"
                   }`}
                   style={filled ? { background: card.cardAccent, color: card.cardBackground } : undefined}
                 >
                   {card.customIconPreviewUrl ? (
-                    <img src={card.customIconPreviewUrl} alt="" className="h-5 w-5 object-contain" />
+                    <img src={card.customIconPreviewUrl} alt="" className="h-4 w-4 object-contain" />
                   ) : (
-                    <ProgressIcon className="h-4 w-4" />
+                    <ProgressIcon className="h-3.5 w-3.5" />
                   )}
                 </span>
               );
             })}
           </div>
-          <div className="mt-4 flex flex-wrap gap-2 text-xs font-black">
-            <span className="rounded-full bg-white/12 px-3 py-1.5">{card.completedStamps} / {card.stampsRequired} {card.stampLabel}</span>
-            <span className="rounded-full bg-white/12 px-3 py-1.5">{pointsBalance} نقطة</span>
-            <span className="rounded-full bg-white/12 px-3 py-1.5">{earnedValue} ر.س قيمة تقريبية</span>
-          </div>
-        </div>
-
-        <div className="grid gap-3 rounded-[14px] bg-white p-3 text-[#17100d]">
-          <SecureQrCode kind="loyalty-card" value={card.sampleCode} title="QR بطاقة الولاء" size={108} />
-          {card.barcodeVisible ? <LoyaltyBarcode value={card.sampleCode} /> : null}
         </div>
       </div>
 
-      <p className="mt-4 text-xs font-bold leading-5 opacity-75">{card.terms}</p>
+      {logoVisible ? (
+        <div
+          role={editable ? "button" : undefined}
+          tabIndex={editable ? 0 : undefined}
+          onPointerDown={(event) => startDrag(event, "logo")}
+          className={`absolute z-20 rounded-xl ${editable ? "cursor-move ring-2 ring-[#D9A33F]/60" : ""}`}
+          style={layerStyle(card.logoX, card.logoY, card.logoWidth, card.logoHeight)}
+        >
+          <img src={card.logoPreviewUrl} alt="" className="h-full w-full object-contain" />
+        </div>
+      ) : null}
+
+      {showPoints ? (
+        <div
+          role={editable ? "button" : undefined}
+          tabIndex={editable ? 0 : undefined}
+          onPointerDown={(event) => startDrag(event, "points")}
+          className={`absolute z-20 flex flex-col justify-center rounded-xl border border-white/15 bg-white/90 px-3 text-[#17100d] shadow-lg ${
+            editable ? "cursor-move ring-2 ring-[#D9A33F]/60" : ""
+          }`}
+          style={layerStyle(card.pointsBadgeX, card.pointsBadgeY, card.pointsBadgeWidth, card.pointsBadgeHeight)}
+        >
+          <p className="truncate text-[10px] font-black text-[#806A5E]">نقاط الولاء</p>
+          <p className="truncate text-sm font-black">{pointsBalance} نقطة</p>
+          <p className="truncate text-[10px] font-bold text-[#806A5E]">{earnedValue} ر.س</p>
+        </div>
+      ) : null}
+
+      {card.barcodeVisible ? (
+        <div
+          role={editable ? "button" : undefined}
+          tabIndex={editable ? 0 : undefined}
+          onPointerDown={(event) => startDrag(event, "barcode")}
+          className={`absolute z-20 ${editable ? "cursor-move ring-2 ring-[#D9A33F]/60" : ""}`}
+          style={layerStyle(card.barcodeX, card.barcodeY, card.barcodeWidth, card.barcodeHeight)}
+        >
+          <LoyaltyBarcode value={card.sampleCode} />
+        </div>
+      ) : null}
+
+      <div className="absolute bottom-5 left-5 z-20 rounded-xl bg-white p-2 text-[#17100d]">
+        <SecureQrCode kind="loyalty-card" value={card.sampleCode} title="QR بطاقة الولاء" size={compact ? 76 : 96} />
+      </div>
+
+      {editable ? (
+        <div className="absolute right-4 top-4 z-30 rounded-xl bg-black/35 px-3 py-1 text-[11px] font-black text-white backdrop-blur">
+          اسحب العناصر داخل حدود البطاقة
+        </div>
+      ) : null}
     </div>
   );
 }

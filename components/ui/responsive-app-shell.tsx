@@ -103,7 +103,7 @@ export function ResponsiveAppShell({
         style={sidebarStyle}
         className="min-h-[100dvh] w-full max-w-full min-w-0 overflow-x-hidden pt-14 transition-[margin] duration-300 lg:mr-[var(--app-sidebar-width)] lg:w-[calc(100%_-_var(--app-sidebar-width))] lg:pt-0"
       >
-        <div className="w-full max-w-full min-w-0 overflow-x-hidden">{children}</div>
+        <div className="mx-auto w-full max-w-[1480px] min-w-0 overflow-x-hidden">{children}</div>
       </section>
     </>
   );

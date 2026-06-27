@@ -124,7 +124,7 @@ export function DashboardAppLayout({
     <ResponsiveAppShell
       variant="dashboard"
       mobileTitle="لوحة التحكم"
-      desktopSidebarWidth={sidebarCollapsed ? "68px" : "240px"}
+      desktopSidebarWidth={sidebarCollapsed ? "64px" : "224px"}
       sidebar={(close) => (
         <DashboardSidebar
           collapsed={sidebarCollapsed}

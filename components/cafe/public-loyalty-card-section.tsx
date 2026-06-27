@@ -2,8 +2,9 @@
 
 import { Download, UserRound, WalletCards } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { CustomerLoyaltyCard } from "@/components/loyalty/customer-loyalty-card";
 import { CustomerPointsSummary } from "@/components/loyalty/customer-points-summary";
+import { LoyaltyCardPreview } from "@/components/loyalty/loyalty-card-preview";
+import { useLoyaltyDemoState } from "@/components/loyalty/use-loyalty-demo-state";
 import { getCustomerLoginHref } from "@/lib/cafe/theme-links";
 import { getCustomerSession } from "@/lib/customer/session";
 
@@ -29,6 +30,7 @@ const POINT_VALUE_SAR = 0.25;
 const MINIMUM_REDEMPTION_POINTS = 100;
 
 export function PublicLoyaltyCardSection({ slug, cafeName, program, logoUrl }: Props) {
+  const [demoState] = useLoyaltyDemoState();
   const [cardCode, setCardCode] = useState("");
   const [hasCustomerSession, setHasCustomerSession] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
@@ -52,13 +54,28 @@ export function PublicLoyaltyCardSection({ slug, cafeName, program, logoUrl }: P
   }, [slug]);
 
   const displayCode = cardCode || `${slug.toUpperCase().slice(0, 10)}-LOYALTY`;
-  const pointsBalance = cardCode ? 320 : 180;
+  const pointsBalance = demoState.points.enabled
+    ? demoState.points.customerPointsBalance
+    : cardCode ? 320 : 180;
+  const pointValueSar = demoState.points.enabled ? demoState.points.pointValueSar : POINT_VALUE_SAR;
   const completedStamps = useMemo(
     () => Math.min(program?.purchasesRequired ?? 8, cardCode ? 5 : 3),
     [cardCode, program?.purchasesRequired]
   );
 
-  if (!program?.enabled) return null;
+  if (!program?.enabled || !demoState.card.enabled) return null;
+  const previewCard = {
+    ...demoState.card,
+    brandName: cafeName,
+    cardTitle: demoState.card.cardTitle || program.cardTitle,
+    subtitle: demoState.card.subtitle || program.cardSubtitle,
+    rewardTitle: demoState.card.rewardTitle || program.rewardName,
+    stampsRequired: program.purchasesRequired,
+    completedStamps,
+    logoPreviewUrl: demoState.card.logoPreviewUrl || logoUrl || undefined,
+    sampleCode: displayCode,
+    pointsBadgeVisible: demoState.points.enabled && demoState.card.pointsBadgeVisible,
+  };
 
   function showCard() {
     setCardCode(`${slug.toUpperCase().slice(0, 8)}-2408`);
@@ -74,14 +91,14 @@ export function PublicLoyaltyCardSection({ slug, cafeName, program, logoUrl }: P
             بطاقة رقمية واضحة خاصة بـ {cafeName}
           </h2>
           <p className="mt-3 max-w-2xl text-sm font-bold leading-7 text-[#806A5E]">
-            يظهر للعميل الرصيد، قيمة النقاط بالريال، الأختام، الباركود و QR في نفس البطاقة بدون قص أو أعمدة مزدحمة.
+            يظهر للعميل الرصيد، قيمة النقاط بالريال، الأختام، الباركود و QR في نفس البطاقة. محتوى البطاقة يستخدم تصميم الديمو المحفوظ عند توفره.
           </p>
 
           <div className="mt-5">
             <CustomerPointsSummary
               pointsBalance={pointsBalance}
-              pointValueSar={POINT_VALUE_SAR}
-              minimumRedemptionPoints={MINIMUM_REDEMPTION_POINTS}
+              pointValueSar={pointValueSar}
+              minimumRedemptionPoints={demoState.points.minimumRedemptionPoints || MINIMUM_REDEMPTION_POINTS}
             />
           </div>
 
@@ -125,20 +142,10 @@ export function PublicLoyaltyCardSection({ slug, cafeName, program, logoUrl }: P
           {message ? <p className="mt-3 text-sm font-bold text-[#6B3A25]">{message}</p> : null}
         </div>
 
-        <CustomerLoyaltyCard
-          cafeName={cafeName}
-          logoUrl={logoUrl}
-          cardTitle={program.cardTitle}
-          cardSubtitle={program.cardSubtitle}
-          cardCode={displayCode}
-          purchasesRequired={program.purchasesRequired}
-          completedStamps={completedStamps}
-          rewardName={program.rewardName}
+        <LoyaltyCardPreview
+          card={previewCard}
           pointsBalance={pointsBalance}
-          pointValueSar={POINT_VALUE_SAR}
-          cardBackground={program.cardBackground}
-          cardForeground={program.cardForeground}
-          cardAccent={program.cardAccent}
+          pointValueSar={pointValueSar}
         />
       </div>
     </section>

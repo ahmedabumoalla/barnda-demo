@@ -1,36 +1,73 @@
 "use client";
 
-import { Eye, Palette, ToggleLeft, ToggleRight } from "lucide-react";
+import { Eye, Move, Palette, ToggleLeft, ToggleRight } from "lucide-react";
 import { LoyaltyIconPicker } from "@/components/loyalty/loyalty-icon-picker";
 import { LoyaltyLogoUploader } from "@/components/loyalty/loyalty-logo-uploader";
-import { NeumoInput, NeumoSelect, NeumoTextarea } from "@/components/ui/design-system";
-import type { LoyaltyCardDesign, LoyaltyLogoPlacement } from "@/lib/loyalty/types";
+import { NeumoInput, NeumoTextarea } from "@/components/ui/design-system";
+import type { LoyaltyCardDesign } from "@/lib/loyalty/types";
 
 type Props = {
   value: LoyaltyCardDesign;
   onChange: (value: LoyaltyCardDesign) => void;
 };
 
-const logoPlacements: Array<{ value: LoyaltyLogoPlacement; label: string }> = [
-  { value: "top-right", label: "أعلى اليمين" },
-  { value: "top-left", label: "أعلى اليسار" },
-  { value: "center", label: "في المنتصف" },
-  { value: "bottom-right", label: "أسفل اليمين" },
-  { value: "custom", label: "مخصص" },
-];
+type LayerKey = "logo" | "pointsBadge" | "barcode";
+
+function percentLabel(value: number) {
+  return `${Math.round(value)}%`;
+}
 
 export function LoyaltyCardBuilder({ value, onChange }: Props) {
   function patch(next: Partial<LoyaltyCardDesign>) {
     onChange({ ...value, ...next });
   }
 
+  function updateLayer(layer: LayerKey, field: "X" | "Y" | "Width" | "Height", nextValue: number) {
+    const key = `${layer}${field}` as keyof LoyaltyCardDesign;
+    patch({ [key]: nextValue } as Partial<LoyaltyCardDesign>);
+  }
+
+  function LayerSlider({
+    label,
+    layer,
+    field,
+    min = 0,
+    max = 100,
+  }: {
+    label: string;
+    layer: LayerKey;
+    field: "X" | "Y" | "Width" | "Height";
+    min?: number;
+    max?: number;
+  }) {
+    const key = `${layer}${field}` as keyof LoyaltyCardDesign;
+    const current = Number(value[key] ?? 0);
+
+    return (
+      <label className="space-y-2">
+        <span className="flex justify-between gap-2 text-xs font-black text-[#6B3A25]">
+          <span>{label}</span>
+          <span>{percentLabel(current)}</span>
+        </span>
+        <NeumoInput
+          type="range"
+          min={min}
+          max={max}
+          value={current}
+          onChange={(event) => updateLayer(layer, field, Number(event.target.value))}
+          className="h-10"
+        />
+      </label>
+    );
+  }
+
   return (
-    <div className="space-y-5" dir="rtl">
+    <div className="space-y-4" dir="rtl">
       <div className="rounded-[16px] border border-[#E7D7C6] bg-[#FCF8F3] p-4">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-black text-[#311912]">قسم بطاقة الولاء</h2>
-            <p className="mt-1 text-xs font-bold text-[#806A5E]">تخصيص البطاقة الرقمية، النصوص، الأختام، الشعار والرموز.</p>
+            <h2 className="text-base font-black text-[#311912]">إعدادات البطاقة</h2>
+            <p className="mt-1 text-xs font-bold text-[#806A5E]">كل التعديلات محفوظة محلياً داخل الديمو.</p>
           </div>
           <button
             type="button"
@@ -40,11 +77,11 @@ export function LoyaltyCardBuilder({ value, onChange }: Props) {
             }`}
           >
             {value.enabled ? <ToggleRight className="h-5 w-5" /> : <ToggleLeft className="h-5 w-5" />}
-            {value.enabled ? "مفعلة" : "متوقفة"}
+            {value.enabled ? "إيقاف بطاقة الولاء" : "تفعيل بطاقة الولاء"}
           </button>
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-3">
+        <div className="grid gap-3 lg:grid-cols-3">
           <label className="space-y-2">
             <span className="text-xs font-black text-[#6B3A25]">اسم العلامة</span>
             <NeumoInput value={value.brandName} onChange={(event) => patch({ brandName: event.target.value })} />
@@ -68,19 +105,51 @@ export function LoyaltyCardBuilder({ value, onChange }: Props) {
         </div>
       </div>
 
-      <div className="grid gap-5 xl:grid-cols-[1.1fr_0.9fr]">
+      <div className="grid gap-4 xl:grid-cols-2">
+        <div className="rounded-[16px] border border-[#E7D7C6] bg-white p-4">
+          <div className="mb-4 flex items-center gap-2">
+            <Palette className="h-5 w-5 text-[#6B3A25]" />
+            <h3 className="text-sm font-black text-[#311912]">الألوان والشعار</h3>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <label className="space-y-2">
+              <span className="text-xs font-black text-[#6B3A25]">الخلفية</span>
+              <NeumoInput type="color" value={value.cardBackground} onChange={(event) => patch({ cardBackground: event.target.value })} className="h-11 p-2" />
+            </label>
+            <label className="space-y-2">
+              <span className="text-xs font-black text-[#6B3A25]">النص</span>
+              <NeumoInput type="color" value={value.cardForeground} onChange={(event) => patch({ cardForeground: event.target.value })} className="h-11 p-2" />
+            </label>
+            <label className="space-y-2">
+              <span className="text-xs font-black text-[#6B3A25]">التمييز</span>
+              <NeumoInput type="color" value={value.cardAccent} onChange={(event) => patch({ cardAccent: event.target.value })} className="h-11 p-2" />
+            </label>
+          </div>
+          <div className="mt-4">
+            <LoyaltyLogoUploader
+              label="شعار البطاقة"
+              value={value.logoPreviewUrl}
+              onChange={(logoPreviewUrl) => patch({ logoPreviewUrl })}
+              removeLightBackground={value.logoRemoveLightBackground}
+              tolerance={value.logoBackgroundTolerance}
+              onRemoveLightBackgroundChange={(logoRemoveLightBackground) => patch({ logoRemoveLightBackground })}
+              onToleranceChange={(logoBackgroundTolerance) => patch({ logoBackgroundTolerance })}
+            />
+          </div>
+        </div>
+
         <div className="rounded-[16px] border border-[#E7D7C6] bg-white p-4">
           <div className="mb-4 flex items-center gap-2">
             <Eye className="h-5 w-5 text-[#6B3A25]" />
-            <h3 className="text-base font-black text-[#311912]">الأختام والتقدم</h3>
+            <h3 className="text-sm font-black text-[#311912]">الأختام وأيقونة التقدم</h3>
           </div>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-3">
             <label className="space-y-2">
               <span className="text-xs font-black text-[#6B3A25]">عدد الأختام</span>
               <NeumoInput type="number" min={1} max={16} value={value.stampsRequired} onChange={(event) => patch({ stampsRequired: Math.max(1, Number(event.target.value) || 1) })} />
             </label>
             <label className="space-y-2">
-              <span className="text-xs font-black text-[#6B3A25]">المكتمل في المعاينة</span>
+              <span className="text-xs font-black text-[#6B3A25]">المكتمل</span>
               <NeumoInput type="number" min={0} max={value.stampsRequired} value={value.completedStamps} onChange={(event) => patch({ completedStamps: Math.min(value.stampsRequired, Math.max(0, Number(event.target.value) || 0)) })} />
             </label>
             <label className="space-y-2">
@@ -97,50 +166,60 @@ export function LoyaltyCardBuilder({ value, onChange }: Props) {
             />
           </div>
         </div>
+      </div>
 
-        <div className="rounded-[16px] border border-[#E7D7C6] bg-white p-4">
-          <div className="mb-4 flex items-center gap-2">
-            <Palette className="h-5 w-5 text-[#6B3A25]" />
-            <h3 className="text-base font-black text-[#311912]">الألوان والشعار</h3>
+      <div className="rounded-[16px] border border-[#E7D7C6] bg-white p-4">
+        <div className="mb-4 flex items-center gap-2">
+          <Move className="h-5 w-5 text-[#6B3A25]" />
+          <h3 className="text-sm font-black text-[#311912]">السحب والحجم</h3>
+        </div>
+        <div className="grid gap-4 xl:grid-cols-3">
+          <div className="rounded-[14px] bg-[#FCF8F3] p-3">
+            <p className="mb-3 text-xs font-black text-[#311912]">الشعار</p>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+              <LayerSlider label="يمين / يسار" layer="logo" field="X" max={90} />
+              <LayerSlider label="أعلى / أسفل" layer="logo" field="Y" max={86} />
+              <LayerSlider label="العرض" layer="logo" field="Width" min={8} max={36} />
+              <LayerSlider label="الارتفاع" layer="logo" field="Height" min={8} max={36} />
+            </div>
           </div>
-          <div className="grid gap-3 sm:grid-cols-3">
-            <label className="space-y-2">
-              <span className="text-xs font-black text-[#6B3A25]">الخلفية</span>
-              <NeumoInput type="color" value={value.cardBackground} onChange={(event) => patch({ cardBackground: event.target.value })} className="h-12 p-2" />
-            </label>
-            <label className="space-y-2">
-              <span className="text-xs font-black text-[#6B3A25]">النص</span>
-              <NeumoInput type="color" value={value.cardForeground} onChange={(event) => patch({ cardForeground: event.target.value })} className="h-12 p-2" />
-            </label>
-            <label className="space-y-2">
-              <span className="text-xs font-black text-[#6B3A25]">التمييز</span>
-              <NeumoInput type="color" value={value.cardAccent} onChange={(event) => patch({ cardAccent: event.target.value })} className="h-12 p-2" />
-            </label>
+
+          <div className="rounded-[14px] bg-[#FCF8F3] p-3">
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <p className="text-xs font-black text-[#311912]">وسم النقاط</p>
+              <button
+                type="button"
+                onClick={() => patch({ pointsBadgeVisible: !value.pointsBadgeVisible })}
+                className="rounded-lg bg-white px-2 py-1 text-[11px] font-black text-[#6B3A25]"
+              >
+                {value.pointsBadgeVisible ? "إخفاء" : "إظهار"}
+              </button>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+              <LayerSlider label="يمين / يسار" layer="pointsBadge" field="X" max={85} />
+              <LayerSlider label="أعلى / أسفل" layer="pointsBadge" field="Y" max={88} />
+              <LayerSlider label="العرض" layer="pointsBadge" field="Width" min={18} max={42} />
+              <LayerSlider label="الارتفاع" layer="pointsBadge" field="Height" min={10} max={24} />
+            </div>
           </div>
-          <div className="mt-4">
-            <LoyaltyLogoUploader label="شعار البطاقة" value={value.logoPreviewUrl} onChange={(logoPreviewUrl) => patch({ logoPreviewUrl })} />
-          </div>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            <label className="space-y-2">
-              <span className="text-xs font-black text-[#6B3A25]">مكان الشعار</span>
-              <NeumoSelect value={value.logoPlacement} onChange={(event) => patch({ logoPlacement: event.target.value as LoyaltyLogoPlacement })}>
-                {logoPlacements.map((placement) => (
-                  <option key={placement.value} value={placement.value}>{placement.label}</option>
-                ))}
-              </NeumoSelect>
-            </label>
-            <label className="space-y-2">
-              <span className="text-xs font-black text-[#6B3A25]">حجم الشعار</span>
-              <NeumoInput type="range" min={36} max={96} value={value.logoSize} onChange={(event) => patch({ logoSize: Number(event.target.value) })} />
-            </label>
-            <label className="space-y-2">
-              <span className="text-xs font-black text-[#6B3A25]">إزاحة أفقية</span>
-              <NeumoInput type="range" min={-60} max={60} value={value.logoOffsetX} onChange={(event) => patch({ logoOffsetX: Number(event.target.value) })} />
-            </label>
-            <label className="space-y-2">
-              <span className="text-xs font-black text-[#6B3A25]">إزاحة رأسية</span>
-              <NeumoInput type="range" min={-60} max={60} value={value.logoOffsetY} onChange={(event) => patch({ logoOffsetY: Number(event.target.value) })} />
-            </label>
+
+          <div className="rounded-[14px] bg-[#FCF8F3] p-3">
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <p className="text-xs font-black text-[#311912]">الباركود</p>
+              <button
+                type="button"
+                onClick={() => patch({ barcodeVisible: !value.barcodeVisible })}
+                className="rounded-lg bg-white px-2 py-1 text-[11px] font-black text-[#6B3A25]"
+              >
+                {value.barcodeVisible ? "إخفاء" : "إظهار"}
+              </button>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+              <LayerSlider label="يمين / يسار" layer="barcode" field="X" max={86} />
+              <LayerSlider label="أعلى / أسفل" layer="barcode" field="Y" max={86} />
+              <LayerSlider label="العرض" layer="barcode" field="Width" min={24} max={48} />
+              <LayerSlider label="الارتفاع" layer="barcode" field="Height" min={14} max={30} />
+            </div>
           </div>
         </div>
       </div>

@@ -26,7 +26,7 @@ export function FinancePageShell({
 }: FinancePageShellProps) {
   return (
     <main dir="rtl" className="min-h-screen w-full max-w-full overflow-x-hidden bg-[#F5EFE6] px-3 py-4 text-right text-[#2F241D] sm:px-4 lg:px-5">
-      <div className="mx-auto flex w-full max-w-full min-w-0 flex-col gap-4 overflow-hidden">
+      <div className="mx-auto flex w-full max-w-[1320px] min-w-0 flex-col gap-4 overflow-hidden">
         <header className="min-w-0 rounded-[8px] border border-[#D8C3A2] bg-[#FFFDF8] p-3 shadow-[0_16px_38px_rgba(69,43,28,0.08)] sm:p-4">
           <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div className="min-w-0">

@@ -143,7 +143,22 @@ export const brandaFinanceReportSections: BrandaFinanceReportSection[] = [
   },
 ];
 
-export const brandaFinanceReports = brandaFinanceReportSections.flatMap((section) => section.reports);
+const brandaFinanceBaseReports = brandaFinanceReportSections.flatMap((section) => section.reports);
+
+const brandaFinanceAdditionalReports: BrandaFinanceReportItem[] = [
+  report("financial", "طھظ‚ط§ط±ظٹط± ظ…ط§ظ„ظٹط©", "profit-loss", "الأرباح والخسائر", "قائمة مختصرة للإيرادات والتكاليف والمصروفات وصافي الربح."),
+  report("purchases", "ظ…ط´طھط±ظٹط§طھ", "purchases", "تقرير المشتريات", "تحليل مشتريات الموردين والضريبة والمدفوعات."),
+  report("inventory", "ظ…ط®ط²ظˆظ†", "inventory", "تقرير المخزون", "أرصدة المنتجات وحركة المستودعات والتنبيهات."),
+  report("sales", "ظ…ط¨ظٹط¹ط§طھ", "branches", "تقرير الفروع", "أداء كل فرع من المبيعات والصندوق والمستودع."),
+  report("inventory", "ظ…ط®ط²ظˆظ†", "products", "تقرير المنتجات", "ربحية المنتجات والمبيعات والمخزون."),
+];
+
+export const brandaFinanceReports = [
+  ...brandaFinanceBaseReports,
+  ...brandaFinanceAdditionalReports.filter(
+    (additionalReport) => !brandaFinanceBaseReports.some((baseReport) => baseReport.slug === additionalReport.slug),
+  ),
+];
 
 export function getBrandaFinanceReportBySlug(slug: string) {
   return brandaFinanceReports.find((reportItem) => reportItem.slug === slug);

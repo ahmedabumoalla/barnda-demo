@@ -89,7 +89,7 @@ export function InvoiceForm({
   onRemoveItem,
 }: InvoiceFormProps) {
   return (
-    <section className="w-full max-w-full min-w-0 overflow-hidden rounded-[8px] border border-[#D8C3A2] bg-[#FFFDF8] p-3 shadow-[0_16px_38px_rgba(69,43,28,0.08)] sm:p-4">
+    <section className="w-full max-w-full min-w-0 overflow-hidden rounded-[8px] border border-[#D8C3A2] bg-[#FFFDF8] p-3 shadow-[0_16px_38px_rgba(69,43,28,0.08)] sm:p-4 xl:p-5">
       <div className="mb-4 flex min-w-0 flex-col gap-2 border-b border-[#E8D8C2] pb-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-xs font-black text-[#9C6B2E]">مساحة إنشاء الفاتورة</p>
@@ -209,7 +209,7 @@ export function InvoiceForm({
         />
       </div>
 
-      <div className="mt-4 grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="mt-4 grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="min-w-0 space-y-3">
           <div className="rounded-[8px] border border-dashed border-[#D6B677] bg-[#FFF8EA] p-3 text-[12px] font-bold leading-6 text-[#6B431C]">
             <div className="mb-2 inline-flex items-center gap-2 font-black">

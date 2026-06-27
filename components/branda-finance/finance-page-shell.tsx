@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { FinanceBackButton } from "@/components/branda-finance/finance-back-button";
 import { FinanceStatusBadge } from "@/components/branda-finance/finance-status-badge";
 
 type FinancePageShellProps = {
@@ -7,6 +8,8 @@ type FinancePageShellProps = {
   eyebrow?: string;
   description?: string;
   status?: string;
+  backHref?: string;
+  backLabel?: string;
   actions?: Array<{ label: string; href: string; primary?: boolean }>;
   children: ReactNode;
 };
@@ -16,6 +19,8 @@ export function FinancePageShell({
   eyebrow = "برندة المالية",
   description,
   status = "ديمو محلي",
+  backHref = "/dashboard/branda-finance",
+  backLabel = "عودة",
   actions = [],
   children,
 }: FinancePageShellProps) {
@@ -25,6 +30,9 @@ export function FinancePageShell({
         <header className="min-w-0 rounded-[8px] border border-[#D8C3A2] bg-[#FFFDF8] p-3 shadow-[0_16px_38px_rgba(69,43,28,0.08)] sm:p-4">
           <div className="flex min-w-0 flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div className="min-w-0">
+              <div className="mb-2">
+                <FinanceBackButton href={backHref} label={backLabel} />
+              </div>
               <p className="text-[11px] font-black text-[#9C6B2E]">{eyebrow}</p>
               <div className="mt-1 flex min-w-0 flex-wrap items-center gap-2">
                 <h1 className="min-w-0 text-xl font-black text-[#2F241D] sm:text-2xl">{title}</h1>

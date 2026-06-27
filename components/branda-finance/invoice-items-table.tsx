@@ -46,16 +46,16 @@ export function InvoiceItemsTable({
         </button>
       </div>
       <div className="max-w-full overflow-x-auto">
-        <table className="w-full min-w-[1060px] table-fixed text-right text-[12px]">
+        <table className="w-full min-w-[1180px] table-fixed text-right text-[12px]">
           <colgroup>
-            <col className="w-[260px]" />
-            <col className="w-[78px]" />
-            <col className="w-[95px]" />
-            <col className="w-[95px]" />
-            <col className="w-[120px]" />
-            <col className="w-[140px]" />
-            <col className="w-[150px]" />
-            <col className="w-[120px]" />
+            <col className="w-[320px]" />
+            <col className="w-[82px]" />
+            <col className="w-[105px]" />
+            <col className="w-[105px]" />
+            <col className="w-[130px]" />
+            <col className="w-[160px]" />
+            <col className="w-[170px]" />
+            <col className="w-[130px]" />
             <col className="w-[62px]" />
           </colgroup>
           <thead className="bg-[#F4E8D8] text-xs font-black text-[#674C38]">

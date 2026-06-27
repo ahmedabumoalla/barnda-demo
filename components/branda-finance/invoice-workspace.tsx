@@ -6,6 +6,7 @@ import { Eye, FileCheck2, Paperclip, Save, ShoppingCart, X } from "lucide-react"
 import { AddBranchModal } from "@/components/branda-finance/add-branch-modal";
 import { AddCustomerModal } from "@/components/branda-finance/add-customer-modal";
 import { CustomFieldModal } from "@/components/branda-finance/custom-field-modal";
+import { FinanceBackButton } from "@/components/branda-finance/finance-back-button";
 import { InvoiceForm } from "@/components/branda-finance/invoice-form";
 import { InvoicePreviewModal } from "@/components/branda-finance/invoice-preview-modal";
 import { calculateInvoiceTotals } from "@/components/branda-finance/invoice-totals";
@@ -124,6 +125,9 @@ export function InvoiceWorkspace({ data }: InvoiceWorkspaceProps) {
         <div className="min-w-0 rounded-[8px] border border-[#D8C3A2] bg-[#FFFDF8] p-3 shadow-[0_16px_38px_rgba(69,43,28,0.08)] sm:p-4">
           <div className="flex min-w-0 flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
             <div className="min-w-0">
+              <div className="mb-2">
+                <FinanceBackButton href="/dashboard/branda-finance/invoicing" />
+              </div>
               <p className="text-xs font-black text-[#9C6B2E]">برندا المالية</p>
               <h1 className="mt-1 text-2xl font-black text-[#2F241D] sm:text-3xl">إنشاء فاتورة مبيعات</h1>
               <div className="mt-1 flex min-w-0 flex-wrap items-center gap-2">

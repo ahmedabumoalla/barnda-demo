@@ -1,5 +1,5 @@
-import { FinanceActionCard } from "@/components/branda-finance/finance-action-card";
 import { FinancePageShell } from "@/components/branda-finance/finance-page-shell";
+import { FinanceReportCard } from "@/components/branda-finance/finance-report-card";
 import { FinanceStatCard } from "@/components/branda-finance/finance-stat-card";
 import { brandaFinanceReportSections, brandaFinanceReports } from "@/lib/branda-finance/reports";
 
@@ -9,6 +9,7 @@ export default function BrandaFinanceReportsRoutePage() {
       title="التقارير المالية"
       description="مركز تقارير موحد: أرباح وخسائر، تدفق نقدي، ميزان مراجعة، دفتر أستاذ، كشوف حساب، مبيعات، مشتريات، مخزون، ضريبة، فروع ومنتجات."
       status="جاهز"
+      backHref="/dashboard/branda-finance"
       actions={[
         { label: "دفتر الأستاذ", href: "/dashboard/branda-finance/reports/general-ledger", primary: true },
         { label: "ميزان المراجعة", href: "/dashboard/branda-finance/reports/trial-balance" },
@@ -23,11 +24,12 @@ export default function BrandaFinanceReportsRoutePage() {
 
       <section className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
         {brandaFinanceReports.map((report) => (
-          <FinanceActionCard
+          <FinanceReportCard
             key={report.slug}
             title={report.title}
             href={`/dashboard/branda-finance/reports/${report.slug}`}
             description={report.description}
+            section={report.section}
           />
         ))}
       </section>

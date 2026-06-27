@@ -43,6 +43,7 @@ export default function BrandaFinancePage() {
       title="برندة المالية"
       description="نظام تشغيل مالي داخلي متصل لأصحاب العلامات: مبيعات، فواتير، مشتريات، مخزون، تقارير، محاسبة، بنوك، قوالب وتكاملات. كل شيء هنا محلي وتجريبي وجاهز لربط قاعدة البيانات لاحقا."
       status="DEMO"
+      backHref="/dashboard"
       actions={[
         { label: "إنشاء فاتورة", href: "/dashboard/branda-finance/invoicing/create", primary: true },
         { label: "فتح الكاشير", href: "/dashboard/branda-finance/sales" },

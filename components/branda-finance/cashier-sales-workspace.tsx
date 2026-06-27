@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { FileText, Languages, ScanLine, Search, ShieldCheck } from "lucide-react";
 import { CashierCartPanel, type CartItem } from "@/components/branda-finance/cashier-cart-panel";
 import { EntitySelect } from "@/components/branda-finance/entity-select";
+import { FinanceBackButton } from "@/components/branda-finance/finance-back-button";
 import { LoyaltyScanModal } from "@/components/branda-finance/loyalty-scan-modal";
 import { ProductGrid } from "@/components/branda-finance/product-grid";
 import type { FinancePaymentMethod, FinanceProduct, FinanceWorkspaceData } from "@/lib/branda-finance/invoice-types";
@@ -99,6 +100,9 @@ export function CashierSalesWorkspace({ data }: CashierSalesWorkspaceProps) {
             <div className="flex min-w-0 flex-col gap-3">
               <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
                 <div>
+                  <div className="mb-2">
+                    <FinanceBackButton href="/dashboard/branda-finance" />
+                  </div>
                   <p className="text-xs font-black text-[#9C6B2E]">برندا المالية</p>
                   <h1 className="mt-1 text-xl font-black text-[#2F241D] sm:text-2xl">المبيعات</h1>
                 </div>

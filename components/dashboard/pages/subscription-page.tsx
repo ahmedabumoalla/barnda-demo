@@ -46,6 +46,9 @@ type Props = {
 };
 
 function featureTitle(featureId: string, categoryId?: string) {
+  if (featureId === "loyalty") {
+    return "الولاء والمكافآت + نقاط الولاء المتقدمة";
+  }
   if (featureId === "cashier") {
     return categoryId === "events_conferences" ? "بوابة الدخول" : "الكاشير";
   }
@@ -189,6 +192,7 @@ export function SubscriptionPageClient({
       { label: "الحجوزات الشهرية", value: formatLimit(plan.maxReservationsMonthly, "حجز") },
       { label: "الفروع", value: formatLimit(plan.maxBranches, "فرع") },
       { label: "مدة التجربة", value: plan.trialDays && plan.trialDays > 0 ? `${plan.trialDays} يوم` : "بدون تجربة" },
+      { label: "نقاط الولاء المتقدمة", value: planHasFeature(plan, "loyalty") ? "متاحة في الباقة" : "تحتاج ترقية" },
     ];
   }
 

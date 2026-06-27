@@ -79,6 +79,9 @@ function createPlan(categoryId: BusinessCategoryId): PlatformPlan {
 }
 
 function featureTitle(feature: PlatformFeature, categoryId?: string) {
+  if (feature === "loyalty") {
+    return "الولاء والمكافآت + نقاط الولاء المتقدمة";
+  }
   if (feature === "cashier") {
     return categoryId === "events_conferences" ? "بوابة الدخول" : "الكاشير";
   }
@@ -513,6 +516,12 @@ export function AdminPlansPage({
       </BentoGrid>
 
       <BentoCard variant="dark" span="4" className="mb-7">
+        <div className="mb-5 rounded-2xl border border-[#F6C35B]/20 bg-[#F6C35B]/10 p-4">
+          <h2 className="text-lg font-black text-[#F6C35B]">نقاط الولاء المتقدمة</h2>
+          <p className="mt-1 text-sm font-bold text-[#CBB29C]">
+            تظهر كجزء من ميزة الولاء في عرض الباقات: قواعد كسب واستبدال، نقاط لكل منتج، وسياسات انتهاء وصافي خصم. هذا عرض واجهة فقط ولا يغير منطق الفوترة.
+          </p>
+        </div>
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-xl font-black text-[#F8F4EF]">مصفوفة خدمات الباقات</h2>

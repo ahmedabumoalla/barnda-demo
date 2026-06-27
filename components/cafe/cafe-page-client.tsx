@@ -38,7 +38,7 @@ import { getPreferredCafeDisplayLogoUrl } from "@/lib/cafe/cafe-display-logo";
 import { buildCustomIdentityCssVars, defaultCustomIdentityTheme, OVERLAY_OPACITY } from "@/lib/mock/custom-identity-theme";
 import { usePublicCafeMenu } from "@/lib/cafe/use-public-cafe-menu";
 import { getCafePath, getCustomerLoginHref } from "@/lib/cafe/theme-links";
-import { featureCodesAllow } from "@/lib/platform/feature-gates";
+import { publicFeatureAllows } from "@/lib/platform/public-feature-access";
 import { getBusinessCopy } from "@/lib/platform/business-copy";
 import { resolveProductCategoryLabel } from "@/lib/cafe/menu-category-utils";
 import { getCustomerSession, type BarndaksaCustomerSession } from "@/lib/customer/session";
@@ -493,7 +493,8 @@ function markBranchEmailPending(slug: string, branchId: string, customerId: stri
 
 function CafePageInner({ slug }: { slug: string }) {
   const { settings, previewThemeId, loadError: cafeLoadError, customIdentity, features, hydrated } = useCafeThemePage(slug);
-  const hasFeature = (feature: string) => hydrated && featureCodesAllow(features, feature);
+  const hasFeature = (feature: Parameters<typeof publicFeatureAllows>[1]) =>
+    hydrated && publicFeatureAllows(features, feature);
   const { products, offers, branches, categories, experienceCampaigns, loading, error: menuError } = usePublicCafeMenu(slug);
   const [customer, setCustomer] = useState<BarndaksaCustomerSession | null>(null);
   const [customerChecked, setCustomerChecked] = useState(false);
@@ -862,7 +863,7 @@ function CafePageInner({ slug }: { slug: string }) {
           isCustomer: Boolean(customer),
           hasProducts: hasFeature("menu"),
           hasOrders: hasFeature("reservations") || hasFeature("menu"),
-          hasRewards: hasFeature("loyalty"),
+          hasRewards: hasFeature("loyalty") || hasFeature("experience_reviews"),
           businessCategory: settings.businessCategory,
           active: "home",
         })}

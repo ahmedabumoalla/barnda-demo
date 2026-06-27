@@ -11,7 +11,7 @@ import { ThemedCafeShell } from "@/components/cafe/themes/themed-cafe-shell";
 import { useCafeThemePage } from "@/lib/cafe/use-cafe-theme-page";
 import { usePublicCafeMenu } from "@/lib/cafe/use-public-cafe-menu";
 import { getCafePath } from "@/lib/cafe/theme-links";
-import { featureCodesAllow } from "@/lib/platform/feature-gates";
+import { publicFeatureAllows } from "@/lib/platform/public-feature-access";
 import { resolveProductCategoryLabel } from "@/lib/cafe/menu-category-utils";
 import { getCustomerSession, type BarndaksaCustomerSession } from "@/lib/customer/session";
 import { formatSar } from "@/lib/format";
@@ -103,7 +103,8 @@ function CafeHomeProductCard({
 
 function CafePageInner({ slug }: { slug: string }) {
   const { theme, settings, previewThemeId, loadError: cafeLoadError, features } = useCafeThemePage(slug);
-  const hasFeature = (feature: string) => features.length > 0 && featureCodesAllow(features, feature);
+  const hasFeature = (feature: Parameters<typeof publicFeatureAllows>[1]) =>
+    features.length > 0 && publicFeatureAllows(features, feature);
   const { products, offers, loading, error: menuError } = usePublicCafeMenu(slug);
   const [customer, setCustomer] = useState<BarndaksaCustomerSession | null>(null);
 

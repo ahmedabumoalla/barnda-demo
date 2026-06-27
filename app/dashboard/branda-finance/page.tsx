@@ -7,9 +7,13 @@ import { calculateDemoInvoice, financeAmount } from "@/lib/branda-finance/calcul
 import { getBrandaFinanceDemoData } from "@/lib/branda-finance/demo-data";
 import { brandaFinanceRoutes } from "@/lib/branda-finance/navigation";
 import { brandaFinanceWorkflowBoundaries } from "@/lib/branda-finance/workflows";
+import { getOwnerFeatureCodes } from "@/lib/data/feature-entitlements";
+import { featureCodesAllow } from "@/lib/platform/feature-gates";
 
-export default function BrandaFinancePage() {
+export default async function BrandaFinancePage() {
   const data = getBrandaFinanceDemoData();
+  const features = await getOwnerFeatureCodes().catch(() => []);
+  const loyaltyEnabled = featureCodesAllow(features, "loyalty");
   const invoiceTotals = data.invoices.map(calculateDemoInvoice);
   const salesToday = invoiceTotals.reduce((sum, total) => sum + total.total, 0);
   const unpaid = invoiceTotals.reduce((sum, total) => sum + total.remainingBalance, 0);
@@ -39,8 +43,15 @@ export default function BrandaFinancePage() {
     { title: "فتح تقرير مالي", href: "/dashboard/branda-finance/reports", description: "مركز التقارير" },
     { title: "الكشوف الموحدة", href: "/dashboard/branda-finance/statements", description: "عميل ومورد ومنتج وخدمة" },
     { title: "شجرة الحسابات", href: "/dashboard/branda-finance/accountant/chart-of-accounts", description: "حسابات وإضافة محلية" },
-    { title: "نقاط الولاء", href: "/dashboard/branda-finance/loyalty-points", description: "قواعد كسب واستبدال" },
+    ...(loyaltyEnabled
+      ? [{ title: "نقاط الولاء", href: "/dashboard/branda-finance/loyalty-points", description: "قواعد كسب واستبدال" }]
+      : []),
   ];
+  const visibleRoutes = brandaFinanceRoutes.filter((route) => {
+    if (route.href === "/dashboard/branda-finance") return false;
+    if (route.href === "/dashboard/branda-finance/loyalty-points") return loyaltyEnabled;
+    return true;
+  });
 
   return (
     <FinancePageShell
@@ -73,7 +84,7 @@ export default function BrandaFinancePage() {
           <div className="rounded-[8px] border border-[#D8C3A2] bg-[#FFFDF8] p-3">
             <h2 className="text-[14px] font-black text-[#2F241D]">الوحدات المالية</h2>
             <div className="mt-3">
-              <FinanceModuleGrid routes={brandaFinanceRoutes.filter((route) => route.href !== "/dashboard/branda-finance")} />
+              <FinanceModuleGrid routes={visibleRoutes} />
             </div>
           </div>
         </div>

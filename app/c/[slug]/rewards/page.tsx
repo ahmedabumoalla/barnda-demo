@@ -39,10 +39,12 @@ import {
   CustomerBottomDock,
   defaultCustomerDockItems,
 } from "@/components/cafe/themes/customer-mobile-experience";
+import { PublicBrowserNav } from "@/components/cafe/public-browser-nav";
+import { PublicFeatureUnavailable } from "@/components/cafe/public-feature-guard";
 import { SecureQrCode } from "@/components/loyalty/secure-qr-code";
 import { getCafePath, getCustomerLoginHref } from "@/lib/cafe/theme-links";
 import { useResolvedCafeLogoUrl } from "@/lib/cafe/use-resolved-cafe-logo";
-import { featureCodesAllow } from "@/lib/platform/feature-gates";
+import { publicFeatureAllows } from "@/lib/platform/public-feature-access";
 import type { CustomerExperienceReward } from "@/lib/data/experience-rewards";
 import type { CustomerLoyaltyCardView } from "@/lib/data/loyalty-cards";
 
@@ -707,7 +709,7 @@ function ExperienceProofSheet({
 function RewardsPageInner() {
   const params = useParams<{ slug: string }>();
   const slug = params.slug;
-  const { settings, previewThemeId, features } = useCafePageContext(slug);
+  const { settings, previewThemeId, features, hydrated } = useCafePageContext(slug);
   const cafeName = settings.cafeName;
   const logoUrl = useResolvedCafeLogoUrl(settings);
   const [loading, setLoading] = useState(true);
@@ -729,8 +731,11 @@ function RewardsPageInner() {
   const [experienceNotes, setExperienceNotes] = useState("");
   const [submittingProof, setSubmittingProof] = useState(false);
 
-  const loyaltyEnabled = featureCodesAllow(features, "loyalty");
-  const experienceRewardsEnabled = featureCodesAllow(features, "experience_reviews");
+  const loyaltyEnabled = publicFeatureAllows(features, "loyalty_card");
+  const experienceRewardsEnabled = publicFeatureAllows(features, "experience_reviews");
+  const productsEnabled = publicFeatureAllows(features, "menu");
+  const reservationsEnabled = publicFeatureAllows(features, "reservations");
+  const rewardsPageEnabled = loyaltyEnabled || experienceRewardsEnabled;
   const loginHref = getCustomerLoginHref(slug, `/c/${slug}/rewards`, previewThemeId);
 
   useEffect(() => {
@@ -898,13 +903,20 @@ function RewardsPageInner() {
 
   let content: ReactNode;
 
-  if (pageLoading) {
+  if (!hydrated || pageLoading) {
     content = (
       <div className="rounded-[24px] bg-white p-8 text-center shadow-sm">
         <p className="font-black text-[var(--ci-page-fg,#311912)]">
           جاري تحميل المكافآت...
         </p>
       </div>
+    );
+  } else if (!rewardsPageEnabled) {
+    content = (
+      <>
+        <PublicBrowserNav slug={slug} previewThemeId={previewThemeId} features={features} active="rewards" />
+        <PublicFeatureUnavailable slug={slug} feature="loyalty" previewThemeId={previewThemeId} title="المكافآت" />
+      </>
     );
   } else if (loadError) {
     content = (
@@ -1050,10 +1062,12 @@ function RewardsPageInner() {
           onChange={setQuery}
           placeholder="ابحث في المكافآت"
         />
-        <LoyaltyQrPreviewCard
-          view={scopedLoyaltyView}
-          enabled={loyaltyEnabled}
-        />
+        {loyaltyEnabled ? (
+          <LoyaltyQrPreviewCard
+            view={scopedLoyaltyView}
+            enabled={loyaltyEnabled}
+          />
+        ) : null}
         <div className="grid grid-cols-2 gap-3">
           {mainActions.length ? (
             mainActions.map((item) => (
@@ -1097,8 +1111,8 @@ function RewardsPageInner() {
           slug,
           previewThemeId,
           active: "rewards",
-          hasProducts: true,
-          hasOrders: true,
+          hasProducts: productsEnabled,
+          hasOrders: reservationsEnabled,
           hasRewards: loyaltyEnabled || experienceRewardsEnabled,
           isCustomer: true,
           businessCategory: settings.businessCategory,

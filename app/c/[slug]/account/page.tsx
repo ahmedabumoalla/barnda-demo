@@ -9,8 +9,9 @@ import {
   CustomerBottomDock,
   defaultCustomerDockItems,
 } from "@/components/cafe/themes/customer-mobile-experience";
+import { PublicBrowserNav } from "@/components/cafe/public-browser-nav";
 import { getCafePath, getCustomerLoginHref } from "@/lib/cafe/theme-links";
-import { featureCodesAllow } from "@/lib/platform/feature-gates";
+import { publicFeatureAllows } from "@/lib/platform/public-feature-access";
 import { revokeObjectUrl } from "@/lib/cafe/local-asset-store";
 import {
   clearCustomerSession,
@@ -1116,8 +1117,10 @@ function AccountPageInner() {
       .slice(0, 4);
   }, [myOrders, myReservations, myTransactions]);
 
-  const loyaltyEnabled = featureCodesAllow(accountFeatures, "loyalty");
-  const experienceRewardsEnabled = featureCodesAllow(accountFeatures, "experience_reviews");
+  const loyaltyEnabled = publicFeatureAllows(accountFeatures, "loyalty_card");
+  const experienceRewardsEnabled = publicFeatureAllows(accountFeatures, "experience_reviews");
+  const productsEnabled = publicFeatureAllows(accountFeatures, "menu");
+  const reservationsEnabled = publicFeatureAllows(accountFeatures, "reservations");
   const notificationStorageKey = customer
     ? `barndaksa_read_notifications_${slug}_${customer.id}`
     : "";
@@ -1141,8 +1144,8 @@ function AccountPageInner() {
       slug,
       previewThemeId,
       active: "account",
-      hasProducts: true,
-      hasOrders: true,
+      hasProducts: productsEnabled,
+      hasOrders: reservationsEnabled,
       hasRewards: loyaltyEnabled,
       isCustomer: true,
       businessCategory: settings.businessCategory,
@@ -1154,7 +1157,7 @@ function AccountPageInner() {
         item.key === "account" ? { ...item, badge: unreadNotificationCount } : item,
       ),
     };
-  }, [loyaltyEnabled, previewThemeId, slug, unreadNotificationCount]);
+  }, [loyaltyEnabled, previewThemeId, productsEnabled, reservationsEnabled, settings.businessCategory, slug, unreadNotificationCount]);
 
   useEffect(() => {
     if (!notificationStorageKey) {
@@ -1459,6 +1462,9 @@ function AccountPageInner() {
 
   return (
     <>
+      <div className="mx-auto w-full max-w-5xl px-4 pt-4 sm:px-6">
+        <PublicBrowserNav slug={slug} previewThemeId={previewThemeId} features={accountFeatures} active="account" />
+      </div>
       <ThemedAccountPanel
         slug={slug}
         experience={experience}

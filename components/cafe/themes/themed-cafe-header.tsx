@@ -4,7 +4,7 @@ import Link from "next/link";
 import { UserRound, WalletCards } from "lucide-react";
 import { CafeLogo } from "@/components/cafe/cafe-logo";
 import { getCafePath, getCustomerLoginHref } from "@/lib/cafe/theme-links";
-import { featureCodesAllow } from "@/lib/platform/feature-gates";
+import { publicFeatureAllows } from "@/lib/platform/public-feature-access";
 import type { BarndaksaCustomerSession } from "@/lib/customer/session";
 
 type Props = {
@@ -31,7 +31,8 @@ export function ThemedCafeHeader({
   const home = getCafePath(slug, "", previewThemeId);
   const account = getCafePath(slug, "account", previewThemeId);
   const login = getCustomerLoginHref(slug, `/c/${slug}/account`, previewThemeId);
-  const has = (feature: string) => featureCodesAllow(features, feature);
+  const has = (feature: Parameters<typeof publicFeatureAllows>[1]) =>
+    publicFeatureAllows(features, feature);
   const accountReady = Boolean(customer) || checkingCustomer;
 
   return (
@@ -74,7 +75,7 @@ export function ThemedCafeHeader({
               الحجز
             </Link>
           ) : null}
-          {has("loyalty") ? (
+          {has("loyalty") || has("experience_reviews") ? (
             <Link href={account} className="rounded-2xl px-4 py-2 text-sm font-black text-[var(--ci-primary-bg,var(--barndaksa-brand-brown))] transition hover:bg-[var(--ci-surface-bg,#fff)]">
               الولاء
             </Link>

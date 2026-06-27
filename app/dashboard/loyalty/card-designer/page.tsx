@@ -1,5 +1,13 @@
 import { LoyaltyCardDesignerPage } from "@/components/dashboard/pages/loyalty-card-designer-page";
+import { DashboardFeatureBlockedState } from "@/components/dashboard/feature-blocked-state";
+import { getOwnerFeatureCodes } from "@/lib/data/feature-entitlements";
+import { featureCodesAllow } from "@/lib/platform/feature-gates";
 
-export default function LoyaltyCardDesignerRoute() {
+export default async function LoyaltyCardDesignerRoute() {
+  const features = await getOwnerFeatureCodes().catch(() => []);
+  if (!featureCodesAllow(features, "loyalty")) {
+    return <DashboardFeatureBlockedState title="مصمم بطاقة الولاء" />;
+  }
+
   return <LoyaltyCardDesignerPage />;
 }

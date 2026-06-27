@@ -18,13 +18,14 @@ type Props = {
   product: MenuProduct;
   experience: ThemeExperience;
   href: string;
+  showPoints?: boolean;
 };
 
 export function getCollectionGridClass(_collection?: unknown) {
   return "grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4";
 }
 
-export function ThemedProductCard({ product, experience, href }: Props) {
+export function ThemedProductCard({ product, experience, href, showPoints = true }: Props) {
   const { theme } = experience;
   const promoOn = product.promo ? isPromoActive(product.promo) : false;
   const finalPrice = productFinalPrice(product.price, product.promo);
@@ -62,10 +63,12 @@ export function ThemedProductCard({ product, experience, href }: Props) {
           <Sparkles className="h-3.5 w-3.5 text-[var(--ci-accent-bg,var(--barndaksa-gold-accent))]" />
           <span className="truncate">{category}</span>
         </span>
+        {showPoints ? (
         <span className="absolute bottom-2.5 left-2.5 inline-flex max-w-[70%] items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-black text-[var(--ci-primary-bg,var(--barndaksa-brand-brown))] shadow-sm backdrop-blur">
           <Star className="h-3.5 w-3.5 text-[var(--ci-accent-bg,var(--barndaksa-gold-accent))]" />
           <span className="truncate">يكسب {earnedPoints} نقطة</span>
         </span>
+        ) : null}
       </div>
 
       <div className="flex flex-1 flex-col p-3 sm:p-4">
@@ -105,10 +108,12 @@ export function ThemedProductCard({ product, experience, href }: Props) {
           </p>
         ) : null}
 
+        {showPoints ? (
         <p className={`mt-3 inline-flex w-fit items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[10px] font-black ${theme.badge}`}>
           <Star className="h-3.5 w-3.5" />
           يكسب {earnedPoints} نقطة ولاء
         </p>
+        ) : null}
 
         <div className="mt-auto flex items-end justify-between gap-3 pt-4">
           <div>

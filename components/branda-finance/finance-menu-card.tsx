@@ -1,8 +1,8 @@
 import Link from "next/link";
 import type { ElementType, ReactNode } from "react";
 import {
-  BadgeHelp,
   BadgeDollarSign,
+  BadgeHelp,
   Banknote,
   Boxes,
   BriefcaseBusiness,
@@ -19,7 +19,7 @@ import {
   UserCog,
   UsersRound,
 } from "lucide-react";
-import type { BrandaFinanceMenuItem, BrandaFinanceIconKey } from "@/lib/branda-finance/menu";
+import type { BrandaFinanceIconKey, BrandaFinanceMenuItem } from "@/lib/branda-finance/menu";
 
 const iconMap: Record<BrandaFinanceIconKey, ElementType> = {
   reports: ReceiptText,

@@ -29,9 +29,27 @@ export type BrandaFinanceMenuItem = {
 const comingSoonLine = "قريبًا بنشغلها وحدة وحدة";
 
 export const brandaFinanceMenuItems: BrandaFinanceMenuItem[] = [
-  { title: "التقارير المالية", icon: "reports", description: "تقارير مالية تجريبية جاهزة للعرض", href: "/dashboard/branda-finance/reports", badge: "جاهز" },
-  { title: "الفواتير", icon: "invoices", description: "إنشاء فاتورة مبيعات مع معاينة ونموذج تفصيلي", href: "/dashboard/branda-finance/invoicing/create", badge: "جديد" },
-  { title: "المبيعات", icon: "sales", description: "صفحة كاشير ونقطة بيع مرتبطة بمنتجات العلامة", href: "/dashboard/branda-finance/sales", badge: "جديد" },
+  {
+    title: "التقارير المالية",
+    icon: "reports",
+    description: "تقارير مالية تجريبية جاهزة للعرض",
+    href: "/dashboard/branda-finance/reports",
+    badge: "جاهز",
+  },
+  {
+    title: "الفواتير",
+    icon: "invoices",
+    description: "إنشاء فاتورة مبيعات مع معاينة ونموذج تفصيلي",
+    href: "/dashboard/branda-finance/invoicing/create",
+    badge: "جديد",
+  },
+  {
+    title: "المبيعات",
+    icon: "sales",
+    description: "صفحة كاشير ونقطة بيع مرتبطة بمنتجات العلامة",
+    href: "/dashboard/branda-finance/sales",
+    badge: "جديد",
+  },
   { title: "المشتريات", icon: "purchases", description: comingSoonLine },
   { title: "العملاء والموردين", icon: "contacts", description: comingSoonLine },
   { title: "الرواتب والموظفين", icon: "payroll", description: comingSoonLine },

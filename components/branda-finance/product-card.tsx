@@ -1,6 +1,6 @@
 import { Plus, Tag } from "lucide-react";
-import type { FinanceProduct } from "@/lib/branda-finance/invoice-types";
 import { formatFinanceAmount } from "@/components/branda-finance/invoice-totals";
+import type { FinanceProduct } from "@/lib/branda-finance/invoice-types";
 
 type ProductCardProps = {
   product: FinanceProduct;
@@ -9,11 +9,14 @@ type ProductCardProps = {
 };
 
 export function ProductCard({ product, showTranslationPreview, onAdd }: ProductCardProps) {
+  const available = product.stock > 0;
+
   return (
     <button
       type="button"
       onClick={() => onAdd(product)}
-      className="group flex min-h-[296px] flex-col overflow-hidden rounded-[8px] border border-[#E0D0BB] bg-[#FFFDF8] text-right shadow-[0_14px_28px_rgba(69,43,28,0.08)] transition hover:-translate-y-0.5 hover:border-[#C99A4D] hover:shadow-[0_18px_38px_rgba(69,43,28,0.13)]"
+      disabled={!available}
+      className="group flex min-h-[316px] flex-col overflow-hidden rounded-[8px] border border-[#E0D0BB] bg-[#FFFDF8] text-right shadow-[0_14px_28px_rgba(69,43,28,0.08)] transition hover:-translate-y-0.5 hover:border-[#C99A4D] hover:shadow-[0_18px_38px_rgba(69,43,28,0.13)] disabled:cursor-not-allowed disabled:opacity-60"
     >
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-[#EFE2D0]">
         {product.imageUrl ? (
@@ -23,8 +26,8 @@ export function ProductCard({ product, showTranslationPreview, onAdd }: ProductC
             B
           </div>
         )}
-        <span className="absolute right-3 top-3 rounded-[8px] bg-[#2F5D50] px-2.5 py-1 text-[11px] font-black text-white">
-          متاح
+        <span className={`absolute right-3 top-3 rounded-[8px] px-2.5 py-1 text-[11px] font-black text-white ${available ? "bg-[#2F5D50]" : "bg-[#9B3327]"}`}>
+          {available ? "متاح" : "غير متاح"}
         </span>
         <span className="absolute left-3 top-3 rounded-[8px] bg-[#FFFDF8] px-2.5 py-1 text-[11px] font-black text-[#6B431C] shadow-sm">
           VAT {product.vatRate}%
@@ -53,6 +56,9 @@ export function ProductCard({ product, showTranslationPreview, onAdd }: ProductC
           </span>
           <span className="rounded-[8px] bg-[#F7F2EA] px-2.5 py-1 text-[11px] font-black text-[#755D49]" dir="ltr">
             {product.sku}
+          </span>
+          <span className="rounded-[8px] bg-[#F7F2EA] px-2.5 py-1 text-[11px] font-black text-[#755D49]" dir="ltr">
+            {product.barcode}
           </span>
         </div>
         <span className="mt-4 inline-flex h-10 items-center justify-center gap-2 rounded-[8px] bg-[#5B3926] text-sm font-black text-white">

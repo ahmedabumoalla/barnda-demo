@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
-import { Languages, ScanLine, Search, ShieldCheck } from "lucide-react";
+import { FileText, Languages, ScanLine, Search, ShieldCheck } from "lucide-react";
 import { CashierCartPanel, type CartItem } from "@/components/branda-finance/cashier-cart-panel";
 import { EntitySelect } from "@/components/branda-finance/entity-select";
 import { LoyaltyScanModal } from "@/components/branda-finance/loyalty-scan-modal";
@@ -15,14 +16,8 @@ type CashierSalesWorkspaceProps = {
 function searchProduct(product: FinanceProduct, query: string) {
   const normalized = query.trim().toLowerCase();
   if (!normalized) return true;
-  return [
-    product.name,
-    product.englishName,
-    product.sku,
-    product.barcode,
-    product.category,
-    product.details,
-  ]
+
+  return [product.name, product.englishName, product.sku, product.barcode, product.category, product.details]
     .filter(Boolean)
     .some((value) => String(value).toLowerCase().includes(normalized));
 }
@@ -38,11 +33,14 @@ export function CashierSalesWorkspace({ data }: CashierSalesWorkspaceProps) {
   const [translationPreview, setTranslationPreview] = useState(false);
   const [loyaltyOpen, setLoyaltyOpen] = useState(false);
   const [loyaltyCode, setLoyaltyCode] = useState("");
+  const [invoicePreviewReady, setInvoicePreviewReady] = useState(false);
 
   const selectedBranch = data.branches.find((branch) => branch.id === selectedBranchId) ?? data.branches[0];
   const selectedWarehouse = data.warehouses.find((warehouse) => warehouse.id === selectedWarehouseId) ?? data.warehouses[0];
   const selectedCustomer = data.customers.find((customer) => customer.id === selectedCustomerId) ?? data.customers[0];
-  const cashierPaymentMethods = data.paymentMethods.filter((method): method is FinancePaymentMethod & { id: "cash" | "card" } => method.id === "cash" || method.id === "card");
+  const cashierPaymentMethods = data.paymentMethods.filter(
+    (method): method is FinancePaymentMethod & { id: "cash" | "card" } => method.id === "cash" || method.id === "card",
+  );
 
   const filteredProducts = useMemo(
     () =>
@@ -54,6 +52,7 @@ export function CashierSalesWorkspace({ data }: CashierSalesWorkspaceProps) {
   );
 
   function addToCart(product: FinanceProduct) {
+    setInvoicePreviewReady(false);
     setCart((current) => {
       const existing = current.find((item) => item.product.id === product.id);
       if (existing) {
@@ -61,25 +60,34 @@ export function CashierSalesWorkspace({ data }: CashierSalesWorkspaceProps) {
           item.product.id === product.id ? { ...item, quantity: item.quantity + 1 } : item,
         );
       }
-      return [...current, { product, quantity: 1 }];
+
+      return [...current, { product, quantity: 1, note: "" }];
     });
   }
 
   function changeQuantity(productId: string, quantity: number) {
+    setInvoicePreviewReady(false);
     setCart((current) => current.map((item) => (item.product.id === productId ? { ...item, quantity } : item)));
   }
 
+  function changeNote(productId: string, note: string) {
+    setCart((current) => current.map((item) => (item.product.id === productId ? { ...item, note } : item)));
+  }
+
   function increase(productId: string) {
+    setInvoicePreviewReady(false);
     setCart((current) => current.map((item) => (item.product.id === productId ? { ...item, quantity: item.quantity + 1 } : item)));
   }
 
   function decrease(productId: string) {
+    setInvoicePreviewReady(false);
     setCart((current) =>
       current.map((item) => (item.product.id === productId ? { ...item, quantity: Math.max(1, item.quantity - 1) } : item)),
     );
   }
 
   function remove(productId: string) {
+    setInvoicePreviewReady(false);
     setCart((current) => current.filter((item) => item.product.id !== productId));
   }
 
@@ -94,18 +102,33 @@ export function CashierSalesWorkspace({ data }: CashierSalesWorkspaceProps) {
                   <p className="text-xs font-black text-[#9C6B2E]">برندا المالية</p>
                   <h1 className="mt-1 text-2xl font-black text-[#2F241D] sm:text-3xl">المبيعات</h1>
                 </div>
-                <div className="inline-flex w-fit items-center gap-2 rounded-[8px] border border-[#CFE2D8] bg-[#EDF7F2] px-3 py-2 text-xs font-black text-[#2F5D50]">
-                  <ShieldCheck className="h-4 w-4" />
-                  جلسة كاشير تجريبية نشطة
+                <div className="flex flex-wrap gap-2">
+                  <div className="inline-flex h-11 w-fit items-center gap-2 rounded-[8px] border border-[#CFE2D8] bg-[#EDF7F2] px-3 text-xs font-black text-[#2F5D50]">
+                    <ShieldCheck className="h-4 w-4" />
+                    جلسة كاشير تجريبية نشطة
+                  </div>
+                  <Link
+                    href="/dashboard/branda-finance/invoicing/create?source=cashier"
+                    className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] bg-[#5B3926] px-4 text-sm font-black text-white"
+                  >
+                    <FileText className="h-4 w-4" />
+                    إنشاء فاتورة مبيعات
+                  </Link>
                 </div>
               </div>
 
-              <div className="grid gap-3 xl:grid-cols-[220px_220px_minmax(260px,1fr)_auto_auto]">
+              <div className="grid gap-3 xl:grid-cols-[210px_210px_210px_minmax(260px,1fr)]">
                 <EntitySelect
                   label="الفرع"
                   value={selectedBranchId}
                   options={data.branches.map((branch) => ({ id: branch.id, label: branch.displayName || branch.name, meta: branch.city }))}
                   onChange={setSelectedBranchId}
+                />
+                <EntitySelect
+                  label="المستودع"
+                  value={selectedWarehouseId}
+                  options={data.warehouses.map((warehouse) => ({ id: warehouse.id, label: warehouse.name, meta: warehouse.city }))}
+                  onChange={setSelectedWarehouseId}
                 />
                 <EntitySelect
                   label="العميل"
@@ -125,10 +148,13 @@ export function CashierSalesWorkspace({ data }: CashierSalesWorkspaceProps) {
                     />
                   </span>
                 </label>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
                   onClick={() => setTranslationPreview((value) => !value)}
-                  className="mt-auto inline-flex h-11 items-center justify-center gap-2 rounded-[8px] border border-[#D6B677] bg-[#F8E8C9] px-4 text-sm font-black text-[#6B431C]"
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] border border-[#D6B677] bg-[#F8E8C9] px-4 text-sm font-black text-[#6B431C]"
                 >
                   <Languages className="h-4 w-4" />
                   ترجمة ذكية
@@ -136,19 +162,12 @@ export function CashierSalesWorkspace({ data }: CashierSalesWorkspaceProps) {
                 <button
                   type="button"
                   onClick={() => setLoyaltyOpen(true)}
-                  className="mt-auto inline-flex h-11 items-center justify-center gap-2 rounded-[8px] border border-[#CFE2D8] bg-[#EDF7F2] px-4 text-sm font-black text-[#2F5D50]"
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] border border-[#CFE2D8] bg-[#EDF7F2] px-4 text-sm font-black text-[#2F5D50]"
                 >
                   <ScanLine className="h-4 w-4" />
                   قراءة باركود الولاء
                 </button>
               </div>
-
-              <EntitySelect
-                label="المستودع"
-                value={selectedWarehouseId}
-                options={data.warehouses.map((warehouse) => ({ id: warehouse.id, label: warehouse.name, meta: warehouse.city }))}
-                onChange={setSelectedWarehouseId}
-              />
             </div>
           </header>
 
@@ -180,7 +199,7 @@ export function CashierSalesWorkspace({ data }: CashierSalesWorkspaceProps) {
 
           {translationPreview ? (
             <div className="rounded-[8px] border border-[#D6B677] bg-[#FFF8EA] p-3 text-sm font-bold leading-7 text-[#6B431C]">
-              المنتجات التي تملك اسمًا إنجليزيًا ستعرضه مباشرة. المنتجات الأخرى تعرض عبارة معاينة فقط بدون أي اتصال خارجي.
+              الترجمة الذكية ستعمل لاحقًا عند ربط مزود الترجمة. المنتجات التي تملك اسمًا إنجليزيًا تعرضه الآن مباشرة بدون أي اتصال خارجي.
             </div>
           ) : null}
 
@@ -196,11 +215,14 @@ export function CashierSalesWorkspace({ data }: CashierSalesWorkspaceProps) {
             paymentMethod={paymentMethod}
             paymentMethods={cashierPaymentMethods}
             loyaltyCode={loyaltyCode}
+            invoicePreviewReady={invoicePreviewReady}
             onPaymentMethodChange={setPaymentMethod}
             onIncrease={increase}
             onDecrease={decrease}
             onQuantityChange={changeQuantity}
+            onNoteChange={changeNote}
             onRemove={remove}
+            onCreateInvoicePreview={() => setInvoicePreviewReady(true)}
             onOpenLoyalty={() => setLoyaltyOpen(true)}
           />
         ) : null}

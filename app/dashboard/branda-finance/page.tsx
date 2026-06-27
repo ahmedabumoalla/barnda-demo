@@ -10,18 +10,18 @@ export default function BrandaFinancePage() {
             <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
               <div>
                 <span className="inline-flex rounded-full border border-[#E2C690] bg-[#F7E7C8] px-4 py-1.5 text-xs font-extrabold text-[#7A4D1F] shadow-sm">
-                  قريبًا
+                  ديمو برندا المالية
                 </span>
                 <h1 className="mt-5 text-3xl font-black tracking-normal text-[#3B2417] sm:text-4xl">
-                  برندة المالية
+                  برندا المالية
                 </h1>
                 <p className="mt-3 max-w-3xl text-base font-bold leading-8 text-[#806851] sm:text-lg">
-                  اختر القسم الذي تريد البدء به وسنقوم بتشغيله معك خطوة بخطوة
+                  ابدأ من شاشة المبيعات للكاشير أو أنشئ فاتورة مبيعات مباشرة، وكل شيء هنا محلي وتجريبي بدون ترحيل محاسبي.
                 </p>
               </div>
 
               <div className="rounded-2xl border border-[#E5D0AE] bg-[#FBF4EA] px-5 py-4 text-sm font-extrabold leading-7 text-[#6B3F22] shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]">
-                لوحة مالية خفيفة الآن، وتشغيل الوحدات لاحقًا
+                بطاقات المبيعات والفواتير مرتبطة الآن ببداية تدفق عملي للديمو.
               </div>
             </div>
           </div>

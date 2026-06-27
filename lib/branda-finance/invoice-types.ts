@@ -90,8 +90,10 @@ export type FinanceInvoiceItem = {
   description: string;
   quantity: number;
   price: number;
+  discount: number;
   taxRate: number;
   accountId: string;
+  warehouseId?: string;
   revenueRecognition: string;
 };
 

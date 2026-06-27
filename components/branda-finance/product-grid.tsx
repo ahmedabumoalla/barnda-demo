@@ -1,5 +1,5 @@
-import type { FinanceProduct } from "@/lib/branda-finance/invoice-types";
 import { ProductCard } from "@/components/branda-finance/product-card";
+import type { FinanceProduct } from "@/lib/branda-finance/invoice-types";
 
 type ProductGridProps = {
   products: FinanceProduct[];

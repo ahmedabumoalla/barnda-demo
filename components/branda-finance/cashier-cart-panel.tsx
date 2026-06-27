@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { Minus, Plus, Printer, ReceiptText, ScanLine, Trash2 } from "lucide-react";
+import { formatFinanceAmount } from "@/components/branda-finance/invoice-totals";
 import type {
   FinanceBranch,
   FinanceCustomer,
@@ -6,11 +8,11 @@ import type {
   FinanceProduct,
   FinanceWarehouse,
 } from "@/lib/branda-finance/invoice-types";
-import { formatFinanceAmount } from "@/components/branda-finance/invoice-totals";
 
 export type CartItem = {
   product: FinanceProduct;
   quantity: number;
+  note?: string;
 };
 
 type CashierCartPanelProps = {
@@ -21,11 +23,14 @@ type CashierCartPanelProps = {
   paymentMethod: "cash" | "card" | "";
   paymentMethods: FinancePaymentMethod[];
   loyaltyCode: string;
+  invoicePreviewReady: boolean;
   onPaymentMethodChange: (method: "cash" | "card") => void;
   onIncrease: (productId: string) => void;
   onDecrease: (productId: string) => void;
   onQuantityChange: (productId: string, quantity: number) => void;
+  onNoteChange: (productId: string, note: string) => void;
   onRemove: (productId: string) => void;
+  onCreateInvoicePreview: () => void;
   onOpenLoyalty: () => void;
 };
 
@@ -43,15 +48,19 @@ export function CashierCartPanel({
   paymentMethod,
   paymentMethods,
   loyaltyCode,
+  invoicePreviewReady,
   onPaymentMethodChange,
   onIncrease,
   onDecrease,
   onQuantityChange,
+  onNoteChange,
   onRemove,
+  onCreateInvoicePreview,
   onOpenLoyalty,
 }: CashierCartPanelProps) {
   const totals = cartTotals(items);
   const methodLabel = paymentMethods.find((method) => method.id === paymentMethod)?.name ?? "غير محدد";
+  const canCreateInvoice = Boolean(items.length && paymentMethod);
 
   return (
     <aside className="rounded-[8px] border border-[#D8C3A2] bg-[#FFFDF8] p-4 shadow-[0_16px_38px_rgba(69,43,28,0.10)] lg:sticky lg:top-5">
@@ -76,9 +85,16 @@ export function CashierCartPanel({
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <h3 className="line-clamp-1 text-sm font-black text-[#2F241D]">{item.product.name}</h3>
-                  <p className="mt-1 text-xs font-bold text-[#806A58]" dir="ltr">{item.product.sku}</p>
+                  <p className="mt-1 text-xs font-bold text-[#806A58]" dir="ltr">
+                    {item.product.sku} · {item.product.barcode}
+                  </p>
                 </div>
-                <button type="button" onClick={() => onRemove(item.product.id)} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] border border-[#E6CFC8] bg-[#FFF7F4] text-[#9B3327]">
+                <button
+                  type="button"
+                  onClick={() => onRemove(item.product.id)}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] border border-[#E6CFC8] bg-[#FFF7F4] text-[#9B3327]"
+                  title="حذف"
+                >
                   <Trash2 className="h-4 w-4" />
                 </button>
               </div>
@@ -102,6 +118,12 @@ export function CashierCartPanel({
                   {formatFinanceAmount(item.product.price * item.quantity)}
                 </span>
               </div>
+              <input
+                value={item.note ?? ""}
+                onChange={(event) => onNoteChange(item.product.id, event.target.value)}
+                placeholder="ملاحظة على البند"
+                className="mt-3 h-10 w-full rounded-[8px] border border-[#E1D1BD] bg-[#FFFDF8] px-3 text-xs font-bold outline-none focus:border-[#B88334]"
+              />
             </div>
           ))
         ) : (
@@ -130,7 +152,7 @@ export function CashierCartPanel({
           ))}
         </div>
         <p className="mt-3 text-xs font-bold leading-6 text-[#806A58]">
-          سيتم ربط طريقة الدفع لاحقًا بدفتر برندا فايننس وصندوق الكاشير ومزود البطاقة.
+          سيتم ربط طريقة الدفع لاحقًا بدفتر برندا المالية وصندوق الكاشير ومزود البطاقة.
         </p>
       </div>
 
@@ -149,23 +171,49 @@ export function CashierCartPanel({
           {items.length} بند، إجمالي {formatFinanceAmount(totals.total)}، العميل {customer.name}.
           {loyaltyCode ? ` بطاقة الولاء: ${loyaltyCode}.` : ""}
         </p>
+        {invoicePreviewReady ? (
+          <div className="mt-3 rounded-[8px] border border-[#CFE2D8] bg-[#EDF7F2] p-3 text-xs font-bold leading-6 text-[#2F5D50]">
+            تم تجهيز ملخص فاتورة محليًا فقط بدون كتابة في قاعدة البيانات. يمكنك فتح صفحة إنشاء الفاتورة لإكمال بياناتها.
+            <Link
+              href="/dashboard/branda-finance/invoicing/create?source=cashier"
+              className="mt-3 inline-flex h-10 items-center justify-center rounded-[8px] bg-[#2F5D50] px-4 text-xs font-black text-white"
+            >
+              فتح صفحة إنشاء الفاتورة
+            </Link>
+          </div>
+        ) : null}
       </div>
 
       <div className="mt-4 grid gap-2">
-        <button disabled={!items.length || !paymentMethod} type="button" className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] bg-[#5B3926] text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-50">
+        <button
+          disabled={!canCreateInvoice}
+          type="button"
+          onClick={onCreateInvoicePreview}
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] bg-[#5B3926] text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-50"
+        >
           <ReceiptText className="h-4 w-4" />
           إنشاء فاتورة
         </button>
-        <button disabled type="button" className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] border border-[#D8C7B2] bg-white text-sm font-black text-[#5B3926] opacity-60">
-          <Printer className="h-4 w-4" />
-          طباعة
+        <button
+          type="button"
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] border border-[#D8C7B2] bg-white text-sm font-black text-[#5B3926]"
+        >
+          حفظ كمسودة
         </button>
-        <button type="button" onClick={onOpenLoyalty} className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] border border-[#D6B677] bg-[#F8E8C9] text-sm font-black text-[#6B431C]">
+        <button
+          type="button"
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] border border-[#D8C7B2] bg-white text-sm font-black text-[#5B3926]"
+        >
+          <Printer className="h-4 w-4" />
+          طباعة تجريبية
+        </button>
+        <button
+          type="button"
+          onClick={onOpenLoyalty}
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] border border-[#D6B677] bg-[#F8E8C9] text-sm font-black text-[#6B431C]"
+        >
           <ScanLine className="h-4 w-4" />
           قراءة باركود الولاء
-        </button>
-        <button type="button" className="h-11 rounded-[8px] border border-[#D8C7B2] bg-white text-sm font-black text-[#5B3926]">
-          حفظ كمسودة
         </button>
       </div>
     </aside>

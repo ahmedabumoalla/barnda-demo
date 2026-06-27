@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
-import { Eye, EyeOff, FileCheck2, Save, X, Paperclip } from "lucide-react";
+import { Eye, EyeOff, FileCheck2, Paperclip, Save, ShoppingCart, X } from "lucide-react";
 import { AddBranchModal } from "@/components/branda-finance/add-branch-modal";
 import { AddCustomerModal } from "@/components/branda-finance/add-customer-modal";
 import { CustomFieldModal } from "@/components/branda-finance/custom-field-modal";
@@ -31,16 +32,19 @@ function daysFromNowIso(days: number) {
   return date.toISOString().slice(0, 10);
 }
 
-function createItemFromFirstProduct(data: FinanceWorkspaceData): FinanceInvoiceItem {
-  const product = data.products[0];
+function createItemFromProduct(data: FinanceWorkspaceData, productIndex = 0): FinanceInvoiceItem {
+  const product = data.products[productIndex] ?? data.products[0];
+
   return {
-    id: `item-${Date.now()}`,
+    id: `item-${Date.now()}-${productIndex}`,
     productId: product?.id,
     description: product?.name ?? "بند فاتورة",
     quantity: 1,
     price: product?.price ?? 0,
+    discount: 0,
     taxRate: product?.vatRate ?? 15,
     accountId: product?.accountId ?? data.accounts[0]?.id ?? "sales-food",
+    warehouseId: data.warehouses[0]?.id,
     revenueRecognition: product?.revenueRecognition ?? "عند إصدار الفاتورة",
   };
 }
@@ -55,29 +59,23 @@ export function InvoiceWorkspace({ data }: InvoiceWorkspaceProps) {
   const [selectedPaymentMethodId, setSelectedPaymentMethodId] = useState<FinancePaymentMethod["id"]>("unpaid");
   const [issueDate, setIssueDate] = useState(todayIso);
   const [dueDate, setDueDate] = useState(() => daysFromNowIso(15));
-  const [taxMode, setTaxMode] = useState("السعر غير شامل الضريبة");
+  const [taxMode, setTaxMode] = useState("غير شامل الضريبة");
+  const [invoiceStatus, setInvoiceStatus] = useState("مسودة");
   const [discount, setDiscount] = useState(0);
+  const [amountPaid, setAmountPaid] = useState(0);
   const [previewVisible, setPreviewVisible] = useState(true);
   const [customerModalOpen, setCustomerModalOpen] = useState(false);
   const [branchModalOpen, setBranchModalOpen] = useState(false);
   const [customFieldModalOpen, setCustomFieldModalOpen] = useState(false);
-  const [statusMessage, setStatusMessage] = useState("مسودة محلية فقط");
+  const [statusMessage, setStatusMessage] = useState("مسودة محلية فقط، بدون ترحيل أو حفظ في قاعدة البيانات");
   const [items, setItems] = useState<FinanceInvoiceItem[]>(() => [
-    createItemFromFirstProduct(data),
-    {
-      ...createItemFromFirstProduct(data),
-      id: "item-seed-2",
-      productId: data.products[1]?.id,
-      description: data.products[1]?.name ?? "بند إضافي",
-      price: data.products[1]?.price ?? 0,
-      taxRate: data.products[1]?.vatRate ?? 15,
-      accountId: data.products[1]?.accountId ?? data.accounts[0]?.id ?? "sales-food",
-      revenueRecognition: data.products[1]?.revenueRecognition ?? "عند إصدار الفاتورة",
-    },
+    { ...createItemFromProduct(data, 0), id: "item-seed-1" },
+    { ...createItemFromProduct(data, 1), id: "item-seed-2" },
   ]);
 
-  const totals = useMemo(() => calculateInvoiceTotals(items, discount), [items, discount]);
+  const totals = useMemo(() => calculateInvoiceTotals(items, discount, amountPaid), [amountPaid, discount, items]);
   const selectedBranch = branches.find((branch) => branch.id === selectedBranchId) ?? branches[0];
+  const selectedWarehouse = data.warehouses.find((warehouse) => warehouse.id === selectedWarehouseId) ?? data.warehouses[0];
   const selectedCustomer = customers.find((customer) => customer.id === selectedCustomerId) ?? customers[0];
   const selectedPaymentMethod =
     data.paymentMethods.find((method) => method.id === selectedPaymentMethodId) ?? data.paymentMethods[0];
@@ -87,11 +85,20 @@ export function InvoiceWorkspace({ data }: InvoiceWorkspaceProps) {
   }
 
   function addItem() {
-    setItems((current) => [...current, { ...createItemFromFirstProduct(data), id: `item-${Date.now()}-${current.length}` }]);
+    setItems((current) => [
+      ...current,
+      { ...createItemFromProduct(data, current.length), id: `item-${Date.now()}-${current.length}` },
+    ]);
   }
 
   function removeItem(id: string) {
     setItems((current) => (current.length > 1 ? current.filter((item) => item.id !== id) : current));
+  }
+
+  function changePaymentMethod(id: FinancePaymentMethod["id"]) {
+    setSelectedPaymentMethodId(id);
+    setAmountPaid(id === "cash" || id === "card" || id === "transfer" ? totals.total : 0);
+    setInvoiceStatus(id === "credit" || id === "unpaid" ? "غير مدفوعة" : "جاهزة للاعتماد");
   }
 
   function saveCustomer(customer: FinanceCustomer) {
@@ -122,23 +129,56 @@ export function InvoiceWorkspace({ data }: InvoiceWorkspaceProps) {
               <p className="mt-2 text-sm font-bold text-[#7D6654]">{statusMessage}</p>
             </div>
             <div className="flex flex-wrap gap-2">
-              <button type="button" onClick={() => setStatusMessage("اعتماد تجريبي فقط، لا توجد آثار محاسبية")} className="inline-flex h-11 items-center gap-2 rounded-[8px] bg-[#2F5D50] px-4 text-sm font-black text-white">
+              <button
+                type="button"
+                onClick={() => {
+                  setInvoiceStatus("جاهزة للاعتماد");
+                  setStatusMessage("تم اعتماد الفاتورة تجريبيًا داخل الواجهة فقط");
+                }}
+                className="inline-flex h-11 items-center gap-2 rounded-[8px] bg-[#2F5D50] px-4 text-sm font-black text-white"
+              >
                 <FileCheck2 className="h-4 w-4" />
-                اعتماد
+                اعتماد الفاتورة
               </button>
-              <button type="button" onClick={() => setStatusMessage("تم حفظ المسودة محليًا داخل الواجهة")} className="inline-flex h-11 items-center gap-2 rounded-[8px] border border-[#D6B677] bg-[#F8E8C9] px-4 text-sm font-black text-[#6B431C]">
+              <button
+                type="button"
+                onClick={() => {
+                  setInvoiceStatus("مسودة");
+                  setStatusMessage("تم حفظ المسودة محليًا داخل واجهة الديمو");
+                }}
+                className="inline-flex h-11 items-center gap-2 rounded-[8px] border border-[#D6B677] bg-[#F8E8C9] px-4 text-sm font-black text-[#6B431C]"
+              >
                 <Save className="h-4 w-4" />
-                حفظ المسودة
+                حفظ كمسودة
               </button>
-              <button type="button" onClick={() => setPreviewVisible((visible) => !visible)} className="inline-flex h-11 items-center gap-2 rounded-[8px] border border-[#D8C7B2] bg-white px-4 text-sm font-black text-[#5B3926]">
+              <Link
+                href="/dashboard/branda-finance/sales"
+                className="inline-flex h-11 items-center gap-2 rounded-[8px] border border-[#CFE2D8] bg-[#EDF7F2] px-4 text-sm font-black text-[#2F5D50]"
+              >
+                <ShoppingCart className="h-4 w-4" />
+                فتح شاشة المبيعات
+              </Link>
+              <button
+                type="button"
+                onClick={() => setPreviewVisible((visible) => !visible)}
+                className="inline-flex h-11 items-center gap-2 rounded-[8px] border border-[#D8C7B2] bg-white px-4 text-sm font-black text-[#5B3926]"
+              >
                 {previewVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 {previewVisible ? "إخفاء المعاينة" : "إظهار المعاينة"}
               </button>
-              <button type="button" className="inline-flex h-11 items-center gap-2 rounded-[8px] border border-[#D8C7B2] bg-white px-4 text-sm font-black text-[#5B3926]">
+              <button
+                type="button"
+                onClick={() => setStatusMessage("المرفقات محلية في الديمو ولا يتم رفع أي ملفات الآن")}
+                className="inline-flex h-11 items-center gap-2 rounded-[8px] border border-[#D8C7B2] bg-white px-4 text-sm font-black text-[#5B3926]"
+              >
                 <Paperclip className="h-4 w-4" />
                 مرفقات
               </button>
-              <button type="button" onClick={() => setStatusMessage("تم إغلاق مساحة العمل تجريبيًا بدون انتقال")} className="inline-flex h-11 items-center gap-2 rounded-[8px] border border-[#E6CFC8] bg-[#FFF7F4] px-4 text-sm font-black text-[#9B3327]">
+              <button
+                type="button"
+                onClick={() => setStatusMessage("تم إغلاق مساحة العمل تجريبيًا بدون انتقال أو حفظ دائم")}
+                className="inline-flex h-11 items-center gap-2 rounded-[8px] border border-[#E6CFC8] bg-[#FFF7F4] px-4 text-sm font-black text-[#9B3327]"
+              >
                 <X className="h-4 w-4" />
                 إغلاق
               </button>
@@ -147,15 +187,17 @@ export function InvoiceWorkspace({ data }: InvoiceWorkspaceProps) {
         </div>
 
         <div className={`grid gap-5 ${previewVisible ? "xl:grid-cols-[minmax(360px,0.9fr)_minmax(680px,1.3fr)]" : "xl:grid-cols-1"}`}>
-          {previewVisible && selectedBranch && selectedCustomer && selectedPaymentMethod ? (
+          {previewVisible && selectedBranch && selectedWarehouse && selectedCustomer && selectedPaymentMethod ? (
             <InvoicePreview
               branch={selectedBranch}
+              warehouse={selectedWarehouse}
               customer={selectedCustomer}
               items={items}
               totals={totals}
               issueDate={issueDate}
               dueDate={dueDate}
               paymentMethod={selectedPaymentMethod}
+              invoiceStatus={invoiceStatus}
             />
           ) : null}
           <InvoiceForm
@@ -173,15 +215,19 @@ export function InvoiceWorkspace({ data }: InvoiceWorkspaceProps) {
             issueDate={issueDate}
             dueDate={dueDate}
             taxMode={taxMode}
+            invoiceStatus={invoiceStatus}
             discount={discount}
+            amountPaid={amountPaid}
             onBranchChange={setSelectedBranchId}
             onWarehouseChange={setSelectedWarehouseId}
             onCustomerChange={setSelectedCustomerId}
-            onPaymentMethodChange={setSelectedPaymentMethodId}
+            onPaymentMethodChange={changePaymentMethod}
             onIssueDateChange={setIssueDate}
             onDueDateChange={setDueDate}
             onTaxModeChange={setTaxMode}
+            onInvoiceStatusChange={setInvoiceStatus}
             onDiscountChange={setDiscount}
+            onAmountPaidChange={setAmountPaid}
             onOpenCustomerModal={() => setCustomerModalOpen(true)}
             onOpenBranchModal={() => setBranchModalOpen(true)}
             onOpenCustomFieldModal={() => setCustomFieldModalOpen(true)}

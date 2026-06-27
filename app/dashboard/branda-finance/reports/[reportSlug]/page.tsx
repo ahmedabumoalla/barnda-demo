@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, FileText } from "lucide-react";
+import { GeneralLedgerReport } from "@/components/branda-finance/general-ledger-report";
 import { StatementAccountReport } from "@/components/branda-finance/statement-account-report";
 import { TrialBalanceReport } from "@/components/branda-finance/trial-balance-report";
 import type { StatementAccountView } from "@/lib/branda-finance/statement-account";
@@ -38,6 +39,10 @@ export default async function BrandaFinanceReportPlaceholderPage({
 
   if (reportSlug === "statement-of-account") {
     return <StatementAccountReport view={statementAccountView} />;
+  }
+
+  if (reportSlug === "general-ledger") {
+    return <GeneralLedgerReport />;
   }
 
   return (

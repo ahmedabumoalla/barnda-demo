@@ -5,7 +5,7 @@ import { useRef, type PointerEvent } from "react";
 import { SecureQrCode } from "@/components/loyalty/secure-qr-code";
 import type { LoyaltyCardDesign, LoyaltyProgressIcon } from "@/lib/loyalty/types";
 
-export type LoyaltyDesignerLayer = "logo" | "points" | "barcode";
+export type LoyaltyDesignerLayer = "logo" | "points" | "barcode" | "qr";
 
 type Props = {
   card: LoyaltyCardDesign;
@@ -37,6 +37,20 @@ function layerStyle(x: number, y: number, width: number, height: number) {
     width: `${width}%`,
     height: `${height}%`,
   };
+}
+
+function getLayerMetrics(card: LoyaltyCardDesign, layer: LoyaltyDesignerLayer) {
+  if (layer === "logo") return { width: card.logoWidth, height: card.logoHeight };
+  if (layer === "points") return { width: card.pointsBadgeWidth, height: card.pointsBadgeHeight };
+  if (layer === "qr") return { width: card.qrWidth, height: card.qrHeight };
+  return { width: card.barcodeWidth, height: card.barcodeHeight };
+}
+
+function applyLayerPosition(card: LoyaltyCardDesign, layer: LoyaltyDesignerLayer, x: number, y: number) {
+  if (layer === "logo") return { ...card, logoX: x, logoY: y };
+  if (layer === "points") return { ...card, pointsBadgeX: x, pointsBadgeY: y };
+  if (layer === "qr") return { ...card, qrX: x, qrY: y };
+  return { ...card, barcodeX: x, barcodeY: y };
 }
 
 export function LoyaltyBarcode({ value, dark = false }: { value: string; dark?: boolean }) {
@@ -96,18 +110,13 @@ export function LoyaltyCardPreview({
     const activeRect = rect;
     const updateCard = onCardChange;
 
-    const width =
-      layer === "logo" ? card.logoWidth : layer === "points" ? card.pointsBadgeWidth : card.barcodeWidth;
-    const height =
-      layer === "logo" ? card.logoHeight : layer === "points" ? card.pointsBadgeHeight : card.barcodeHeight;
+    const { width, height } = getLayerMetrics(card, layer);
 
     function move(moveEvent: globalThis.PointerEvent) {
       const nextX = clamp(((moveEvent.clientX - activeRect.left) / activeRect.width) * 100 - width / 2, 0, 100 - width);
       const nextY = clamp(((moveEvent.clientY - activeRect.top) / activeRect.height) * 100 - height / 2, 0, 100 - height);
 
-      if (layer === "logo") updateCard({ ...card, logoX: nextX, logoY: nextY });
-      if (layer === "points") updateCard({ ...card, pointsBadgeX: nextX, pointsBadgeY: nextY });
-      if (layer === "barcode") updateCard({ ...card, barcodeX: nextX, barcodeY: nextY });
+      updateCard(applyLayerPosition(card, layer, nextX, nextY));
     }
 
     function stop() {
@@ -210,8 +219,20 @@ export function LoyaltyCardPreview({
         </div>
       ) : null}
 
-      <div className="absolute bottom-5 left-5 z-20 rounded-xl bg-white p-2 text-[#17100d]">
-        <SecureQrCode kind="loyalty-card" value={card.sampleCode} title="QR بطاقة الولاء" size={compact ? 76 : 96} />
+      <div
+        role={editable ? "button" : undefined}
+        tabIndex={editable ? 0 : undefined}
+        onClick={() => selectLayer("qr")}
+        onPointerDown={(event) => startDrag(event, "qr")}
+        className={`absolute z-20 flex items-center justify-center rounded-xl bg-white p-1 text-[#17100d] ${activeRing("qr")}`}
+        style={layerStyle(card.qrX, card.qrY, card.qrWidth, card.qrHeight)}
+      >
+        <SecureQrCode
+          kind="loyalty-card"
+          value={card.sampleCode}
+          title="QR بطاقة الولاء"
+          size={compact ? 44 : clamp(Math.min(card.qrWidth * 8, card.qrHeight * 5), 48, 148)}
+        />
       </div>
 
       {editable ? (

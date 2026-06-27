@@ -39,6 +39,10 @@ export type LoyaltyCardDesign = {
   barcodeY: number;
   barcodeWidth: number;
   barcodeHeight: number;
+  qrX: number;
+  qrY: number;
+  qrWidth: number;
+  qrHeight: number;
   pointsBadgeVisible: boolean;
   pointsBadgeX: number;
   pointsBadgeY: number;

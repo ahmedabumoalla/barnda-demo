@@ -9,6 +9,7 @@ import {
   CircleDot,
   Image,
   Palette,
+  QrCode,
   RotateCcw,
   Save,
   Settings,
@@ -25,7 +26,7 @@ import { useLoyaltyDemoState } from "@/components/loyalty/use-loyalty-demo-state
 import { loyaltyDashboardDemoState } from "@/lib/loyalty/demo-data";
 import type { LoyaltyCardDesign, LoyaltyDashboardDemoState } from "@/lib/loyalty/types";
 
-type DesignerGroup = "texts" | "logo" | "colors" | "stamps" | "barcode" | "points" | "settings";
+type DesignerGroup = "texts" | "logo" | "colors" | "stamps" | "barcode" | "qr" | "points" | "settings";
 
 const inputClass =
   "h-8 w-full rounded-lg border border-[#D8C3A2] bg-white px-2 text-right text-[12px] font-bold text-[#2F241D] outline-none focus:border-[#9C6B2E]";
@@ -44,6 +45,7 @@ const groups: Array<{
   { id: "colors", label: "الألوان", icon: Palette },
   { id: "stamps", label: "الأختام", icon: Stamp },
   { id: "barcode", label: "الباركود", icon: Barcode, layer: "barcode" },
+  { id: "qr", label: "QR", icon: QrCode, layer: "qr" },
   { id: "points", label: "النقاط", icon: Badge, layer: "points" },
   { id: "settings", label: "الإعدادات", icon: Settings },
 ];
@@ -52,12 +54,15 @@ const layerLabels: Record<LoyaltyDesignerLayer, string> = {
   logo: "الشعار",
   points: "وسم النقاط",
   barcode: "الباركود",
+  qr: "رمز QR",
 };
 
-function clampLayerValue(field: "X" | "Y" | "Width" | "Height", value: number) {
-  if (field === "Width" || field === "Height") return Math.max(6, Math.min(55, value));
-  return Math.max(0, Math.min(92, value));
-}
+const layerDefaults: Record<LoyaltyDesignerLayer, { x: number; y: number; width: number; height: number }> = {
+  logo: { x: 74, y: 7, width: 15, height: 17 },
+  points: { x: 7, y: 66, width: 25, height: 15 },
+  barcode: { x: 56, y: 66, width: 36, height: 22 },
+  qr: { x: 7, y: 36, width: 16, height: 24 },
+};
 
 export function LoyaltyCardDesignerPage() {
   const [storedState, setStoredState] = useLoyaltyDemoState();
@@ -98,16 +103,45 @@ export function LoyaltyCardDesignerPage() {
     if (target) setActiveLayer(target);
   }
 
-  function setLayerValue(layer: LoyaltyDesignerLayer, field: "X" | "Y" | "Width" | "Height", value: number) {
-    const prefix = layer === "points" ? "pointsBadge" : layer;
-    const key = `${prefix}${field}` as keyof LoyaltyCardDesign;
-    patchCard({ [key]: clampLayerValue(field, value) } as Partial<LoyaltyCardDesign>);
+  function layerPrefix(layer: LoyaltyDesignerLayer) {
+    return layer === "points" ? "pointsBadge" : layer;
   }
 
   function getLayerValue(layer: LoyaltyDesignerLayer, field: "X" | "Y" | "Width" | "Height") {
-    const prefix = layer === "points" ? "pointsBadge" : layer;
-    const key = `${prefix}${field}` as keyof LoyaltyCardDesign;
+    const key = `${layerPrefix(layer)}${field}` as keyof LoyaltyCardDesign;
     return Number(draft.card[key] ?? 0);
+  }
+
+  function clampLayerValue(layer: LoyaltyDesignerLayer, field: "X" | "Y" | "Width" | "Height", value: number) {
+    const width = field === "Width" ? value : getLayerValue(layer, "Width");
+    const height = field === "Height" ? value : getLayerValue(layer, "Height");
+    const x = field === "X" ? value : getLayerValue(layer, "X");
+    const y = field === "Y" ? value : getLayerValue(layer, "Y");
+    const minSize = layer === "qr" ? 12 : layer === "barcode" ? 14 : 6;
+    const maxWidth = Math.max(minSize, 100 - x);
+    const maxHeight = Math.max(minSize, 100 - y);
+
+    if (field === "Width") return Math.max(minSize, Math.min(maxWidth, value));
+    if (field === "Height") return Math.max(minSize, Math.min(maxHeight, value));
+    if (field === "X") return Math.max(0, Math.min(100 - width, value));
+    return Math.max(0, Math.min(100 - height, value));
+  }
+
+  function setLayerValue(layer: LoyaltyDesignerLayer, field: "X" | "Y" | "Width" | "Height", value: number) {
+    const prefix = layerPrefix(layer);
+    const key = `${prefix}${field}` as keyof LoyaltyCardDesign;
+    patchCard({ [key]: clampLayerValue(layer, field, value) } as Partial<LoyaltyCardDesign>);
+  }
+
+  function resetLayer(layer: LoyaltyDesignerLayer) {
+    const defaults = layerDefaults[layer];
+    const prefix = layerPrefix(layer);
+    patchCard({
+      [`${prefix}X`]: defaults.x,
+      [`${prefix}Y`]: defaults.y,
+      [`${prefix}Width`]: defaults.width,
+      [`${prefix}Height`]: defaults.height,
+    } as Partial<LoyaltyCardDesign>);
   }
 
   function CompactToggle({
@@ -138,15 +172,21 @@ export function LoyaltyCardDesignerPage() {
     layer,
     field,
     min = 0,
-    max = 92,
   }: {
     label: string;
     layer: LoyaltyDesignerLayer;
     field: "X" | "Y" | "Width" | "Height";
     min?: number;
-    max?: number;
   }) {
     const value = getLayerValue(layer, field);
+    const max =
+      field === "X"
+        ? 100 - getLayerValue(layer, "Width")
+        : field === "Y"
+          ? 100 - getLayerValue(layer, "Height")
+          : field === "Width"
+            ? 100 - getLayerValue(layer, "X")
+            : 100 - getLayerValue(layer, "Y");
 
     return (
       <label className="space-y-1">
@@ -154,14 +194,25 @@ export function LoyaltyCardDesignerPage() {
           <span>{label}</span>
           <span>{Math.round(value)}%</span>
         </span>
-        <input
-          type="range"
-          min={min}
-          max={max}
-          value={value}
-          onChange={(event) => setLayerValue(layer, field, Number(event.target.value))}
-          className="h-5 w-full accent-[#6B3A25]"
-        />
+        <span className="grid grid-cols-[minmax(0,1fr)_58px] items-center gap-2">
+          <input
+            type="range"
+            min={min}
+            max={max}
+            value={value}
+            onChange={(event) => setLayerValue(layer, field, Number(event.target.value))}
+            className="h-5 w-full accent-[#6B3A25]"
+          />
+          <input
+            type="number"
+            min={min}
+            max={max}
+            value={Math.round(value)}
+            onChange={(event) => setLayerValue(layer, field, Number(event.target.value))}
+            className="h-8 rounded-lg border border-[#D8C3A2] bg-white px-2 text-center text-[12px] font-black text-[#2F241D] outline-none focus:border-[#9C6B2E]"
+            aria-label={`${label} قيمة رقمية`}
+          />
+        </span>
       </label>
     );
   }
@@ -233,6 +284,17 @@ export function LoyaltyCardDesignerPage() {
           <CompactToggle enabled={draft.card.barcodeVisible} label={draft.card.barcodeVisible ? "إخفاء الباركود" : "إظهار الباركود"} onClick={() => patchCard({ barcodeVisible: !draft.card.barcodeVisible })} />
           <label className={labelClass}>رمز البطاقة<input className={inputClass} value={draft.card.sampleCode} onChange={(event) => patchCard({ sampleCode: event.target.value })} /></label>
           <p className="rounded-lg bg-[#FFF8EA] px-2 py-2 text-[11px] font-bold leading-5 text-[#806A5E]">الباركود قابل للسحب وتغيير الحجم من اللوحة اليمنى.</p>
+        </div>
+      );
+    }
+
+    if (activeGroup === "qr") {
+      return (
+        <div className="grid gap-2">
+          <label className={labelClass}>رمز البطاقة / QR<input className={inputClass} value={draft.card.sampleCode} onChange={(event) => patchCard({ sampleCode: event.target.value })} /></label>
+          <p className="rounded-lg bg-[#FFF8EA] px-2 py-2 text-[11px] font-bold leading-5 text-[#806A5E]">
+            يمكن سحب رمز QR مباشرة داخل البطاقة وتعديل موضعه وحجمه من اللوحة اليمنى. يتم ضبط الحدود تلقائياً حتى يبقى داخل البطاقة.
+          </p>
         </div>
       );
     }
@@ -342,6 +404,7 @@ export function LoyaltyCardDesignerPage() {
                   if (layer === "logo") setActiveGroup("logo");
                   if (layer === "points") setActiveGroup("points");
                   if (layer === "barcode") setActiveGroup("barcode");
+                  if (layer === "qr") setActiveGroup("qr");
                 }}
                 onCardChange={(card) => setDraft((current) => ({ ...current, card }))}
               />
@@ -354,8 +417,8 @@ export function LoyaltyCardDesignerPage() {
           <aside className="flex min-h-0 flex-col overflow-hidden rounded-[14px] border border-[#E7D7C6] bg-[#FCF8F3]">
             <div className="shrink-0 border-b border-[#E7D7C6] p-3">
               <p className="text-[12px] font-black text-[#806A5E]">العنصر المحدد</p>
-              <div className="mt-2 grid grid-cols-3 gap-1">
-                {(["logo", "points", "barcode"] as LoyaltyDesignerLayer[]).map((layer) => (
+              <div className="mt-2 grid grid-cols-2 gap-1">
+                {(["logo", "points", "barcode", "qr"] as LoyaltyDesignerLayer[]).map((layer) => (
                   <button
                     key={layer}
                     type="button"
@@ -364,6 +427,7 @@ export function LoyaltyCardDesignerPage() {
                       if (layer === "logo") setActiveGroup("logo");
                       if (layer === "points") setActiveGroup("points");
                       if (layer === "barcode") setActiveGroup("barcode");
+                      if (layer === "qr") setActiveGroup("qr");
                     }}
                     className={`flex h-8 items-center justify-center gap-1 rounded-lg text-[11px] font-black ${
                       activeLayer === layer ? "bg-[#D9A33F] text-[#2F241D]" : "bg-white text-[#6B3A25]"
@@ -379,11 +443,18 @@ export function LoyaltyCardDesignerPage() {
               <div className="rounded-[12px] bg-white p-3">
                 <h2 className="text-sm font-black text-[#2F241D]">{layerLabels[activeSliderLayer]}</h2>
                 <p className="mt-1 text-[11px] font-bold text-[#806A5E]">اسحب العنصر داخل البطاقة</p>
+                <button
+                  type="button"
+                  onClick={() => resetLayer(activeSliderLayer)}
+                  className="mt-2 h-8 rounded-lg border border-[#D8C3A2] bg-[#FFF8EA] px-3 text-[12px] font-black text-[#6B3A25]"
+                >
+                  إعادة ضبط العنصر
+                </button>
                 <div className="mt-3 grid gap-3">
-                  <Slider label="يمين / يسار" layer={activeSliderLayer} field="X" max={92} />
-                  <Slider label="أعلى / أسفل" layer={activeSliderLayer} field="Y" max={92} />
-                  <Slider label="العرض" layer={activeSliderLayer} field="Width" min={8} max={52} />
-                  <Slider label="الارتفاع" layer={activeSliderLayer} field="Height" min={8} max={36} />
+                  <Slider label="الموضع الأفقي / قيمة X" layer={activeSliderLayer} field="X" />
+                  <Slider label="الموضع العمودي / قيمة Y" layer={activeSliderLayer} field="Y" />
+                  <Slider label="العرض" layer={activeSliderLayer} field="Width" min={activeSliderLayer === "qr" ? 12 : 8} />
+                  <Slider label="الطول" layer={activeSliderLayer} field="Height" min={activeSliderLayer === "qr" ? 12 : 8} />
                 </div>
               </div>
               <div className="mt-3 rounded-[12px] bg-white p-3 text-[11px] font-bold leading-5 text-[#806A5E]">

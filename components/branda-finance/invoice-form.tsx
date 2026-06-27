@@ -87,8 +87,8 @@ export function InvoiceForm({
   onRemoveItem,
 }: InvoiceFormProps) {
   return (
-    <section className="rounded-[8px] border border-[#D8C3A2] bg-[#FFFDF8] p-4 shadow-[0_16px_38px_rgba(69,43,28,0.08)]">
-      <div className="mb-5 flex flex-col gap-3 border-b border-[#E8D8C2] pb-4 sm:flex-row sm:items-center sm:justify-between">
+    <section className="rounded-[8px] border border-[#D8C3A2] bg-[#FFFDF8] p-4 shadow-[0_16px_38px_rgba(69,43,28,0.08)] sm:p-5 lg:p-6">
+      <div className="mb-6 flex flex-col gap-3 border-b border-[#E8D8C2] pb-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-xs font-black text-[#9C6B2E]">مساحة إنشاء الفاتورة</p>
           <h2 className="mt-1 text-2xl font-black text-[#2F241D]">INV-000101</h2>
@@ -103,23 +103,27 @@ export function InvoiceForm({
         </button>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <EntitySelect
-          label="جهة الإصدار / الفرع"
-          value={selectedBranchId}
-          options={branches.map((branch) => ({ id: branch.id, label: branch.displayName || branch.name, meta: branch.city }))}
-          onChange={onBranchChange}
-          actionLabel="إضافة فرع"
-          onAction={onOpenBranchModal}
-        />
-        <EntitySelect
-          label="العميل"
-          value={selectedCustomerId}
-          options={customers.map((customer) => ({ id: customer.id, label: customer.name, meta: customer.vatNumber ?? customer.paymentTerms }))}
-          onChange={onCustomerChange}
-          actionLabel="إضافة عميل"
-          onAction={onOpenCustomerModal}
-        />
+      <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
+        <div className="xl:col-span-2">
+          <EntitySelect
+            label="جهة الإصدار / الفرع"
+            value={selectedBranchId}
+            options={branches.map((branch) => ({ id: branch.id, label: branch.displayName || branch.name, meta: branch.city }))}
+            onChange={onBranchChange}
+            actionLabel="إضافة فرع"
+            onAction={onOpenBranchModal}
+          />
+        </div>
+        <div className="xl:col-span-2">
+          <EntitySelect
+            label="العميل"
+            value={selectedCustomerId}
+            options={customers.map((customer) => ({ id: customer.id, label: customer.name, meta: customer.vatNumber ?? customer.paymentTerms }))}
+            onChange={onCustomerChange}
+            actionLabel="إضافة عميل"
+            onAction={onOpenCustomerModal}
+          />
+        </div>
         <label className="block">
           <span className="mb-2 block text-xs font-black text-[#6D5544]">تاريخ الإصدار</span>
           <input type="date" value={issueDate} onChange={(event) => onIssueDateChange(event.target.value)} className={inputClass} />
@@ -161,7 +165,7 @@ export function InvoiceForm({
         </label>
       </div>
 
-      <div className="mt-5 rounded-[8px] border border-[#E8D8C2] bg-[#FAF3E8] p-4">
+      <div className="mt-6 rounded-[8px] border border-[#E8D8C2] bg-[#FAF3E8] p-4 sm:p-5">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
           <h3 className="text-sm font-black text-[#2F241D]">الحقول المخصصة وربط الكيانات</h3>
           <button
@@ -181,7 +185,7 @@ export function InvoiceForm({
         </div>
       </div>
 
-      <div className="mt-5">
+      <div className="mt-6">
         <InvoiceItemsTable
           items={items}
           products={data.products}
@@ -194,7 +198,7 @@ export function InvoiceForm({
         />
       </div>
 
-      <div className="mt-5 grid gap-4 xl:grid-cols-[1fr_340px]">
+      <div className="mt-6 grid gap-5 xl:grid-cols-[minmax(0,1fr)_380px]">
         <div className="space-y-4">
           <div className="rounded-[8px] border border-dashed border-[#D6B677] bg-[#FFF8EA] p-4 text-sm font-bold leading-7 text-[#6B431C]">
             <div className="mb-2 inline-flex items-center gap-2 font-black">

@@ -8,7 +8,7 @@ import type {
   FinanceWarehouse,
 } from "@/lib/branda-finance/invoice-types";
 
-type InvoicePreviewProps = {
+export type InvoicePreviewProps = {
   branch: FinanceBranch;
   warehouse: FinanceWarehouse;
   customer: FinanceCustomer;
@@ -18,6 +18,8 @@ type InvoicePreviewProps = {
   dueDate: string;
   paymentMethod: FinancePaymentMethod;
   invoiceStatus: string;
+  sticky?: boolean;
+  className?: string;
 };
 
 export function InvoicePreview({
@@ -30,9 +32,15 @@ export function InvoicePreview({
   dueDate,
   paymentMethod,
   invoiceStatus,
+  sticky = true,
+  className = "",
 }: InvoicePreviewProps) {
   return (
-    <aside className="rounded-[8px] border border-[#D8C3A2] bg-[#FFFDF8] p-4 shadow-[0_16px_38px_rgba(69,43,28,0.10)] lg:sticky lg:top-5">
+    <aside
+      className={`rounded-[8px] border border-[#D8C3A2] bg-[#FFFDF8] p-4 shadow-[0_16px_38px_rgba(69,43,28,0.10)] ${
+        sticky ? "lg:sticky lg:top-5" : ""
+      } ${className}`}
+    >
       <div className="mb-4 flex items-center justify-between gap-4">
         <div>
           <p className="text-xs font-black text-[#9C6B2E]">معاينة غير نهائية</p>

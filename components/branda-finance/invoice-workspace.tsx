@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { Eye, EyeOff, FileCheck2, Paperclip, Save, ShoppingCart, X } from "lucide-react";
+import { Eye, FileCheck2, Paperclip, Save, ShoppingCart, X } from "lucide-react";
 import { AddBranchModal } from "@/components/branda-finance/add-branch-modal";
 import { AddCustomerModal } from "@/components/branda-finance/add-customer-modal";
 import { CustomFieldModal } from "@/components/branda-finance/custom-field-modal";
 import { InvoiceForm } from "@/components/branda-finance/invoice-form";
-import { InvoicePreview } from "@/components/branda-finance/invoice-preview";
+import { InvoicePreviewModal } from "@/components/branda-finance/invoice-preview-modal";
 import { calculateInvoiceTotals } from "@/components/branda-finance/invoice-totals";
 import type {
   FinanceBranch,
@@ -63,7 +63,7 @@ export function InvoiceWorkspace({ data }: InvoiceWorkspaceProps) {
   const [invoiceStatus, setInvoiceStatus] = useState("مسودة");
   const [discount, setDiscount] = useState(0);
   const [amountPaid, setAmountPaid] = useState(0);
-  const [previewVisible, setPreviewVisible] = useState(true);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [customerModalOpen, setCustomerModalOpen] = useState(false);
   const [branchModalOpen, setBranchModalOpen] = useState(false);
   const [customFieldModalOpen, setCustomFieldModalOpen] = useState(false);
@@ -160,11 +160,11 @@ export function InvoiceWorkspace({ data }: InvoiceWorkspaceProps) {
               </Link>
               <button
                 type="button"
-                onClick={() => setPreviewVisible((visible) => !visible)}
+                onClick={() => setPreviewOpen(true)}
                 className="inline-flex h-11 items-center gap-2 rounded-[8px] border border-[#D8C7B2] bg-white px-4 text-sm font-black text-[#5B3926]"
               >
-                {previewVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                {previewVisible ? "إخفاء المعاينة" : "إظهار المعاينة"}
+                <Eye className="h-4 w-4" />
+                معاينة الفاتورة
               </button>
               <button
                 type="button"
@@ -186,20 +186,7 @@ export function InvoiceWorkspace({ data }: InvoiceWorkspaceProps) {
           </div>
         </div>
 
-        <div className={`grid gap-5 ${previewVisible ? "xl:grid-cols-[minmax(360px,0.9fr)_minmax(680px,1.3fr)]" : "xl:grid-cols-1"}`}>
-          {previewVisible && selectedBranch && selectedWarehouse && selectedCustomer && selectedPaymentMethod ? (
-            <InvoicePreview
-              branch={selectedBranch}
-              warehouse={selectedWarehouse}
-              customer={selectedCustomer}
-              items={items}
-              totals={totals}
-              issueDate={issueDate}
-              dueDate={dueDate}
-              paymentMethod={selectedPaymentMethod}
-              invoiceStatus={invoiceStatus}
-            />
-          ) : null}
+        <div className="grid gap-5">
           <InvoiceForm
             data={data}
             branches={branches}
@@ -241,6 +228,21 @@ export function InvoiceWorkspace({ data }: InvoiceWorkspaceProps) {
       <AddCustomerModal open={customerModalOpen} onClose={() => setCustomerModalOpen(false)} onSave={saveCustomer} />
       <AddBranchModal open={branchModalOpen} onClose={() => setBranchModalOpen(false)} onSave={saveBranch} />
       <CustomFieldModal open={customFieldModalOpen} onClose={() => setCustomFieldModalOpen(false)} onSave={saveCustomField} />
+      {selectedBranch && selectedWarehouse && selectedCustomer && selectedPaymentMethod ? (
+        <InvoicePreviewModal
+          open={previewOpen}
+          onClose={() => setPreviewOpen(false)}
+          branch={selectedBranch}
+          warehouse={selectedWarehouse}
+          customer={selectedCustomer}
+          items={items}
+          totals={totals}
+          issueDate={issueDate}
+          dueDate={dueDate}
+          paymentMethod={selectedPaymentMethod}
+          invoiceStatus={invoiceStatus}
+        />
+      ) : null}
     </main>
   );
 }

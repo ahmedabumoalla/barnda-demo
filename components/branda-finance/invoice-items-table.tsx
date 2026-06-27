@@ -30,47 +30,45 @@ export function InvoiceItemsTable({
   onRemoveItem,
 }: InvoiceItemsTableProps) {
   return (
-    <div className="overflow-hidden rounded-[8px] border border-[#E1D1BD] bg-white shadow-[0_10px_24px_rgba(69,43,28,0.06)]">
-      <div className="flex flex-col gap-3 border-b border-[#EFE3D2] bg-[#FFFDF8] p-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h3 className="text-base font-black text-[#2F241D]">بنود الفاتورة والمنتجات</h3>
-          <p className="mt-1 text-xs font-bold text-[#806A58]">مساحة موسعة لاختيار المنتج وتعديل الكمية والسعر والضريبة والحساب.</p>
+    <div className="w-full max-w-full min-w-0 overflow-hidden rounded-[8px] border border-[#E1D1BD] bg-white shadow-[0_10px_24px_rgba(69,43,28,0.06)]">
+      <div className="flex min-w-0 flex-col gap-2 border-b border-[#EFE3D2] bg-[#FFFDF8] p-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <h3 className="text-[13px] font-black text-[#2F241D]">بنود الفاتورة والمنتجات</h3>
+          <p className="mt-1 truncate text-[11px] font-bold text-[#806A58]">اختيار المنتج وتعديل الكمية والسعر والضريبة والحساب داخل جدول محصور.</p>
         </div>
         <button
           type="button"
           onClick={onAddItem}
-          className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] border border-[#D6B677] bg-[#F8E8C9] px-4 text-xs font-black text-[#6B431C] transition hover:bg-[#F1D9A8]"
+          className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-[8px] border border-[#D6B677] bg-[#F8E8C9] px-3 text-[11px] font-black text-[#6B431C] transition hover:bg-[#F1D9A8]"
         >
           <Plus className="h-4 w-4" />
           إضافة بند
         </button>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[1480px] table-fixed text-right text-sm">
+      <div className="max-w-full overflow-x-auto">
+        <table className="w-full min-w-[1060px] table-fixed text-right text-[12px]">
           <colgroup>
-            <col className="w-[360px]" />
-            <col className="w-[110px]" />
-            <col className="w-[130px]" />
-            <col className="w-[130px]" />
+            <col className="w-[260px]" />
+            <col className="w-[78px]" />
+            <col className="w-[95px]" />
+            <col className="w-[95px]" />
+            <col className="w-[120px]" />
+            <col className="w-[140px]" />
             <col className="w-[150px]" />
-            <col className="w-[190px]" />
-            <col className="w-[190px]" />
-            <col className="w-[220px]" />
-            <col className="w-[150px]" />
-            <col className="w-[72px]" />
+            <col className="w-[120px]" />
+            <col className="w-[62px]" />
           </colgroup>
           <thead className="bg-[#F4E8D8] text-xs font-black text-[#674C38]">
             <tr>
-              <th className="px-4 py-3">الوصف / المنتج</th>
-              <th className="px-4 py-3">الكمية</th>
-              <th className="px-4 py-3">السعر</th>
-              <th className="px-4 py-3">الخصم</th>
-              <th className="px-4 py-3">الضريبة</th>
-              <th className="px-4 py-3">المستودع</th>
-              <th className="px-4 py-3">الحساب</th>
-              <th className="px-4 py-3">الاعتراف بالإيراد</th>
-              <th className="px-4 py-3">الإجمالي</th>
-              <th className="px-4 py-3" aria-label="إجراءات" />
+              <th className="px-2.5 py-2.5">المنتج / الوصف</th>
+              <th className="px-2.5 py-2.5">الكمية</th>
+              <th className="px-2.5 py-2.5">السعر</th>
+              <th className="px-2.5 py-2.5">الخصم</th>
+              <th className="px-2.5 py-2.5">الضريبة</th>
+              <th className="px-2.5 py-2.5">المستودع</th>
+              <th className="px-2.5 py-2.5">الحساب</th>
+              <th className="px-2.5 py-2.5">الإجمالي</th>
+              <th className="px-2.5 py-2.5" aria-label="إجراء" />
             </tr>
           </thead>
           <tbody className="divide-y divide-[#EFE3D2]">
@@ -79,7 +77,7 @@ export function InvoiceItemsTable({
 
               return (
                 <tr key={item.id} className="align-top transition hover:bg-[#FFF8EA]">
-                  <td className="px-4 py-4">
+                  <td className="px-2.5 py-2.5">
                     <select
                       value={item.productId ?? ""}
                       onChange={(event) => {
@@ -94,7 +92,7 @@ export function InvoiceItemsTable({
                           revenueRecognition: product.revenueRecognition,
                         });
                       }}
-                      className="mb-2 h-11 w-full rounded-[8px] border border-[#E1D1BD] bg-[#FFFDF8] px-3 text-sm font-bold outline-none transition focus:border-[#B88334] focus:ring-2 focus:ring-[#D9A33F]/20"
+                      className="mb-1.5 h-9 w-full min-w-0 rounded-[8px] border border-[#E1D1BD] bg-[#FFFDF8] px-2 text-[12px] font-bold outline-none transition focus:border-[#B88334] focus:ring-2 focus:ring-[#D9A33F]/20"
                     >
                       <option value="">اختر صنفًا</option>
                       {products.map((product) => (
@@ -106,16 +104,16 @@ export function InvoiceItemsTable({
                     <input
                       value={item.description}
                       onChange={(event) => onChangeItem(item.id, { description: event.target.value })}
-                      className="h-11 w-full rounded-[8px] border border-[#E1D1BD] px-3 text-sm font-bold outline-none transition focus:border-[#B88334] focus:ring-2 focus:ring-[#D9A33F]/20"
+                      className="h-9 w-full min-w-0 rounded-[8px] border border-[#E1D1BD] px-2 text-[12px] font-bold outline-none transition focus:border-[#B88334] focus:ring-2 focus:ring-[#D9A33F]/20"
                       placeholder="وصف البند"
                     />
                     {selectedProduct ? (
-                      <div className="mt-3 flex gap-3 rounded-[8px] border border-[#EFE3D2] bg-[#FAF3E8] p-3 text-[11px] font-bold leading-5 text-[#735A45]">
+                      <div className="mt-2 flex min-w-0 gap-2 rounded-[8px] border border-[#EFE3D2] bg-[#FAF3E8] p-2 text-[10px] font-bold leading-4 text-[#735A45]">
                         {selectedProduct.imageUrl ? (
-                          <img src={selectedProduct.imageUrl} alt="" className="h-12 w-12 rounded-[8px] object-cover" loading="lazy" />
+                          <img src={selectedProduct.imageUrl} alt="" className="h-9 w-9 shrink-0 rounded-[8px] object-cover" loading="lazy" />
                         ) : null}
-                        <div>
-                          <p>{selectedProduct.category}</p>
+                        <div className="min-w-0">
+                          <p className="truncate">{selectedProduct.category}</p>
                           <p dir="ltr">SKU {selectedProduct.sku}</p>
                           <p dir="ltr">Barcode {selectedProduct.barcode}</p>
                           <p dir="ltr">{formatFinanceAmount(selectedProduct.price)} / VAT {selectedProduct.vatRate}%</p>
@@ -123,38 +121,38 @@ export function InvoiceItemsTable({
                       </div>
                     ) : null}
                   </td>
-                  <td className="px-4 py-4">
+                  <td className="px-2.5 py-2.5">
                     <input
                       type="number"
                       min="1"
                       value={item.quantity}
                       onChange={(event) => onChangeItem(item.id, { quantity: Math.max(1, Number(event.target.value) || 1) })}
-                      className="h-11 w-full rounded-[8px] border border-[#E1D1BD] px-3 text-center text-sm font-black outline-none transition focus:border-[#B88334] focus:ring-2 focus:ring-[#D9A33F]/20"
+                      className="h-9 w-full min-w-0 rounded-[8px] border border-[#E1D1BD] px-1.5 text-center text-[12px] font-black outline-none transition focus:border-[#B88334] focus:ring-2 focus:ring-[#D9A33F]/20"
                     />
                   </td>
-                  <td className="px-4 py-4">
+                  <td className="px-2.5 py-2.5">
                     <input
                       type="number"
                       min="0"
                       value={item.price}
                       onChange={(event) => onChangeItem(item.id, { price: Math.max(0, Number(event.target.value) || 0) })}
-                      className="h-11 w-full rounded-[8px] border border-[#E1D1BD] px-3 text-center text-sm font-black outline-none transition focus:border-[#B88334] focus:ring-2 focus:ring-[#D9A33F]/20"
+                      className="h-9 w-full min-w-0 rounded-[8px] border border-[#E1D1BD] px-1.5 text-center text-[12px] font-black outline-none transition focus:border-[#B88334] focus:ring-2 focus:ring-[#D9A33F]/20"
                     />
                   </td>
-                  <td className="px-4 py-4">
+                  <td className="px-2.5 py-2.5">
                     <input
                       type="number"
                       min="0"
                       value={item.discount}
                       onChange={(event) => onChangeItem(item.id, { discount: Math.max(0, Number(event.target.value) || 0) })}
-                      className="h-11 w-full rounded-[8px] border border-[#E1D1BD] px-3 text-center text-sm font-black outline-none transition focus:border-[#B88334] focus:ring-2 focus:ring-[#D9A33F]/20"
+                      className="h-9 w-full min-w-0 rounded-[8px] border border-[#E1D1BD] px-1.5 text-center text-[12px] font-black outline-none transition focus:border-[#B88334] focus:ring-2 focus:ring-[#D9A33F]/20"
                     />
                   </td>
-                  <td className="px-4 py-4">
+                  <td className="px-2.5 py-2.5">
                     <select
                       value={String(item.taxRate)}
                       onChange={(event) => onChangeItem(item.id, { taxRate: Number(event.target.value) })}
-                      className="h-11 w-full rounded-[8px] border border-[#E1D1BD] bg-white px-2 text-xs font-bold outline-none transition focus:border-[#B88334] focus:ring-2 focus:ring-[#D9A33F]/20"
+                      className="h-9 w-full min-w-0 rounded-[8px] border border-[#E1D1BD] bg-white px-1.5 text-[11px] font-bold outline-none transition focus:border-[#B88334] focus:ring-2 focus:ring-[#D9A33F]/20"
                     >
                       {taxRates.map((taxRate) => (
                         <option key={taxRate.id} value={taxRate.rate}>
@@ -166,11 +164,11 @@ export function InvoiceItemsTable({
                       {formatFinanceAmount(lineVat(item))}
                     </p>
                   </td>
-                  <td className="px-4 py-4">
+                  <td className="px-2.5 py-2.5">
                     <select
                       value={item.warehouseId ?? warehouses[0]?.id ?? ""}
                       onChange={(event) => onChangeItem(item.id, { warehouseId: event.target.value })}
-                      className="h-11 w-full rounded-[8px] border border-[#E1D1BD] bg-white px-2 text-xs font-bold outline-none transition focus:border-[#B88334] focus:ring-2 focus:ring-[#D9A33F]/20"
+                      className="h-9 w-full min-w-0 rounded-[8px] border border-[#E1D1BD] bg-white px-1.5 text-[11px] font-bold outline-none transition focus:border-[#B88334] focus:ring-2 focus:ring-[#D9A33F]/20"
                     >
                       {warehouses.map((warehouse) => (
                         <option key={warehouse.id} value={warehouse.id}>
@@ -179,11 +177,11 @@ export function InvoiceItemsTable({
                       ))}
                     </select>
                   </td>
-                  <td className="px-4 py-4">
+                  <td className="px-2.5 py-2.5">
                     <select
                       value={item.accountId}
                       onChange={(event) => onChangeItem(item.id, { accountId: event.target.value })}
-                      className="h-11 w-full rounded-[8px] border border-[#E1D1BD] bg-white px-2 text-xs font-bold outline-none transition focus:border-[#B88334] focus:ring-2 focus:ring-[#D9A33F]/20"
+                      className="h-9 w-full min-w-0 rounded-[8px] border border-[#E1D1BD] bg-white px-1.5 text-[11px] font-bold outline-none transition focus:border-[#B88334] focus:ring-2 focus:ring-[#D9A33F]/20"
                     >
                       {accounts.map((account) => (
                         <option key={account.id} value={account.id}>
@@ -192,21 +190,14 @@ export function InvoiceItemsTable({
                       ))}
                     </select>
                   </td>
-                  <td className="px-4 py-4">
-                    <input
-                      value={item.revenueRecognition}
-                      onChange={(event) => onChangeItem(item.id, { revenueRecognition: event.target.value })}
-                      className="h-11 w-full rounded-[8px] border border-[#E1D1BD] px-3 text-xs font-bold outline-none transition focus:border-[#B88334] focus:ring-2 focus:ring-[#D9A33F]/20"
-                    />
-                  </td>
-                  <td className="px-4 py-4 text-sm font-black text-[#2F241D]" dir="ltr">
+                  <td className="px-2.5 py-2.5 text-[12px] font-black text-[#2F241D]" dir="ltr">
                     {formatFinanceAmount(lineTotal(item))}
                   </td>
-                  <td className="px-4 py-4">
+                  <td className="px-2.5 py-2.5">
                     <button
                       type="button"
                       onClick={() => onRemoveItem(item.id)}
-                      className="flex h-9 w-9 items-center justify-center rounded-[8px] border border-[#E6CFC8] bg-[#FFF7F4] text-[#9B3327] transition hover:bg-[#FBE5DF]"
+                      className="flex h-8 w-8 items-center justify-center rounded-[8px] border border-[#E6CFC8] bg-[#FFF7F4] text-[#9B3327] transition hover:bg-[#FBE5DF]"
                       title="حذف البند"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -218,11 +209,11 @@ export function InvoiceItemsTable({
           </tbody>
         </table>
       </div>
-      <div className="border-t border-[#EFE3D2] bg-[#FFFDF8] p-4">
+      <div className="border-t border-[#EFE3D2] bg-[#FFFDF8] p-3">
         <button
           type="button"
           onClick={onAddItem}
-          className="inline-flex items-center gap-2 rounded-[8px] border border-[#D6B677] bg-[#F8E8C9] px-4 py-2 text-xs font-black text-[#6B431C] transition hover:bg-[#F1D9A8]"
+          className="inline-flex h-8 items-center gap-1.5 rounded-[8px] border border-[#D6B677] bg-[#F8E8C9] px-3 text-[11px] font-black text-[#6B431C] transition hover:bg-[#F1D9A8]"
         >
           <Plus className="h-4 w-4" />
           إضافة بند

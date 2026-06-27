@@ -75,8 +75,8 @@ export function InvoiceTotals({ totals }: { totals: InvoiceTotalsValue }) {
   ] as const;
 
   return (
-    <div className="rounded-[8px] border border-[#E6D7C3] bg-[#FFFDF8] p-4">
-      <div className="space-y-3">
+    <div className="w-full max-w-full min-w-0 rounded-[8px] border border-[#E6D7C3] bg-[#FFFDF8] p-3">
+      <div className="space-y-2">
         {rows.map(([label, value], index) => {
           const isTotal = label === "الإجمالي المستحق";
           const isBalance = label === "الرصيد المتبقي";
@@ -84,16 +84,16 @@ export function InvoiceTotals({ totals }: { totals: InvoiceTotalsValue }) {
           return (
             <div
               key={label}
-              className={`flex items-center justify-between gap-4 text-sm ${
+              className={`flex min-w-0 items-center justify-between gap-3 text-[12px] ${
                 isTotal || isBalance
-                  ? "border-t border-[#E6D7C3] pt-3 text-lg font-black text-[#2F241D]"
+                  ? "border-t border-[#E6D7C3] pt-2 text-[15px] font-black text-[#2F241D]"
                   : index > 3
                     ? "font-black text-[#2F5D50]"
                     : "font-bold text-[#725D4D]"
               }`}
             >
-              <span>{label}</span>
-              <span dir="ltr" className="font-black">
+              <span className="min-w-0 truncate">{label}</span>
+              <span dir="ltr" className="shrink-0 font-black">
                 {formatFinanceAmount(value)}
               </span>
             </div>

@@ -16,7 +16,7 @@ export function ProductCard({ product, showTranslationPreview, onAdd }: ProductC
       type="button"
       onClick={() => onAdd(product)}
       disabled={!available}
-      className="group flex min-h-[316px] flex-col overflow-hidden rounded-[8px] border border-[#E0D0BB] bg-[#FFFDF8] text-right shadow-[0_14px_28px_rgba(69,43,28,0.08)] transition hover:-translate-y-0.5 hover:border-[#C99A4D] hover:shadow-[0_18px_38px_rgba(69,43,28,0.13)] disabled:cursor-not-allowed disabled:opacity-60"
+      className="group flex min-h-[270px] min-w-0 flex-col overflow-hidden rounded-[8px] border border-[#E0D0BB] bg-[#FFFDF8] text-right shadow-[0_14px_28px_rgba(69,43,28,0.08)] transition hover:-translate-y-0.5 hover:border-[#C99A4D] hover:shadow-[0_18px_38px_rgba(69,43,28,0.13)] disabled:cursor-not-allowed disabled:opacity-60"
     >
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-[#EFE2D0]">
         {product.imageUrl ? (
@@ -33,10 +33,10 @@ export function ProductCard({ product, showTranslationPreview, onAdd }: ProductC
           VAT {product.vatRate}%
         </span>
       </div>
-      <div className="flex flex-1 flex-col p-4">
+      <div className="flex min-w-0 flex-1 flex-col p-3">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h3 className="line-clamp-2 text-base font-black leading-6 text-[#2F241D]">{product.name}</h3>
+            <h3 className="line-clamp-2 text-[14px] font-black leading-5 text-[#2F241D]">{product.name}</h3>
             <p className="mt-1 min-h-5 text-xs font-bold text-[#806A58]">
               {product.englishName || (showTranslationPreview ? "الترجمة الذكية ستعمل لاحقًا عند ربط مزود الترجمة" : "")}
             </p>
@@ -46,7 +46,7 @@ export function ProductCard({ product, showTranslationPreview, onAdd }: ProductC
           </span>
         </div>
         <p className="mt-3 line-clamp-2 min-h-10 text-xs font-bold leading-5 text-[#7D6654]">{product.details}</p>
-        <div className="mt-auto flex flex-wrap gap-2 pt-4">
+        <div className="mt-auto flex min-w-0 flex-wrap gap-1.5 pt-3">
           <span className="inline-flex items-center gap-1 rounded-[8px] bg-[#F4E8D8] px-2.5 py-1 text-[11px] font-black text-[#6B431C]">
             <Tag className="h-3.5 w-3.5" />
             {product.category}
@@ -61,7 +61,7 @@ export function ProductCard({ product, showTranslationPreview, onAdd }: ProductC
             {product.barcode}
           </span>
         </div>
-        <span className="mt-4 inline-flex h-10 items-center justify-center gap-2 rounded-[8px] bg-[#5B3926] text-sm font-black text-white">
+        <span className="mt-3 inline-flex h-9 items-center justify-center gap-1.5 rounded-[8px] bg-[#5B3926] text-[12px] font-black text-white">
           <Plus className="h-4 w-4" />
           إضافة
         </span>

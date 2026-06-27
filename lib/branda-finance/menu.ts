@@ -22,47 +22,30 @@ export type BrandaFinanceMenuItem = {
   title: string;
   icon: BrandaFinanceIconKey;
   description: string;
-  href?: string;
+  href: string;
   badge?: string;
 };
 
-const comingSoonLine = "قريبًا بنشغلها وحدة وحدة";
+const ready = "جاهز";
+const local = "محلي";
 
 export const brandaFinanceMenuItems: BrandaFinanceMenuItem[] = [
-  {
-    title: "التقارير المالية",
-    icon: "reports",
-    description: "تقارير مالية تجريبية جاهزة للعرض",
-    href: "/dashboard/branda-finance/reports",
-    badge: "جاهز",
-  },
-  {
-    title: "الفواتير",
-    icon: "invoices",
-    description: "إنشاء فاتورة مبيعات مع معاينة ونموذج تفصيلي",
-    href: "/dashboard/branda-finance/invoicing/create",
-    badge: "جديد",
-  },
-  {
-    title: "المبيعات",
-    icon: "sales",
-    description: "صفحة كاشير ونقطة بيع مرتبطة بمنتجات العلامة",
-    href: "/dashboard/branda-finance/sales",
-    badge: "جديد",
-  },
-  { title: "المشتريات", icon: "purchases", description: comingSoonLine },
-  { title: "العملاء والموردين", icon: "contacts", description: comingSoonLine },
-  { title: "الرواتب والموظفين", icon: "payroll", description: comingSoonLine },
-  { title: "المنتجات والخدمات والمخزون", icon: "inventory", description: comingSoonLine },
-  { title: "للمحاسب", icon: "accountant", description: comingSoonLine },
-  { title: "الحسابات البنكية", icon: "banking", description: comingSoonLine },
-  { title: "الأصول الثابتة", icon: "assets", description: comingSoonLine },
-  { title: "مراكز التكلفة", icon: "costCenters", description: comingSoonLine },
-  { title: "المشاريع", icon: "projects", description: comingSoonLine },
-  { title: "الفروع", icon: "branches", description: comingSoonLine },
-  { title: "للمطورين", icon: "developers", description: comingSoonLine },
-  { title: "التكاملات", icon: "integrations", description: comingSoonLine },
-  { title: "القوالب", icon: "templates", description: comingSoonLine },
-  { title: "التعاقد مع محاسب", icon: "hireAccountant", description: comingSoonLine },
-  { title: "مركز المساعدة", icon: "help", description: comingSoonLine },
+  { title: "التقارير المالية", icon: "reports", description: "مركز تقارير مالية مترابط مع الديمو", href: "/dashboard/branda-finance/reports", badge: ready },
+  { title: "المبيعات", icon: "sales", description: "شاشة كاشير ومبيعات مرتبطة بالفواتير", href: "/dashboard/branda-finance/sales", badge: ready },
+  { title: "الفواتير", icon: "invoices", description: "قائمة فواتير المبيعات وإنشاء فاتورة", href: "/dashboard/branda-finance/invoicing", badge: ready },
+  { title: "المشتريات", icon: "purchases", description: "فواتير مشتريات وأوامر شراء ومردودات", href: "/dashboard/branda-finance/purchases", badge: local },
+  { title: "العملاء والموردين", icon: "contacts", description: "أرصدة وكشوف حساب وأعمار ديون", href: "/dashboard/branda-finance/parties", badge: local },
+  { title: "الرواتب والموظفين", icon: "payroll", description: "رواتب وعهد وسلف واستقطاعات", href: "/dashboard/branda-finance/payroll", badge: local },
+  { title: "المنتجات والخدمات والمخزون", icon: "inventory", description: "منتجات وخدمات ومستودعات وتنبيهات", href: "/dashboard/branda-finance/catalog", badge: local },
+  { title: "للمحاسب", icon: "accountant", description: "شجرة حسابات وقيود وتسويات تجريبية", href: "/dashboard/branda-finance/accountant", badge: local },
+  { title: "الحسابات البنكية", icon: "banking", description: "صناديق وبنوك وإغلاق يومي", href: "/dashboard/branda-finance/banking", badge: local },
+  { title: "الأصول الثابتة", icon: "assets", description: "سجل أصول وإهلاك وصيانة", href: "/dashboard/branda-finance/assets", badge: local },
+  { title: "مراكز التكلفة", icon: "costCenters", description: "توزيع دخل ومصروف حسب المركز", href: "/dashboard/branda-finance/cost-centers", badge: local },
+  { title: "المشاريع", icon: "projects", description: "إيراد وتكلفة وهامش المشروع", href: "/dashboard/branda-finance/projects", badge: local },
+  { title: "الفروع", icon: "branches", description: "مبيعات وصندوق ومخزون حسب الفرع", href: "/dashboard/branda-finance/branches", badge: local },
+  { title: "للمطورين", icon: "developers", description: "جاهزية API وwebhooks بدون مفاتيح", href: "/dashboard/branda-finance/developer", badge: "جاهزية" },
+  { title: "التكاملات", icon: "integrations", description: "ZATCA وmada والبنوك والطابعات معطلة بوضوح", href: "/dashboard/branda-finance/integrations", badge: "معطل" },
+  { title: "القوالب", icon: "templates", description: "قوالب فاتورة وإيصالات وعروض وأوامر شراء", href: "/dashboard/branda-finance/templates", badge: local },
+  { title: "التعاقد مع محاسب", icon: "hireAccountant", description: "طلب خدمة محاسب وقائمة مستندات", href: "/dashboard/branda-finance/accountant-service", badge: local },
+  { title: "مركز المساعدة", icon: "help", description: "مقالات إعداد وأسئلة شائعة", href: "/dashboard/branda-finance/help", badge: ready },
 ];

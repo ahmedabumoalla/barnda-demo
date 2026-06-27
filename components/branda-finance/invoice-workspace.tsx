@@ -119,23 +119,31 @@ export function InvoiceWorkspace({ data }: InvoiceWorkspaceProps) {
   }
 
   return (
-    <main dir="rtl" className="min-h-screen bg-[#F5EFE6] px-4 py-5 text-right text-[#2F241D] sm:px-6 lg:px-8">
-      <div className="mx-auto flex w-full max-w-[1720px] flex-col gap-5">
-        <div className="rounded-[8px] border border-[#D8C3A2] bg-[#FFFDF8] p-4 shadow-[0_16px_38px_rgba(69,43,28,0.08)]">
-          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-            <div>
+    <main dir="rtl" className="min-h-screen w-full max-w-full overflow-x-hidden bg-[#F5EFE6] px-3 py-4 text-right text-[#2F241D] sm:px-4 lg:px-5">
+      <div className="mx-auto flex w-full max-w-full min-w-0 flex-col gap-4 overflow-hidden">
+        <div className="min-w-0 rounded-[8px] border border-[#D8C3A2] bg-[#FFFDF8] p-3 shadow-[0_16px_38px_rgba(69,43,28,0.08)] sm:p-4">
+          <div className="flex min-w-0 flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+            <div className="min-w-0">
               <p className="text-xs font-black text-[#9C6B2E]">برندا المالية</p>
               <h1 className="mt-1 text-2xl font-black text-[#2F241D] sm:text-3xl">إنشاء فاتورة مبيعات</h1>
-              <p className="mt-2 text-sm font-bold text-[#7D6654]">{statusMessage}</p>
+              <div className="mt-1 flex min-w-0 flex-wrap items-center gap-2">
+                <span className="rounded-[8px] border border-[#D8BD89] bg-[#F8E8C9] px-2.5 py-1 text-[11px] font-black text-[#6B431C]" dir="ltr">
+                  INV-000101
+                </span>
+                <span className="rounded-[8px] border border-[#CFE2D8] bg-[#EDF7F2] px-2.5 py-1 text-[11px] font-black text-[#2F5D50]">
+                  {invoiceStatus}
+                </span>
+              </div>
+              <p className="mt-1.5 max-w-full truncate text-[12px] font-bold text-[#7D6654]">{statusMessage}</p>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex min-w-0 flex-wrap gap-1.5 xl:justify-end">
               <button
                 type="button"
                 onClick={() => {
                   setInvoiceStatus("جاهزة للاعتماد");
                   setStatusMessage("تم اعتماد الفاتورة تجريبيًا داخل الواجهة فقط");
                 }}
-                className="inline-flex h-11 items-center gap-2 rounded-[8px] bg-[#2F5D50] px-4 text-sm font-black text-white"
+                className="inline-flex h-9 max-w-full items-center gap-1.5 rounded-[8px] bg-[#2F5D50] px-3 text-[12px] font-black text-white"
               >
                 <FileCheck2 className="h-4 w-4" />
                 اعتماد الفاتورة
@@ -146,14 +154,14 @@ export function InvoiceWorkspace({ data }: InvoiceWorkspaceProps) {
                   setInvoiceStatus("مسودة");
                   setStatusMessage("تم حفظ المسودة محليًا داخل واجهة الديمو");
                 }}
-                className="inline-flex h-11 items-center gap-2 rounded-[8px] border border-[#D6B677] bg-[#F8E8C9] px-4 text-sm font-black text-[#6B431C]"
+                className="inline-flex h-9 max-w-full items-center gap-1.5 rounded-[8px] border border-[#D6B677] bg-[#F8E8C9] px-3 text-[12px] font-black text-[#6B431C]"
               >
                 <Save className="h-4 w-4" />
                 حفظ كمسودة
               </button>
               <Link
                 href="/dashboard/branda-finance/sales"
-                className="inline-flex h-11 items-center gap-2 rounded-[8px] border border-[#CFE2D8] bg-[#EDF7F2] px-4 text-sm font-black text-[#2F5D50]"
+                className="inline-flex h-9 max-w-full items-center gap-1.5 rounded-[8px] border border-[#CFE2D8] bg-[#EDF7F2] px-3 text-[12px] font-black text-[#2F5D50]"
               >
                 <ShoppingCart className="h-4 w-4" />
                 فتح شاشة المبيعات
@@ -161,7 +169,7 @@ export function InvoiceWorkspace({ data }: InvoiceWorkspaceProps) {
               <button
                 type="button"
                 onClick={() => setPreviewOpen(true)}
-                className="inline-flex h-11 items-center gap-2 rounded-[8px] border border-[#D8C7B2] bg-white px-4 text-sm font-black text-[#5B3926]"
+                className="inline-flex h-9 max-w-full items-center gap-1.5 rounded-[8px] border border-[#D8C7B2] bg-white px-3 text-[12px] font-black text-[#5B3926]"
               >
                 <Eye className="h-4 w-4" />
                 معاينة الفاتورة
@@ -169,7 +177,7 @@ export function InvoiceWorkspace({ data }: InvoiceWorkspaceProps) {
               <button
                 type="button"
                 onClick={() => setStatusMessage("المرفقات محلية في الديمو ولا يتم رفع أي ملفات الآن")}
-                className="inline-flex h-11 items-center gap-2 rounded-[8px] border border-[#D8C7B2] bg-white px-4 text-sm font-black text-[#5B3926]"
+                className="inline-flex h-9 max-w-full items-center gap-1.5 rounded-[8px] border border-[#D8C7B2] bg-white px-3 text-[12px] font-black text-[#5B3926]"
               >
                 <Paperclip className="h-4 w-4" />
                 مرفقات
@@ -177,7 +185,7 @@ export function InvoiceWorkspace({ data }: InvoiceWorkspaceProps) {
               <button
                 type="button"
                 onClick={() => setStatusMessage("تم إغلاق مساحة العمل تجريبيًا بدون انتقال أو حفظ دائم")}
-                className="inline-flex h-11 items-center gap-2 rounded-[8px] border border-[#E6CFC8] bg-[#FFF7F4] px-4 text-sm font-black text-[#9B3327]"
+                className="inline-flex h-9 max-w-full items-center gap-1.5 rounded-[8px] border border-[#E6CFC8] bg-[#FFF7F4] px-3 text-[12px] font-black text-[#9B3327]"
               >
                 <X className="h-4 w-4" />
                 إغلاق
@@ -186,7 +194,7 @@ export function InvoiceWorkspace({ data }: InvoiceWorkspaceProps) {
           </div>
         </div>
 
-        <div className="grid gap-5">
+        <div className="grid min-w-0 gap-4 overflow-hidden">
           <InvoiceForm
             data={data}
             branches={branches}

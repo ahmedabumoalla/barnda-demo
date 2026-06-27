@@ -92,24 +92,24 @@ export function CashierSalesWorkspace({ data }: CashierSalesWorkspaceProps) {
   }
 
   return (
-    <main dir="rtl" className="min-h-screen bg-[#F5EFE6] px-4 py-5 text-right text-[#2F241D] sm:px-6 lg:px-8">
-      <div className="mx-auto grid w-full max-w-[1720px] gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
-        <section className="min-w-0 space-y-5">
-          <header className="rounded-[8px] border border-[#D8C3A2] bg-[#FFFDF8] p-4 shadow-[0_16px_38px_rgba(69,43,28,0.08)]">
-            <div className="flex flex-col gap-4">
+    <main dir="rtl" className="min-h-screen w-full max-w-full overflow-x-hidden bg-[#F5EFE6] px-3 py-4 text-right text-[#2F241D] sm:px-4 lg:px-5">
+      <div className="mx-auto grid w-full max-w-full min-w-0 gap-4 overflow-hidden xl:grid-cols-[minmax(0,1fr)_360px]">
+        <section className="min-w-0 space-y-4 overflow-hidden">
+          <header className="min-w-0 rounded-[8px] border border-[#D8C3A2] bg-[#FFFDF8] p-3 shadow-[0_16px_38px_rgba(69,43,28,0.08)] sm:p-4">
+            <div className="flex min-w-0 flex-col gap-3">
               <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
                 <div>
                   <p className="text-xs font-black text-[#9C6B2E]">برندا المالية</p>
-                  <h1 className="mt-1 text-2xl font-black text-[#2F241D] sm:text-3xl">المبيعات</h1>
+                  <h1 className="mt-1 text-xl font-black text-[#2F241D] sm:text-2xl">المبيعات</h1>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <div className="inline-flex h-11 w-fit items-center gap-2 rounded-[8px] border border-[#CFE2D8] bg-[#EDF7F2] px-3 text-xs font-black text-[#2F5D50]">
+                <div className="flex min-w-0 flex-wrap gap-1.5">
+                  <div className="inline-flex h-9 w-fit items-center gap-1.5 rounded-[8px] border border-[#CFE2D8] bg-[#EDF7F2] px-2.5 text-[11px] font-black text-[#2F5D50]">
                     <ShieldCheck className="h-4 w-4" />
                     جلسة كاشير تجريبية نشطة
                   </div>
                   <Link
                     href="/dashboard/branda-finance/invoicing/create?source=cashier"
-                    className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] bg-[#5B3926] px-4 text-sm font-black text-white"
+                    className="inline-flex h-9 items-center justify-center gap-1.5 rounded-[8px] bg-[#5B3926] px-3 text-[12px] font-black text-white"
                   >
                     <FileText className="h-4 w-4" />
                     إنشاء فاتورة مبيعات
@@ -117,7 +117,7 @@ export function CashierSalesWorkspace({ data }: CashierSalesWorkspaceProps) {
                 </div>
               </div>
 
-              <div className="grid gap-3 xl:grid-cols-[210px_210px_210px_minmax(260px,1fr)]">
+              <div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-[160px_160px_180px_minmax(220px,1fr)]">
                 <EntitySelect
                   label="الفرع"
                   value={selectedBranchId}
@@ -137,24 +137,24 @@ export function CashierSalesWorkspace({ data }: CashierSalesWorkspaceProps) {
                   onChange={setSelectedCustomerId}
                 />
                 <label className="block">
-                  <span className="mb-2 block text-xs font-black text-[#6D5544]">بحث ذكي</span>
+                  <span className="mb-1.5 block text-[11px] font-black text-[#6D5544]">بحث ذكي</span>
                   <span className="relative block">
                     <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#9C8068]" />
                     <input
                       value={query}
                       onChange={(event) => setQuery(event.target.value)}
                       placeholder="اسم عربي، إنجليزي، SKU، باركود، تصنيف"
-                      className="h-11 w-full rounded-[8px] border border-[#E1D1BD] bg-white px-10 text-sm font-bold text-[#2F241D] outline-none focus:border-[#B88334] focus:ring-2 focus:ring-[#D9A33F]/20"
+                      className="h-9 w-full min-w-0 rounded-[8px] border border-[#E1D1BD] bg-white px-9 text-[12px] font-bold text-[#2F241D] outline-none focus:border-[#B88334] focus:ring-2 focus:ring-[#D9A33F]/20"
                     />
                   </span>
                 </label>
               </div>
 
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5">
                 <button
                   type="button"
                   onClick={() => setTranslationPreview((value) => !value)}
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] border border-[#D6B677] bg-[#F8E8C9] px-4 text-sm font-black text-[#6B431C]"
+                  className="inline-flex h-9 items-center justify-center gap-1.5 rounded-[8px] border border-[#D6B677] bg-[#F8E8C9] px-3 text-[12px] font-black text-[#6B431C]"
                 >
                   <Languages className="h-4 w-4" />
                   ترجمة ذكية
@@ -162,7 +162,7 @@ export function CashierSalesWorkspace({ data }: CashierSalesWorkspaceProps) {
                 <button
                   type="button"
                   onClick={() => setLoyaltyOpen(true)}
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-[8px] border border-[#CFE2D8] bg-[#EDF7F2] px-4 text-sm font-black text-[#2F5D50]"
+                  className="inline-flex h-9 items-center justify-center gap-1.5 rounded-[8px] border border-[#CFE2D8] bg-[#EDF7F2] px-3 text-[12px] font-black text-[#2F5D50]"
                 >
                   <ScanLine className="h-4 w-4" />
                   قراءة باركود الولاء
@@ -171,12 +171,12 @@ export function CashierSalesWorkspace({ data }: CashierSalesWorkspaceProps) {
             </div>
           </header>
 
-          <div className="rounded-[8px] border border-[#D8C3A2] bg-[#FFFDF8] p-3 shadow-[0_16px_38px_rgba(69,43,28,0.08)]">
-            <div className="flex flex-wrap gap-2">
+          <div className="min-w-0 rounded-[8px] border border-[#D8C3A2] bg-[#FFFDF8] p-3 shadow-[0_16px_38px_rgba(69,43,28,0.08)]">
+            <div className="flex min-w-0 flex-wrap gap-1.5">
               <button
                 type="button"
                 onClick={() => setSelectedCategory("all")}
-                className={`h-10 rounded-[8px] px-4 text-sm font-black ${
+                className={`h-8 rounded-[8px] px-3 text-[12px] font-black ${
                   selectedCategory === "all" ? "bg-[#5B3926] text-white" : "border border-[#E1D1BD] bg-white text-[#5B3926]"
                 }`}
               >
@@ -187,7 +187,7 @@ export function CashierSalesWorkspace({ data }: CashierSalesWorkspaceProps) {
                   type="button"
                   key={category.id}
                   onClick={() => setSelectedCategory(category.name)}
-                  className={`h-10 rounded-[8px] px-4 text-sm font-black ${
+                  className={`h-8 rounded-[8px] px-3 text-[12px] font-black ${
                     selectedCategory === category.name ? "bg-[#5B3926] text-white" : "border border-[#E1D1BD] bg-white text-[#5B3926]"
                   }`}
                 >
@@ -198,7 +198,7 @@ export function CashierSalesWorkspace({ data }: CashierSalesWorkspaceProps) {
           </div>
 
           {translationPreview ? (
-            <div className="rounded-[8px] border border-[#D6B677] bg-[#FFF8EA] p-3 text-sm font-bold leading-7 text-[#6B431C]">
+            <div className="rounded-[8px] border border-[#D6B677] bg-[#FFF8EA] p-3 text-[12px] font-bold leading-6 text-[#6B431C]">
               الترجمة الذكية ستعمل لاحقًا عند ربط مزود الترجمة. المنتجات التي تملك اسمًا إنجليزيًا تعرضه الآن مباشرة بدون أي اتصال خارجي.
             </div>
           ) : null}

@@ -49,7 +49,9 @@ type InvoiceFormProps = {
 };
 
 const inputClass =
-  "h-11 w-full rounded-[8px] border border-[#E1D1BD] bg-white px-3 text-sm font-bold text-[#2F241D] outline-none transition focus:border-[#B88334] focus:ring-2 focus:ring-[#D9A33F]/20";
+  "h-9 w-full min-w-0 rounded-[8px] border border-[#E1D1BD] bg-white px-2 text-[12px] font-bold text-[#2F241D] outline-none transition focus:border-[#B88334] focus:ring-2 focus:ring-[#D9A33F]/20";
+
+const linkedEntityLabels = ["أمر الشراء", "المرجع", "المشروع", "المستودع"];
 
 export function InvoiceForm({
   data,
@@ -87,24 +89,28 @@ export function InvoiceForm({
   onRemoveItem,
 }: InvoiceFormProps) {
   return (
-    <section className="rounded-[8px] border border-[#D8C3A2] bg-[#FFFDF8] p-4 shadow-[0_16px_38px_rgba(69,43,28,0.08)] sm:p-5 lg:p-6">
-      <div className="mb-6 flex flex-col gap-3 border-b border-[#E8D8C2] pb-5 sm:flex-row sm:items-center sm:justify-between">
+    <section className="w-full max-w-full min-w-0 overflow-hidden rounded-[8px] border border-[#D8C3A2] bg-[#FFFDF8] p-3 shadow-[0_16px_38px_rgba(69,43,28,0.08)] sm:p-4">
+      <div className="mb-4 flex min-w-0 flex-col gap-2 border-b border-[#E8D8C2] pb-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-xs font-black text-[#9C6B2E]">مساحة إنشاء الفاتورة</p>
-          <h2 className="mt-1 text-2xl font-black text-[#2F241D]">INV-000101</h2>
+          <h2 className="mt-1 text-xl font-black text-[#2F241D]" dir="ltr">INV-000101</h2>
           <p className="mt-1 text-xs font-bold text-[#806A58]">عملة الفاتورة: SAR</p>
         </div>
         <button
           type="button"
-          className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] border border-[#D6B677] bg-[#F8E8C9] px-4 text-xs font-black text-[#6B431C]"
+          className="inline-flex h-9 items-center justify-center gap-1.5 rounded-[8px] border border-[#D6B677] bg-[#F8E8C9] px-3 text-[11px] font-black text-[#6B431C]"
         >
           <Upload className="h-4 w-4" />
           شعار الفاتورة
         </button>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
-        <div className="xl:col-span-2">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <h3 className="text-[13px] font-black text-[#2F241D]">بيانات الفاتورة الأساسية</h3>
+      </div>
+
+      <div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="min-w-0 xl:col-span-2">
           <EntitySelect
             label="جهة الإصدار / الفرع"
             value={selectedBranchId}
@@ -114,7 +120,7 @@ export function InvoiceForm({
             onAction={onOpenBranchModal}
           />
         </div>
-        <div className="xl:col-span-2">
+        <div className="min-w-0 xl:col-span-2">
           <EntitySelect
             label="العميل"
             value={selectedCustomerId}
@@ -165,27 +171,32 @@ export function InvoiceForm({
         </label>
       </div>
 
-      <div className="mt-6 rounded-[8px] border border-[#E8D8C2] bg-[#FAF3E8] p-4 sm:p-5">
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-          <h3 className="text-sm font-black text-[#2F241D]">الحقول المخصصة وربط الكيانات</h3>
+      <div className="mt-4 min-w-0 rounded-[8px] border border-[#E8D8C2] bg-[#FAF3E8] p-3">
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+          <h3 className="text-[13px] font-black text-[#2F241D]">الحقول المخصصة وربط الكيانات</h3>
           <button
             type="button"
             onClick={onOpenCustomFieldModal}
-            className="rounded-[8px] border border-[#D6B677] bg-[#FFF8EA] px-3 py-2 text-xs font-black text-[#6B431C]"
+            className="rounded-[8px] border border-[#D6B677] bg-[#FFF8EA] px-2.5 py-1.5 text-[11px] font-black text-[#6B431C]"
           >
             إضافة حقل مخصص
           </button>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex min-w-0 flex-wrap gap-1.5">
+          {linkedEntityLabels.map((label) => (
+            <span key={label} className="rounded-[8px] border border-[#D6B677] bg-[#FFF8EA] px-2.5 py-1.5 text-[11px] font-black text-[#6B431C]">
+              {label}
+            </span>
+          ))}
           {customFields.map((field) => (
-            <span key={field.id} className="rounded-[8px] border border-[#E1D1BD] bg-white px-3 py-2 text-xs font-black text-[#6D5544]">
+            <span key={field.id} className="rounded-[8px] border border-[#E1D1BD] bg-white px-2.5 py-1.5 text-[11px] font-black text-[#6D5544]">
               {field.name}
             </span>
           ))}
         </div>
       </div>
 
-      <div className="mt-6">
+      <div className="mt-4 min-w-0 overflow-hidden">
         <InvoiceItemsTable
           items={items}
           products={data.products}
@@ -198,9 +209,9 @@ export function InvoiceForm({
         />
       </div>
 
-      <div className="mt-6 grid gap-5 xl:grid-cols-[minmax(0,1fr)_380px]">
-        <div className="space-y-4">
-          <div className="rounded-[8px] border border-dashed border-[#D6B677] bg-[#FFF8EA] p-4 text-sm font-bold leading-7 text-[#6B431C]">
+      <div className="mt-4 grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="min-w-0 space-y-3">
+          <div className="rounded-[8px] border border-dashed border-[#D6B677] bg-[#FFF8EA] p-3 text-[12px] font-bold leading-6 text-[#6B431C]">
             <div className="mb-2 inline-flex items-center gap-2 font-black">
               <Paperclip className="h-4 w-4" />
               مرفقات وملاحظات
@@ -209,15 +220,15 @@ export function InvoiceForm({
             <p className="mt-2">بيانات الموردين موجودة تمهيديًا لتدفقات المشتريات المستقبلية، وعددها {data.suppliers.length}.</p>
           </div>
 
-          <div className="rounded-[8px] border border-[#E8D8C2] bg-white p-4">
-            <h3 className="mb-3 text-sm font-black text-[#2F241D]">طريقة الدفع</h3>
-            <div className="grid gap-2 sm:grid-cols-5">
+          <div className="min-w-0 rounded-[8px] border border-[#E8D8C2] bg-white p-3">
+            <h3 className="mb-2 text-[13px] font-black text-[#2F241D]">طريقة الدفع</h3>
+            <div className="grid min-w-0 gap-1.5 sm:grid-cols-2 lg:grid-cols-5">
               {data.paymentMethods.map((method) => (
                 <button
                   key={method.id}
                   type="button"
                   onClick={() => onPaymentMethodChange(method.id)}
-                  className={`min-h-16 rounded-[8px] border px-3 py-2 text-sm font-black transition ${
+                  className={`min-h-12 min-w-0 rounded-[8px] border px-2 py-1.5 text-[12px] font-black transition ${
                     selectedPaymentMethodId === method.id
                       ? "border-[#5B3926] bg-[#5B3926] text-white"
                       : "border-[#E1D1BD] bg-[#FFFDF8] text-[#5B3926] hover:border-[#B88334]"
@@ -228,13 +239,13 @@ export function InvoiceForm({
                 </button>
               ))}
             </div>
-            <p className="mt-3 text-xs font-bold leading-6 text-[#806A58]">
+            <p className="mt-2 text-[11px] font-bold leading-5 text-[#806A58]">
               سيتم ربطها لاحقًا مع الصندوق ودفتر اليومية في برندا المالية.
             </p>
           </div>
 
-          <label className="block rounded-[8px] border border-[#E8D8C2] bg-white p-4">
-            <span className="mb-2 block text-xs font-black text-[#6D5544]">المبلغ المدفوع</span>
+          <label className="block min-w-0 rounded-[8px] border border-[#E8D8C2] bg-white p-3">
+            <span className="mb-1.5 block text-[11px] font-black text-[#6D5544]">المبلغ المدفوع</span>
             <input
               type="number"
               min="0"

@@ -43,6 +43,7 @@ type InvoiceFormProps = {
   onOpenCustomerModal: () => void;
   onOpenBranchModal: () => void;
   onOpenCustomFieldModal: () => void;
+  onOpenProductModal: () => void;
   onChangeItem: (id: string, patch: Partial<FinanceInvoiceItem>) => void;
   onAddItem: () => void;
   onRemoveItem: (id: string) => void;
@@ -84,6 +85,7 @@ export function InvoiceForm({
   onOpenCustomerModal,
   onOpenBranchModal,
   onOpenCustomFieldModal,
+  onOpenProductModal,
   onChangeItem,
   onAddItem,
   onRemoveItem,
@@ -206,6 +208,7 @@ export function InvoiceForm({
           onChangeItem={onChangeItem}
           onAddItem={onAddItem}
           onRemoveItem={onRemoveItem}
+          onOpenProductModal={onOpenProductModal}
         />
       </div>
 

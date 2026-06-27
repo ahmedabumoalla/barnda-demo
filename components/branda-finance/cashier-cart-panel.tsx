@@ -20,11 +20,11 @@ type CashierCartPanelProps = {
   customer: FinanceCustomer;
   branch: FinanceBranch;
   warehouse: FinanceWarehouse;
-  paymentMethod: "cash" | "card" | "";
+  paymentMethod: FinancePaymentMethod["id"] | "";
   paymentMethods: FinancePaymentMethod[];
   loyaltyCode: string;
   invoicePreviewReady: boolean;
-  onPaymentMethodChange: (method: "cash" | "card") => void;
+  onPaymentMethodChange: (method: FinancePaymentMethod["id"]) => void;
   onIncrease: (productId: string) => void;
   onDecrease: (productId: string) => void;
   onQuantityChange: (productId: string, quantity: number) => void;
@@ -37,7 +37,8 @@ type CashierCartPanelProps = {
 export function cartTotals(items: CartItem[]) {
   const subtotal = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
   const vat = items.reduce((sum, item) => sum + item.product.price * item.quantity * (item.product.vatRate / 100), 0);
-  return { subtotal, vat, total: subtotal + vat };
+  const earnedPoints = items.reduce((sum, item) => sum + (item.product.loyaltyPointsEarned ?? Math.max(1, Math.round(item.product.price / 10))) * item.quantity, 0);
+  return { subtotal, vat, total: subtotal + vat, earnedPoints };
 }
 
 export function CashierCartPanel({
@@ -59,6 +60,10 @@ export function CashierCartPanel({
   onOpenLoyalty,
 }: CashierCartPanelProps) {
   const totals = cartTotals(items);
+  const customerPointsBalance = loyaltyCode ? 320 : 180;
+  const redeemPoints = paymentMethod === "loyalty_points" ? Math.min(customerPointsBalance, Math.floor(totals.total * 4)) : 0;
+  const loyaltyDiscount = redeemPoints * 0.25;
+  const payableTotal = Math.max(0, totals.total - loyaltyDiscount);
   const methodLabel = paymentMethods.find((method) => method.id === paymentMethod)?.name ?? "غير محدد";
   const canCreateInvoice = Boolean(items.length && paymentMethod);
 
@@ -136,30 +141,49 @@ export function CashierCartPanel({
       <div className="mt-3 rounded-[8px] border border-[#E6D7C3] bg-white p-3">
         <p className="mb-2 text-[13px] font-black text-[#2F241D]">طريقة الدفع</p>
         <div className="grid grid-cols-2 gap-2">
-          {(["cash", "card"] as const).map((method) => (
+          {paymentMethods.map((method) => (
             <button
-              key={method}
+              key={method.id}
               type="button"
-              onClick={() => onPaymentMethodChange(method)}
+              onClick={() => onPaymentMethodChange(method.id)}
               className={`h-9 rounded-[8px] border text-[12px] font-black ${
-                paymentMethod === method
+                paymentMethod === method.id
                   ? "border-[#2F5D50] bg-[#2F5D50] text-white"
                   : "border-[#E1D1BD] bg-[#FFFDF8] text-[#5B3926]"
               }`}
             >
-              {method === "cash" ? "كاش" : "بطاقة"}
+              {method.name}
             </button>
           ))}
         </div>
         <p className="mt-2 text-[11px] font-bold leading-5 text-[#806A58]">
-          سيتم ربط طريقة الدفع لاحقًا بدفتر برندا المالية وصندوق الكاشير ومزود البطاقة.
+          مدى والبطاقات تتطلب مزود دفع رسمي. الاختيار هنا محلي للمعاينة فقط.
+        </p>
+      </div>
+
+      <div className="mt-3 rounded-[8px] border border-[#D6B677] bg-[#FFF8EA] p-3 text-[12px]">
+        <div className="flex justify-between gap-3 font-black text-[#6B431C]">
+          <span>رصيد نقاط العميل</span>
+          <span>{customerPointsBalance} نقطة</span>
+        </div>
+        <div className="mt-2 flex justify-between gap-3 font-bold text-[#6B431C]">
+          <span>النقاط المكتسبة من الفاتورة</span>
+          <span>{totals.earnedPoints} نقطة</span>
+        </div>
+        <div className="mt-2 flex justify-between gap-3 font-bold text-[#6B431C]">
+          <span>خصم نقاط الولاء</span>
+          <span dir="ltr">{formatFinanceAmount(loyaltyDiscount)}</span>
+        </div>
+        <p className="mt-2 text-[11px] font-bold leading-5 text-[#806A58]">
+          سيتم ربطها لاحقًا بمحفظة الولاء وقاعدة البيانات. التطبيق الحالي محلي للمعاينة.
         </p>
       </div>
 
       <div className="mt-3 space-y-2 rounded-[8px] border border-[#E6D7C3] bg-[#FAF3E8] p-3 text-[12px]">
         <TotalLine label="الإجمالي الفرعي" value={totals.subtotal} />
         <TotalLine label="VAT 15%" value={totals.vat} />
-        <TotalLine label="الإجمالي" value={totals.total} strong />
+        <TotalLine label="خصم الولاء" value={-loyaltyDiscount} />
+        <TotalLine label="الإجمالي" value={payableTotal} strong />
       </div>
 
       <div className="mt-3 rounded-[8px] border border-[#E6D7C3] bg-white p-3">
@@ -168,7 +192,7 @@ export function CashierCartPanel({
           <span className="text-xs font-black text-[#2F5D50]">{methodLabel}</span>
         </div>
         <p className="text-xs font-bold leading-6 text-[#806A58]">
-          {items.length} بند، إجمالي {formatFinanceAmount(totals.total)}، العميل {customer.name}.
+          {items.length} بند، إجمالي {formatFinanceAmount(payableTotal)}، العميل {customer.name}.
           {loyaltyCode ? ` بطاقة الولاء: ${loyaltyCode}.` : ""}
         </p>
         {invoicePreviewReady ? (
@@ -196,16 +220,20 @@ export function CashierCartPanel({
         </button>
         <button
           type="button"
-          className="inline-flex h-9 items-center justify-center gap-1.5 rounded-[8px] border border-[#D8C7B2] bg-white text-[12px] font-black text-[#5B3926]"
+          disabled
+          title="قريبًا / يتطلب ربط قاعدة البيانات"
+          className="inline-flex h-9 cursor-not-allowed items-center justify-center gap-1.5 rounded-[8px] border border-[#D8C7B2] bg-white text-[12px] font-black text-[#5B3926] opacity-60"
         >
-          حفظ كمسودة
+          حفظ كمسودة - يتطلب ربط قاعدة البيانات
         </button>
         <button
           type="button"
-          className="inline-flex h-9 items-center justify-center gap-1.5 rounded-[8px] border border-[#D8C7B2] bg-white text-[12px] font-black text-[#5B3926]"
+          disabled
+          title="قريبًا / يتطلب جهاز طباعة"
+          className="inline-flex h-9 cursor-not-allowed items-center justify-center gap-1.5 rounded-[8px] border border-[#D8C7B2] bg-white text-[12px] font-black text-[#5B3926] opacity-60"
         >
           <Printer className="h-4 w-4" />
-          طباعة تجريبية
+          طباعة - تتطلب جهاز
         </button>
         <button
           type="button"

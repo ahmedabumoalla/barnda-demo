@@ -22,6 +22,7 @@ export default function BrandaFinanceInvoicingPage() {
       actions={[
         { label: "إنشاء فاتورة", href: "/dashboard/branda-finance/invoicing/create", primary: true },
         { label: "فتح المبيعات", href: "/dashboard/branda-finance/sales" },
+        { label: "الكشوف", href: "/dashboard/branda-finance/statements" },
       ]}
     >
       <section className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -53,7 +54,7 @@ export default function BrandaFinanceInvoicingPage() {
                 invoice.status,
                 data.paymentMethods.find((method) => method.id === invoice.paymentMethodId)?.name ?? "غير محدد",
                 financeAmount(invoiceTotal.total),
-                "عرض، تعديل، نسخ، طباعة تجريبية",
+                <Link key={invoice.id} href={`/dashboard/branda-finance/statements/customer/${invoice.customerId}`}>كشف العميل</Link>,
               ];
             })}
           />

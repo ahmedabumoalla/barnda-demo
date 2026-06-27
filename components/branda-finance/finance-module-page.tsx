@@ -90,8 +90,8 @@ function moduleRows(kind: FinanceModuleKind) {
     return {
       headers: ["الطرف", "النوع", "الشروط / الرقم الضريبي", "الرصيد", "رابط"],
       rows: [
-        ...data.customers.map((customer) => [customer.name, "عميل", customer.vatNumber ?? customer.paymentTerms, financeAmount(3200), <Link key={customer.id} href="/dashboard/branda-finance/invoicing">الفواتير</Link>]),
-        ...data.suppliers.map((supplier) => [supplier.name, "مورد", supplier.vatNumber ?? "غير مسجل", financeAmount(5800), <Link key={supplier.id} href="/dashboard/branda-finance/purchases">المشتريات</Link>]),
+        ...data.customers.map((customer) => [customer.name, "عميل", customer.vatNumber ?? customer.paymentTerms, financeAmount(3200), <Link key={customer.id} href={`/dashboard/branda-finance/statements/customer/${customer.id}`}>كشف الحساب</Link>]),
+        ...data.suppliers.map((supplier) => [supplier.name, "مورد", supplier.vatNumber ?? "غير مسجل", financeAmount(5800), <Link key={supplier.id} href={`/dashboard/branda-finance/statements/supplier/${supplier.id}`}>كشف الحساب</Link>]),
       ],
     };
   }
@@ -99,7 +99,7 @@ function moduleRows(kind: FinanceModuleKind) {
   if (kind === "catalog") {
     return {
       headers: ["المنتج / الخدمة", "التصنيف", "SKU", "المخزون", "السعر", "رابط"],
-      rows: data.products.map((product) => [product.name, product.category, product.sku, product.stock, financeAmount(product.price), <Link key={product.id} href="/dashboard/branda-finance/sales">بيع</Link>]),
+      rows: data.products.map((product) => [product.name, product.category, product.sku, product.stock, financeAmount(product.price), <Link key={product.id} href={`/dashboard/branda-finance/statements/product/${product.id}`}>كشف المنتج</Link>]),
     };
   }
 
@@ -211,6 +211,7 @@ function moduleActions(kind: FinanceModuleKind) {
     { title: "إنشاء فاتورة مبيعات", href: "/dashboard/branda-finance/invoicing/create", description: "افتح نموذج الفاتورة الاحترافي" },
     { title: "فتح شاشة المبيعات", href: "/dashboard/branda-finance/sales", description: "بيع محلي من المنتجات" },
     { title: "التقارير المالية", href: "/dashboard/branda-finance/reports", description: "اقرأ المؤشرات والتقارير" },
+    { title: "الكشوف الموحدة", href: "/dashboard/branda-finance/statements", description: "عميل ومورد ومنتج وخدمة" },
   ];
   if (kind === "purchases") return [{ title: "العملاء والموردين", href: "/dashboard/branda-finance/parties", description: "افتح ملف الموردين" }, { title: "المنتجات والمخزون", href: "/dashboard/branda-finance/catalog", description: "راجع أثر الشراء" }, ...common.slice(2)];
   if (kind === "catalog") return [{ title: "بيع منتج", href: "/dashboard/branda-finance/sales", description: "أضف المنتج إلى السلة" }, { title: "فاتورة مشتريات", href: "/dashboard/branda-finance/purchases", description: "زود المخزون محليا" }, ...common.slice(2)];

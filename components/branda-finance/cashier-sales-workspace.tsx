@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { FileText, Languages, ScanLine, Search, ShieldCheck } from "lucide-react";
+import { FileText, Languages, ScanLine, Search, ShieldCheck, Utensils } from "lucide-react";
 import { CashierCartPanel, type CartItem } from "@/components/branda-finance/cashier-cart-panel";
 import { EntitySelect } from "@/components/branda-finance/entity-select";
 import { FinanceBackButton } from "@/components/branda-finance/finance-back-button";
@@ -30,7 +30,7 @@ export function CashierSalesWorkspace({ data }: CashierSalesWorkspaceProps) {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [query, setQuery] = useState("");
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [paymentMethod, setPaymentMethod] = useState<"cash" | "card" | "">("");
+  const [paymentMethod, setPaymentMethod] = useState<FinancePaymentMethod["id"] | "">("");
   const [translationPreview, setTranslationPreview] = useState(false);
   const [loyaltyOpen, setLoyaltyOpen] = useState(false);
   const [loyaltyCode, setLoyaltyCode] = useState("");
@@ -39,8 +39,8 @@ export function CashierSalesWorkspace({ data }: CashierSalesWorkspaceProps) {
   const selectedBranch = data.branches.find((branch) => branch.id === selectedBranchId) ?? data.branches[0];
   const selectedWarehouse = data.warehouses.find((warehouse) => warehouse.id === selectedWarehouseId) ?? data.warehouses[0];
   const selectedCustomer = data.customers.find((customer) => customer.id === selectedCustomerId) ?? data.customers[0];
-  const cashierPaymentMethods = data.paymentMethods.filter(
-    (method): method is FinancePaymentMethod & { id: "cash" | "card" } => method.id === "cash" || method.id === "card",
+  const cashierPaymentMethods = data.paymentMethods.filter((method) =>
+    ["cash", "card", "mada", "transfer", "credit", "loyalty_points"].includes(method.id),
   );
 
   const filteredProducts = useMemo(
@@ -117,6 +117,13 @@ export function CashierSalesWorkspace({ data }: CashierSalesWorkspaceProps) {
                   >
                     <FileText className="h-4 w-4" />
                     إنشاء فاتورة مبيعات
+                  </Link>
+                  <Link
+                    href="/dashboard/branda-finance/hall-orders"
+                    className="inline-flex h-9 items-center justify-center gap-1.5 rounded-[8px] border border-[#D6B677] bg-[#F8E8C9] px-3 text-[12px] font-black text-[#6B431C]"
+                  >
+                    <Utensils className="h-4 w-4" />
+                    طلبات الصالة
                   </Link>
                 </div>
               </div>

@@ -10,12 +10,14 @@ import { FinanceBackButton } from "@/components/branda-finance/finance-back-butt
 import { InvoiceForm } from "@/components/branda-finance/invoice-form";
 import { InvoicePreviewModal } from "@/components/branda-finance/invoice-preview-modal";
 import { calculateInvoiceTotals } from "@/components/branda-finance/invoice-totals";
+import { LocalProductModal } from "@/components/branda-finance/local-product-modal";
 import type {
   FinanceBranch,
   FinanceCustomField,
   FinanceCustomer,
   FinanceInvoiceItem,
   FinancePaymentMethod,
+  FinanceProduct,
   FinanceWorkspaceData,
 } from "@/lib/branda-finance/invoice-types";
 
@@ -54,6 +56,7 @@ export function InvoiceWorkspace({ data }: InvoiceWorkspaceProps) {
   const [branches, setBranches] = useState(data.branches);
   const [customers, setCustomers] = useState(data.customers);
   const [customFields, setCustomFields] = useState(data.customFields);
+  const [products, setProducts] = useState(data.products);
   const [selectedBranchId, setSelectedBranchId] = useState(data.branches[0]?.id ?? "");
   const [selectedWarehouseId, setSelectedWarehouseId] = useState(data.warehouses[0]?.id ?? "");
   const [selectedCustomerId, setSelectedCustomerId] = useState(data.customers[0]?.id ?? "");
@@ -68,6 +71,7 @@ export function InvoiceWorkspace({ data }: InvoiceWorkspaceProps) {
   const [customerModalOpen, setCustomerModalOpen] = useState(false);
   const [branchModalOpen, setBranchModalOpen] = useState(false);
   const [customFieldModalOpen, setCustomFieldModalOpen] = useState(false);
+  const [productModalOpen, setProductModalOpen] = useState(false);
   const [statusMessage, setStatusMessage] = useState("مسودة محلية فقط، بدون ترحيل أو حفظ في قاعدة البيانات");
   const [items, setItems] = useState<FinanceInvoiceItem[]>(() => [
     { ...createItemFromProduct(data, 0), id: "item-seed-1" },
@@ -117,6 +121,26 @@ export function InvoiceWorkspace({ data }: InvoiceWorkspaceProps) {
   function saveCustomField(field: FinanceCustomField) {
     setCustomFields((current) => [field, ...current]);
     setStatusMessage("تمت إضافة الحقل المخصص محليًا داخل الواجهة");
+  }
+
+  function saveProduct(product: FinanceProduct) {
+    setProducts((current) => [product, ...current]);
+    setItems((current) => [
+      ...current,
+      {
+        id: `item-product-${Date.now()}`,
+        productId: product.id,
+        description: product.name,
+        quantity: 1,
+        price: product.price,
+        discount: 0,
+        taxRate: product.vatRate,
+        accountId: product.accountId,
+        warehouseId: product.defaultWarehouseId ?? selectedWarehouseId,
+        revenueRecognition: product.revenueRecognition,
+      },
+    ]);
+    setStatusMessage("تمت إضافة المنتج محليًا وأصبح متاحًا داخل جدول الفاتورة");
   }
 
   return (
@@ -200,7 +224,7 @@ export function InvoiceWorkspace({ data }: InvoiceWorkspaceProps) {
 
         <div className="grid min-w-0 gap-4 overflow-hidden">
           <InvoiceForm
-            data={data}
+            data={{ ...data, products }}
             branches={branches}
             warehouses={data.warehouses}
             customers={customers}
@@ -230,6 +254,7 @@ export function InvoiceWorkspace({ data }: InvoiceWorkspaceProps) {
             onOpenCustomerModal={() => setCustomerModalOpen(true)}
             onOpenBranchModal={() => setBranchModalOpen(true)}
             onOpenCustomFieldModal={() => setCustomFieldModalOpen(true)}
+            onOpenProductModal={() => setProductModalOpen(true)}
             onChangeItem={changeItem}
             onAddItem={addItem}
             onRemoveItem={removeItem}
@@ -240,6 +265,17 @@ export function InvoiceWorkspace({ data }: InvoiceWorkspaceProps) {
       <AddCustomerModal open={customerModalOpen} onClose={() => setCustomerModalOpen(false)} onSave={saveCustomer} />
       <AddBranchModal open={branchModalOpen} onClose={() => setBranchModalOpen(false)} onSave={saveBranch} />
       <CustomFieldModal open={customFieldModalOpen} onClose={() => setCustomFieldModalOpen(false)} onSave={saveCustomField} />
+      <LocalProductModal
+        open={productModalOpen}
+        mode="sales"
+        categories={data.categories}
+        accounts={data.accounts}
+        warehouses={data.warehouses}
+        taxRates={data.taxRates}
+        suppliers={data.suppliers}
+        onClose={() => setProductModalOpen(false)}
+        onSave={saveProduct}
+      />
       {selectedBranch && selectedWarehouse && selectedCustomer && selectedPaymentMethod ? (
         <InvoicePreviewModal
           open={previewOpen}

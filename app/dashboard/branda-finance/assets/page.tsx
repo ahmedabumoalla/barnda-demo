@@ -1,5 +1,5 @@
-import { FinanceModulePage } from "@/components/branda-finance/finance-module-page";
+import { AssetsWorkspace } from "@/components/branda-finance/assets-workspace";
 
 export default function BrandaFinanceAssetsPage() {
-  return <FinanceModulePage kind="assets" />;
+  return <AssetsWorkspace />;
 }

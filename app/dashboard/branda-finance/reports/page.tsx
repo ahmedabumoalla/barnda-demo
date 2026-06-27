@@ -13,6 +13,7 @@ export default function BrandaFinanceReportsRoutePage() {
       actions={[
         { label: "دفتر الأستاذ", href: "/dashboard/branda-finance/reports/general-ledger", primary: true },
         { label: "ميزان المراجعة", href: "/dashboard/branda-finance/reports/trial-balance" },
+        { label: "الكشوف", href: "/dashboard/branda-finance/statements" },
       ]}
     >
       <section className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-4">

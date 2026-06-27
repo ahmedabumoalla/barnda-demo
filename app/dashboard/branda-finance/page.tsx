@@ -31,11 +31,15 @@ export default function BrandaFinancePage() {
   const actions = [
     { title: "إنشاء فاتورة مبيعات", href: "/dashboard/branda-finance/invoicing/create", description: "نموذج فاتورة كامل ومعاينة" },
     { title: "فتح شاشة المبيعات", href: "/dashboard/branda-finance/sales", description: "كاشير محلي وسلة بيع" },
+    { title: "طلبات الصالة", href: "/dashboard/branda-finance/hall-orders", description: "طاولات وويتر وتحويل لفاتورة" },
     { title: "إضافة فاتورة مشتريات", href: "/dashboard/branda-finance/purchases", description: "مساحة مشتريات تجريبية" },
     { title: "إضافة عميل", href: "/dashboard/branda-finance/parties", description: "ملف العملاء والموردين" },
     { title: "إضافة مورد", href: "/dashboard/branda-finance/parties", description: "أرصدة ومشتريات" },
     { title: "تسجيل مصروف", href: "/dashboard/branda-finance/accountant", description: "قيد مصروف تجريبي" },
     { title: "فتح تقرير مالي", href: "/dashboard/branda-finance/reports", description: "مركز التقارير" },
+    { title: "الكشوف الموحدة", href: "/dashboard/branda-finance/statements", description: "عميل ومورد ومنتج وخدمة" },
+    { title: "شجرة الحسابات", href: "/dashboard/branda-finance/accountant/chart-of-accounts", description: "حسابات وإضافة محلية" },
+    { title: "نقاط الولاء", href: "/dashboard/branda-finance/loyalty-points", description: "قواعد كسب واستبدال" },
   ];
 
   return (

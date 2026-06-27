@@ -48,9 +48,20 @@ export type FinanceProduct = {
   barcode: string;
   imageUrl?: string | null;
   price: number;
+  cost?: number;
   vatRate: number;
   stock: number;
   accountId: string;
+  costAccountId?: string;
+  inventoryAccountId?: string;
+  defaultSupplierId?: string;
+  purchaseUnit?: string;
+  defaultWarehouseId?: string;
+  costCenterId?: string;
+  loyaltyPointsEarned?: number;
+  loyaltyPointsRequired?: number;
+  loyaltyEarnEligible?: boolean;
+  loyaltyRedeemEligible?: boolean;
   revenueRecognition: string;
 };
 
@@ -72,7 +83,7 @@ export type FinanceTaxRate = {
 };
 
 export type FinancePaymentMethod = {
-  id: "unpaid" | "cash" | "card" | "transfer" | "credit";
+  id: "unpaid" | "cash" | "card" | "mada" | "transfer" | "credit" | "loyalty_points";
   name: string;
   ledgerHint: string;
 };

@@ -170,8 +170,10 @@ export const financeMockPaymentMethods: FinancePaymentMethod[] = [
   { id: "unpaid", name: "غير مدفوعة", ledgerHint: "يبقى الرصيد على ذمة العميل" },
   { id: "cash", name: "كاش", ledgerHint: "يربط لاحقًا بصندوق الكاشير" },
   { id: "card", name: "بطاقة", ledgerHint: "يربط لاحقًا بمزود البطاقات" },
+  { id: "mada", name: "مدى", ledgerHint: "يتطلب مزود دفع رسمي لاحقًا" },
   { id: "transfer", name: "تحويل", ledgerHint: "يربط لاحقًا بالحساب البنكي" },
   { id: "credit", name: "آجل", ledgerHint: "يرحل لاحقًا إلى الذمم المدينة" },
+  { id: "loyalty_points", name: "نقاط الولاء", ledgerHint: "خصم ولاء محلي للمعاينة فقط" },
 ];
 
 export const financeMockCustomFields: FinanceCustomField[] = [

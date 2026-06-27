@@ -17,6 +17,7 @@ type InvoiceItemsTableProps = {
   onChangeItem: (id: string, patch: Partial<FinanceInvoiceItem>) => void;
   onAddItem: () => void;
   onRemoveItem: (id: string) => void;
+  onOpenProductModal?: () => void;
 };
 
 export function InvoiceItemsTable({
@@ -28,6 +29,7 @@ export function InvoiceItemsTable({
   onChangeItem,
   onAddItem,
   onRemoveItem,
+  onOpenProductModal,
 }: InvoiceItemsTableProps) {
   return (
     <div className="w-full max-w-full min-w-0 overflow-hidden rounded-[8px] border border-[#E1D1BD] bg-white shadow-[0_10px_24px_rgba(69,43,28,0.06)]">
@@ -36,14 +38,26 @@ export function InvoiceItemsTable({
           <h3 className="text-[13px] font-black text-[#2F241D]">بنود الفاتورة والمنتجات</h3>
           <p className="mt-1 truncate text-[11px] font-bold text-[#806A58]">اختيار المنتج وتعديل الكمية والسعر والضريبة والحساب داخل جدول محصور.</p>
         </div>
-        <button
-          type="button"
-          onClick={onAddItem}
-          className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-[8px] border border-[#D6B677] bg-[#F8E8C9] px-3 text-[11px] font-black text-[#6B431C] transition hover:bg-[#F1D9A8]"
-        >
-          <Plus className="h-4 w-4" />
-          إضافة بند
-        </button>
+        <div className="flex shrink-0 flex-wrap gap-1.5">
+          {onOpenProductModal ? (
+            <button
+              type="button"
+              onClick={onOpenProductModal}
+              className="inline-flex h-8 items-center justify-center gap-1.5 rounded-[8px] border border-[#CFE2D8] bg-[#EDF7F2] px-3 text-[11px] font-black text-[#2F5D50] transition hover:bg-[#DDEFE7]"
+            >
+              <Plus className="h-4 w-4" />
+              إضافة منتج جديد
+            </button>
+          ) : null}
+          <button
+            type="button"
+            onClick={onAddItem}
+            className="inline-flex h-8 items-center justify-center gap-1.5 rounded-[8px] border border-[#D6B677] bg-[#F8E8C9] px-3 text-[11px] font-black text-[#6B431C] transition hover:bg-[#F1D9A8]"
+          >
+            <Plus className="h-4 w-4" />
+            إضافة بند
+          </button>
+        </div>
       </div>
       <div className="max-w-full overflow-x-auto">
         <table className="w-full min-w-[1180px] table-fixed text-right text-[12px]">
@@ -210,14 +224,26 @@ export function InvoiceItemsTable({
         </table>
       </div>
       <div className="border-t border-[#EFE3D2] bg-[#FFFDF8] p-3">
-        <button
-          type="button"
-          onClick={onAddItem}
-          className="inline-flex h-8 items-center gap-1.5 rounded-[8px] border border-[#D6B677] bg-[#F8E8C9] px-3 text-[11px] font-black text-[#6B431C] transition hover:bg-[#F1D9A8]"
-        >
-          <Plus className="h-4 w-4" />
-          إضافة بند
-        </button>
+        <div className="flex flex-wrap gap-1.5">
+          <button
+            type="button"
+            onClick={onAddItem}
+            className="inline-flex h-8 items-center gap-1.5 rounded-[8px] border border-[#D6B677] bg-[#F8E8C9] px-3 text-[11px] font-black text-[#6B431C] transition hover:bg-[#F1D9A8]"
+          >
+            <Plus className="h-4 w-4" />
+            إضافة بند
+          </button>
+          {onOpenProductModal ? (
+            <button
+              type="button"
+              onClick={onOpenProductModal}
+              className="inline-flex h-8 items-center gap-1.5 rounded-[8px] border border-[#CFE2D8] bg-[#EDF7F2] px-3 text-[11px] font-black text-[#2F5D50] transition hover:bg-[#DDEFE7]"
+            >
+              <Plus className="h-4 w-4" />
+              إضافة منتج جديد
+            </button>
+          ) : null}
+        </div>
       </div>
     </div>
   );

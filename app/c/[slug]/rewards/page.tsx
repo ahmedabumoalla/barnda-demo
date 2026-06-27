@@ -55,7 +55,7 @@ type CustomerAccountSnapshot = Awaited<
 const REWARDS_LOAD_ERROR =
   "تعذر تحميل المكافآت. سجل الدخول مرة أخرى أو أعد المحاولة.";
 const REWARD_QR_FIT_CLASS =
-  "[&>div]:overflow-visible [&>div]:rounded-[10px] [&>div]:p-2 [&_svg]:block [&_svg]:h-full [&_svg]:w-full";
+  "[&>div]:overflow-hidden [&>div]:rounded-[10px] [&>div]:p-2 [&_svg]:block [&_svg]:h-full [&_svg]:w-full";
 
 function normalizeText(value: string) {
   return value.trim().toLowerCase();

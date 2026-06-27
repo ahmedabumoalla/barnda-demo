@@ -60,6 +60,12 @@ export function ProductCard({ product, showTranslationPreview, onAdd }: ProductC
           <span className="rounded-[8px] bg-[#F7F2EA] px-2.5 py-1 text-[11px] font-black text-[#755D49]" dir="ltr">
             {product.barcode}
           </span>
+          <span className="rounded-[8px] bg-[#FFF8EA] px-2.5 py-1 text-[11px] font-black text-[#6B431C]">
+            يكسب {product.loyaltyPointsEarned ?? Math.max(1, Math.round(product.price / 10))} نقطة
+          </span>
+          <span className={`rounded-[8px] px-2.5 py-1 text-[11px] font-black ${product.loyaltyRedeemEligible ?? true ? "bg-[#EDF7F2] text-[#2F5D50]" : "bg-[#FFF7F4] text-[#9B3327]"}`}>
+            {product.loyaltyRedeemEligible ?? true ? "قابل للاستبدال" : "غير قابل للاستبدال"}
+          </span>
         </div>
         <span className="mt-3 inline-flex h-9 items-center justify-center gap-1.5 rounded-[8px] bg-[#5B3926] text-[12px] font-black text-white">
           <Plus className="h-4 w-4" />

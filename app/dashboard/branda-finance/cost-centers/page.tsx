@@ -1,5 +1,5 @@
-import { FinanceModulePage } from "@/components/branda-finance/finance-module-page";
+import { CostCentersWorkspace } from "@/components/branda-finance/cost-centers-workspace";
 
 export default function BrandaFinanceCostCentersPage() {
-  return <FinanceModulePage kind="costCenters" />;
+  return <CostCentersWorkspace />;
 }

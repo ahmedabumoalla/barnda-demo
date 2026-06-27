@@ -1,5 +1,7 @@
-import { FinanceModulePage } from "@/components/branda-finance/finance-module-page";
+import { PurchaseInvoiceWorkspace } from "@/components/branda-finance/purchase-invoice-workspace";
+import { getBrandaFinanceInvoiceDemoData } from "@/lib/branda-finance/invoice-demo-data";
 
-export default function BrandaFinancePurchasesPage() {
-  return <FinanceModulePage kind="purchases" />;
+export default async function BrandaFinancePurchasesPage() {
+  const data = await getBrandaFinanceInvoiceDemoData();
+  return <PurchaseInvoiceWorkspace data={data} />;
 }

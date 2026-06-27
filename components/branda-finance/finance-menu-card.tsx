@@ -23,6 +23,7 @@ import type { BrandaFinanceMenuItem, BrandaFinanceIconKey } from "@/lib/branda-f
 
 const iconMap: Record<BrandaFinanceIconKey, ElementType> = {
   reports: ReceiptText,
+  invoices: FileStack,
   sales: CircleDollarSign,
   purchases: ShoppingCart,
   contacts: UsersRound,
@@ -56,7 +57,7 @@ function CardContent({ item, icon: Icon }: { item: BrandaFinanceMenuItem; icon: 
           <Icon aria-hidden="true" className="h-6 w-6" strokeWidth={1.8} />
         </span>
         <span className="rounded-full border border-[#E6D5BD] bg-[#FBF5EC] px-3 py-1 text-[11px] font-extrabold text-[#8A5B24]">
-          قريبًا
+          {item.badge ?? "قريبًا"}
         </span>
       </div>
 

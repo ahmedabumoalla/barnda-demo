@@ -58,6 +58,7 @@ export function PublicLoyaltyCardSection({ slug, cafeName, program, logoUrl }: P
     ? demoState.points.customerPointsBalance
     : cardCode ? 320 : 180;
   const pointValueSar = demoState.points.enabled ? demoState.points.pointValueSar : POINT_VALUE_SAR;
+  const usedPoints = demoState.points.enabled ? demoState.points.usedPoints : 0;
   const effectiveStampsRequired = demoState.card.stampsRequired || program?.purchasesRequired || 8;
   const completedStamps = useMemo(
     () => Math.min(effectiveStampsRequired, cardCode ? 5 : 3),
@@ -100,7 +101,9 @@ export function PublicLoyaltyCardSection({ slug, cafeName, program, logoUrl }: P
             <CustomerPointsSummary
               pointsBalance={pointsBalance}
               pointValueSar={pointValueSar}
+              usedPoints={usedPoints}
               minimumRedemptionPoints={demoState.points.minimumRedemptionPoints || MINIMUM_REDEMPTION_POINTS}
+              preview={!demoState.points.enabled}
             />
           </div>
 

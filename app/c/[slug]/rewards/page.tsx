@@ -41,7 +41,9 @@ import {
 } from "@/components/cafe/themes/customer-mobile-experience";
 import { PublicBrowserNav } from "@/components/cafe/public-browser-nav";
 import { PublicFeatureUnavailable } from "@/components/cafe/public-feature-guard";
+import { CustomerPointsSummary } from "@/components/loyalty/customer-points-summary";
 import { SecureQrCode } from "@/components/loyalty/secure-qr-code";
+import { useLoyaltyDemoState } from "@/components/loyalty/use-loyalty-demo-state";
 import { getCafePath, getCustomerLoginHref } from "@/lib/cafe/theme-links";
 import { useResolvedCafeLogoUrl } from "@/lib/cafe/use-resolved-cafe-logo";
 import { publicFeatureAllows } from "@/lib/platform/public-feature-access";
@@ -712,6 +714,7 @@ function RewardsPageInner() {
   const { settings, previewThemeId, features, hydrated } = useCafePageContext(slug);
   const cafeName = settings.cafeName;
   const logoUrl = useResolvedCafeLogoUrl(settings);
+  const [demoState] = useLoyaltyDemoState();
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [loadedSlug, setLoadedSlug] = useState<string | null>(null);
@@ -783,6 +786,13 @@ function RewardsPageInner() {
   const pageLoading = loading || !hasCurrentSlugData;
   const scopedLoyaltyView = hasCurrentSlugData ? loyaltyView : null;
   const scopedExperienceRewards = hasCurrentSlugData ? experienceRewards : [];
+  const loyaltyPointsBalance = demoState.points.enabled
+    ? demoState.points.customerPointsBalance
+    : Math.max(0, Number(scopedLoyaltyView?.card.availableRewards ?? 0)) * 100;
+  const loyaltyUsedPoints = demoState.points.enabled ? demoState.points.usedPoints : 0;
+  const loyaltyPointValueSar = demoState.points.enabled ? demoState.points.pointValueSar : 0.25;
+  const loyaltyMinimumRedemptionPoints =
+    demoState.points.minimumRedemptionPoints || 100;
 
   const readyExperienceRewards = useMemo(
     () =>
@@ -951,6 +961,13 @@ function RewardsPageInner() {
           onChange={setQuery}
           placeholder="ابحث داخل مكافآت الولاء"
         />
+        <CustomerPointsSummary
+          pointsBalance={loyaltyPointsBalance}
+          pointValueSar={loyaltyPointValueSar}
+          usedPoints={loyaltyUsedPoints}
+          minimumRedemptionPoints={loyaltyMinimumRedemptionPoints}
+          preview={!demoState.points.enabled}
+        />
         <div className="grid gap-2">
           <p className="text-xs font-black text-[var(--ci-muted-fg,#806A5E)]">
             بطاقة الولاء
@@ -1063,10 +1080,19 @@ function RewardsPageInner() {
           placeholder="ابحث في المكافآت"
         />
         {loyaltyEnabled ? (
-          <LoyaltyQrPreviewCard
-            view={scopedLoyaltyView}
-            enabled={loyaltyEnabled}
-          />
+          <div className="grid gap-3">
+            <CustomerPointsSummary
+              pointsBalance={loyaltyPointsBalance}
+              pointValueSar={loyaltyPointValueSar}
+              usedPoints={loyaltyUsedPoints}
+              minimumRedemptionPoints={loyaltyMinimumRedemptionPoints}
+              preview={!demoState.points.enabled}
+            />
+            <LoyaltyQrPreviewCard
+              view={scopedLoyaltyView}
+              enabled={loyaltyEnabled}
+            />
+          </div>
         ) : null}
         <div className="grid grid-cols-2 gap-3">
           {mainActions.length ? (

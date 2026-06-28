@@ -51,7 +51,7 @@ The draft creates these additive tables:
 - `finance_journal_entry_lines`
 - `finance_audit_events`
 
-The draft includes UUID primary keys, `cafe_id`, created/updated metadata, status checks, indexes, RLS enablement, service-role policies, platform-admin policies, staff read/write policies, and `public.set_updated_at()` triggers.
+The draft includes UUID primary keys, `cafe_id`, created/updated metadata, status checks, indexes, RLS enablement, service-role policies, scoped staff read/write policies, append-only audit policies for authenticated users, same-cafe validation triggers, and `public.set_updated_at()` triggers.
 
 ## Linked Existing Tables
 
@@ -122,23 +122,82 @@ These files/modules still intentionally contain preview/local data or legacy nam
 
 These are not the real-facing sales invoice/cashier persistence path and must stay clearly non-persistent until their own schema and server actions are reviewed.
 
-## RLS Risks To Review Before Applying
+## RLS Hardening In The Draft
+
+- `cashier` no longer has broad write policies across all Branda Finance tables.
+- Cashier-safe authenticated insert/update is limited to:
+  - `finance_sales_invoices`
+  - `finance_sales_invoice_items`
+  - `finance_payments`
+  - `finance_cash_sessions`
+- Cashier delete is not allowed by the cashier-safe policies. Deletes remain limited to cafe owners or users with `branda_finance` permission, plus platform admins through the platform-admin policies on non-audit tables.
+- Cashier cannot write these accounting/control tables:
+  - `finance_accounts`
+  - `finance_journal_entries`
+  - `finance_journal_entry_lines`
+  - `finance_audit_events`
+- Accounting table writes are limited to cafe owners, users with `branda_finance` permission, platform admins, and `service_role`.
+- Accounting reads are limited to cafe owners, users with `branda_finance` permission, users with `reports` permission, platform admins, and `service_role`.
+- `finance_audit_events` is append-only for normal authenticated access:
+  - `authenticated` receives only `SELECT` and `INSERT`.
+  - `UPDATE` and `DELETE` are revoked from `authenticated`.
+  - RLS exposes read to owner, finance, and reports staff.
+  - RLS exposes insert to owner and finance staff.
+  - `service_role` keeps full access for controlled server-side maintenance.
+
+## Same-Cafe Validation In The Draft
+
+The migration adds `public.finance_validate_same_cafe_refs()` as a `SECURITY DEFINER` trigger function and attaches it before insert/update on the finance tables that carry cross-table references.
+
+Validated references:
+
+- `branch_id` against `public.branches(cafe_id)`.
+- `customer_profile_id` against `public.customer_profiles(cafe_id)`.
+- `menu_product_id` against `public.menu_products(cafe_id)`.
+- `warehouse_id` against `public.finance_warehouses(cafe_id)`.
+- `account_id` against `public.finance_accounts(cafe_id)`.
+- `customer_id` against `public.finance_customers(cafe_id)`.
+- `invoice_id` against `public.finance_sales_invoices(cafe_id)`.
+- `journal_entry_id` against `public.finance_journal_entries(cafe_id)`.
+
+Additional same-cafe checks included:
+
+- `cashier_id` on `finance_cash_sessions` against `public.cafe_cashiers(cafe_id)`.
+- `parent_account_id` on `finance_accounts` against `public.finance_accounts(cafe_id)`.
+
+These checks protect against linking a finance row in one cafe to branch, customer, menu, warehouse, account, invoice, journal-entry, cashier, or parent-account records owned by another cafe.
+
+## Server-Side Calculation Requirements
+
+Browser-provided totals must not be trusted. Before enabling persistence, server actions must recalculate and validate:
+
+- Invoice item line totals.
+- Subtotal.
+- Discount total.
+- VAT/tax total.
+- Invoice total.
+- Amount paid.
+- Amount due.
+- Payment allocation to invoices.
+- Transactional invoice numbers from `finance_invoice_sequences`.
+- Balanced journal entries where total debit equals total credit.
+
+The browser may send draft UI state, but the server must be the source of truth for financial totals, VAT, balances, posting, and audit events.
+
+## Remaining RLS And Rollout Risks To Review Before Applying
 
 - Confirm `public.has_cafe_permission(cafe_id, 'branda_finance')` is a valid permission code in production.
-- Confirm whether `cashier` should be allowed to write all operational tables in the first policy loop, or only invoices, payments, and cash sessions.
-- Confirm cross-table cafe consistency cannot be bypassed by linking a `branch_id`, `customer_profile_id`, `menu_product_id`, warehouse, or account from another cafe.
-- Confirm customer-facing invoice reads are not exposed through these policies.
-- Confirm journal entry writes are restricted to finance/admin staff only.
-- Confirm audit events should be append-only before production use.
+- Confirm customer-facing invoice reads are intentionally not exposed through these policies.
 - Confirm invoice numbers are generated transactionally from `finance_invoice_sequences`.
-- Confirm tax totals, payment totals, and journal balance checks are enforced server-side, not trusted from the browser.
+- Confirm the first production write path uses server actions that recalculate totals and create balanced accounting entries.
+- Verify RLS behavior with owner, finance staff, reports staff, cashier, platform admin, service role, and unrelated authenticated users.
 
 ## Review Items Before Running The Migration
 
 - Review every `CHECK` status value against product workflows.
 - Decide whether purchase invoices and inventory movement tables should be included in the same rollout or a later migration.
 - Decide whether `finance_customers` should mirror `customer_profiles` or remain a finance-specific profile table.
-- Add stricter same-cafe validation triggers if RLS alone is not enough for foreign-key ownership checks.
+- Keep the same-cafe validation triggers in place and test them with cross-cafe references before production transfer.
 - Run the migration only in a staging database first.
 - Verify RLS with owner, staff, cashier, platform admin, and unrelated authenticated users.
 - Verify indexes against the expected invoice list, customer statement, payment search, and journal report queries.

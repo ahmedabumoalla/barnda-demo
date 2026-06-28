@@ -258,18 +258,233 @@ CREATE INDEX IF NOT EXISTS finance_audit_events_cafe_idx ON public.finance_audit
 CREATE INDEX IF NOT EXISTS finance_audit_events_entity_idx ON public.finance_audit_events(entity_table, entity_id);
 CREATE INDEX IF NOT EXISTS finance_audit_events_created_at_idx ON public.finance_audit_events(created_at);
 
+CREATE OR REPLACE FUNCTION public.finance_validate_same_cafe_refs()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+BEGIN
+  IF TG_TABLE_NAME IN (
+    'finance_warehouses',
+    'finance_invoice_sequences',
+    'finance_sales_invoices',
+    'finance_payments',
+    'finance_cash_sessions',
+    'finance_journal_entries'
+  ) THEN
+    IF NEW.branch_id IS NOT NULL
+      AND NOT EXISTS (
+        SELECT 1
+        FROM public.branches b
+        WHERE b.id = NEW.branch_id
+          AND b.cafe_id = NEW.cafe_id
+      )
+    THEN
+      RAISE EXCEPTION 'finance same-cafe validation failed: branch_id % does not belong to cafe_id %', NEW.branch_id, NEW.cafe_id
+        USING ERRCODE = '23503';
+    END IF;
+  END IF;
+
+  IF TG_TABLE_NAME IN ('finance_customers', 'finance_sales_invoices') THEN
+    IF NEW.customer_profile_id IS NOT NULL
+      AND NOT EXISTS (
+        SELECT 1
+        FROM public.customer_profiles cp
+        WHERE cp.id = NEW.customer_profile_id
+          AND cp.cafe_id = NEW.cafe_id
+      )
+    THEN
+      RAISE EXCEPTION 'finance same-cafe validation failed: customer_profile_id % does not belong to cafe_id %', NEW.customer_profile_id, NEW.cafe_id
+        USING ERRCODE = '23503';
+    END IF;
+  END IF;
+
+  IF TG_TABLE_NAME = 'finance_sales_invoices' THEN
+    IF NEW.customer_id IS NOT NULL
+      AND NOT EXISTS (
+        SELECT 1
+        FROM public.finance_customers fc
+        WHERE fc.id = NEW.customer_id
+          AND fc.cafe_id = NEW.cafe_id
+      )
+    THEN
+      RAISE EXCEPTION 'finance same-cafe validation failed: customer_id % does not belong to cafe_id %', NEW.customer_id, NEW.cafe_id
+        USING ERRCODE = '23503';
+    END IF;
+  END IF;
+
+  IF TG_TABLE_NAME = 'finance_sales_invoice_items' THEN
+    IF NOT EXISTS (
+      SELECT 1
+      FROM public.finance_sales_invoices fsi
+      WHERE fsi.id = NEW.invoice_id
+        AND fsi.cafe_id = NEW.cafe_id
+    )
+    THEN
+      RAISE EXCEPTION 'finance same-cafe validation failed: invoice_id % does not belong to cafe_id %', NEW.invoice_id, NEW.cafe_id
+        USING ERRCODE = '23503';
+    END IF;
+
+    IF NEW.menu_product_id IS NOT NULL
+      AND NOT EXISTS (
+        SELECT 1
+        FROM public.menu_products mp
+        WHERE mp.id = NEW.menu_product_id
+          AND mp.cafe_id = NEW.cafe_id
+      )
+    THEN
+      RAISE EXCEPTION 'finance same-cafe validation failed: menu_product_id % does not belong to cafe_id %', NEW.menu_product_id, NEW.cafe_id
+        USING ERRCODE = '23503';
+    END IF;
+
+    IF NEW.warehouse_id IS NOT NULL
+      AND NOT EXISTS (
+        SELECT 1
+        FROM public.finance_warehouses fw
+        WHERE fw.id = NEW.warehouse_id
+          AND fw.cafe_id = NEW.cafe_id
+      )
+    THEN
+      RAISE EXCEPTION 'finance same-cafe validation failed: warehouse_id % does not belong to cafe_id %', NEW.warehouse_id, NEW.cafe_id
+        USING ERRCODE = '23503';
+    END IF;
+
+    IF NEW.account_id IS NOT NULL
+      AND NOT EXISTS (
+        SELECT 1
+        FROM public.finance_accounts fa
+        WHERE fa.id = NEW.account_id
+          AND fa.cafe_id = NEW.cafe_id
+      )
+    THEN
+      RAISE EXCEPTION 'finance same-cafe validation failed: account_id % does not belong to cafe_id %', NEW.account_id, NEW.cafe_id
+        USING ERRCODE = '23503';
+    END IF;
+  END IF;
+
+  IF TG_TABLE_NAME = 'finance_payments' THEN
+    IF NEW.invoice_id IS NOT NULL
+      AND NOT EXISTS (
+        SELECT 1
+        FROM public.finance_sales_invoices fsi
+        WHERE fsi.id = NEW.invoice_id
+          AND fsi.cafe_id = NEW.cafe_id
+      )
+    THEN
+      RAISE EXCEPTION 'finance same-cafe validation failed: invoice_id % does not belong to cafe_id %', NEW.invoice_id, NEW.cafe_id
+        USING ERRCODE = '23503';
+    END IF;
+
+    IF NEW.customer_id IS NOT NULL
+      AND NOT EXISTS (
+        SELECT 1
+        FROM public.finance_customers fc
+        WHERE fc.id = NEW.customer_id
+          AND fc.cafe_id = NEW.cafe_id
+      )
+    THEN
+      RAISE EXCEPTION 'finance same-cafe validation failed: customer_id % does not belong to cafe_id %', NEW.customer_id, NEW.cafe_id
+        USING ERRCODE = '23503';
+    END IF;
+  END IF;
+
+  IF TG_TABLE_NAME = 'finance_cash_sessions' THEN
+    IF NEW.cashier_id IS NOT NULL
+      AND NOT EXISTS (
+        SELECT 1
+        FROM public.cafe_cashiers cc
+        WHERE cc.id = NEW.cashier_id
+          AND cc.cafe_id = NEW.cafe_id
+      )
+    THEN
+      RAISE EXCEPTION 'finance same-cafe validation failed: cashier_id % does not belong to cafe_id %', NEW.cashier_id, NEW.cafe_id
+        USING ERRCODE = '23503';
+    END IF;
+  END IF;
+
+  IF TG_TABLE_NAME = 'finance_accounts' THEN
+    IF NEW.parent_account_id IS NOT NULL
+      AND NOT EXISTS (
+        SELECT 1
+        FROM public.finance_accounts fa
+        WHERE fa.id = NEW.parent_account_id
+          AND fa.cafe_id = NEW.cafe_id
+      )
+    THEN
+      RAISE EXCEPTION 'finance same-cafe validation failed: parent_account_id % does not belong to cafe_id %', NEW.parent_account_id, NEW.cafe_id
+        USING ERRCODE = '23503';
+    END IF;
+  END IF;
+
+  IF TG_TABLE_NAME = 'finance_journal_entry_lines' THEN
+    IF NOT EXISTS (
+      SELECT 1
+      FROM public.finance_journal_entries fje
+      WHERE fje.id = NEW.journal_entry_id
+        AND fje.cafe_id = NEW.cafe_id
+    )
+    THEN
+      RAISE EXCEPTION 'finance same-cafe validation failed: journal_entry_id % does not belong to cafe_id %', NEW.journal_entry_id, NEW.cafe_id
+        USING ERRCODE = '23503';
+    END IF;
+
+    IF NOT EXISTS (
+      SELECT 1
+      FROM public.finance_accounts fa
+      WHERE fa.id = NEW.account_id
+        AND fa.cafe_id = NEW.cafe_id
+    )
+    THEN
+      RAISE EXCEPTION 'finance same-cafe validation failed: account_id % does not belong to cafe_id %', NEW.account_id, NEW.cafe_id
+        USING ERRCODE = '23503';
+    END IF;
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.finance_validate_same_cafe_refs() FROM PUBLIC;
+
 DO $$
 DECLARE
   table_name text;
 BEGIN
   FOREACH table_name IN ARRAY ARRAY[
     'finance_customers',
-    'finance_suppliers',
     'finance_warehouses',
+    'finance_invoice_sequences',
     'finance_sales_invoices',
     'finance_sales_invoice_items',
     'finance_payments',
     'finance_cash_sessions',
+    'finance_accounts',
+    'finance_journal_entries',
+    'finance_journal_entry_lines'
+  ]
+  LOOP
+    EXECUTE format('DROP TRIGGER IF EXISTS %I ON public.%I', 'validate_' || table_name || '_same_cafe_refs', table_name);
+    EXECUTE format(
+      'CREATE TRIGGER %I BEFORE INSERT OR UPDATE ON public.%I FOR EACH ROW EXECUTE FUNCTION public.finance_validate_same_cafe_refs()',
+      'validate_' || table_name || '_same_cafe_refs',
+      table_name
+    );
+  END LOOP;
+END $$;
+
+DO $$
+DECLARE
+  table_name text;
+  staff_read text := 'public.is_cafe_owner(cafe_id) OR public.has_cafe_permission(cafe_id, ''branda_finance'') OR public.has_cafe_permission(cafe_id, ''reports'')';
+  cashier_read text := 'public.is_cafe_owner(cafe_id) OR public.has_cafe_permission(cafe_id, ''branda_finance'') OR public.has_cafe_permission(cafe_id, ''reports'') OR public.has_cafe_permission(cafe_id, ''cashier'')';
+  finance_write text := 'public.is_cafe_owner(cafe_id) OR public.has_cafe_permission(cafe_id, ''branda_finance'')';
+  cashier_safe_write text := 'public.is_cafe_owner(cafe_id) OR public.has_cafe_permission(cafe_id, ''branda_finance'') OR public.has_cafe_permission(cafe_id, ''cashier'')';
+BEGIN
+  FOREACH table_name IN ARRAY ARRAY[
+    'finance_customers',
+    'finance_suppliers',
+    'finance_warehouses',
     'finance_invoice_sequences'
   ]
   LOOP
@@ -284,35 +499,28 @@ BEGIN
     EXECUTE format('CREATE POLICY %I ON public.%I FOR ALL TO authenticated USING (public.is_platform_admin()) WITH CHECK (public.is_platform_admin())', table_name || '_platform_admin_all', table_name);
 
     EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', table_name || '_staff_read', table_name);
-    EXECUTE format(
-      'CREATE POLICY %I ON public.%I FOR SELECT TO authenticated USING (public.is_cafe_owner(cafe_id) OR public.has_cafe_permission(cafe_id, %L) OR public.has_cafe_permission(cafe_id, %L) OR public.has_cafe_permission(cafe_id, %L))',
-      table_name || '_staff_read',
-      table_name,
-      'branda_finance',
-      'reports',
-      'cashier'
-    );
+    EXECUTE format('CREATE POLICY %I ON public.%I FOR SELECT TO authenticated USING (%s)', table_name || '_staff_read', table_name, cashier_read);
 
     EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', table_name || '_staff_write', table_name);
-    EXECUTE format(
-      'CREATE POLICY %I ON public.%I FOR ALL TO authenticated USING (public.is_cafe_owner(cafe_id) OR public.has_cafe_permission(cafe_id, %L) OR public.has_cafe_permission(cafe_id, %L)) WITH CHECK (public.is_cafe_owner(cafe_id) OR public.has_cafe_permission(cafe_id, %L) OR public.has_cafe_permission(cafe_id, %L))',
-      table_name || '_staff_write',
-      table_name,
-      'branda_finance',
-      'cashier',
-      'branda_finance',
-      'cashier'
-    );
+
+    EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', table_name || '_staff_insert', table_name);
+    EXECUTE format('CREATE POLICY %I ON public.%I FOR INSERT TO authenticated WITH CHECK (%s)', table_name || '_staff_insert', table_name, finance_write);
+
+    EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', table_name || '_staff_update', table_name);
+    EXECUTE format('CREATE POLICY %I ON public.%I FOR UPDATE TO authenticated USING (%s) WITH CHECK (%s)', table_name || '_staff_update', table_name, finance_write, finance_write);
+
+    EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', table_name || '_staff_delete', table_name);
+    EXECUTE format('CREATE POLICY %I ON public.%I FOR DELETE TO authenticated USING (%s)', table_name || '_staff_delete', table_name, finance_write);
 
     EXECUTE format('DROP TRIGGER IF EXISTS %I ON public.%I', 'set_' || table_name || '_updated_at', table_name);
     EXECUTE format('CREATE TRIGGER %I BEFORE UPDATE ON public.%I FOR EACH ROW EXECUTE FUNCTION public.set_updated_at()', 'set_' || table_name || '_updated_at', table_name);
   END LOOP;
 
   FOREACH table_name IN ARRAY ARRAY[
-    'finance_accounts',
-    'finance_journal_entries',
-    'finance_journal_entry_lines',
-    'finance_audit_events'
+    'finance_sales_invoices',
+    'finance_sales_invoice_items',
+    'finance_payments',
+    'finance_cash_sessions'
   ]
   LOOP
     EXECUTE format('GRANT SELECT, INSERT, UPDATE, DELETE ON public.%I TO authenticated', table_name);
@@ -326,24 +534,92 @@ BEGIN
     EXECUTE format('CREATE POLICY %I ON public.%I FOR ALL TO authenticated USING (public.is_platform_admin()) WITH CHECK (public.is_platform_admin())', table_name || '_platform_admin_all', table_name);
 
     EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', table_name || '_staff_read', table_name);
-    EXECUTE format(
-      'CREATE POLICY %I ON public.%I FOR SELECT TO authenticated USING (public.is_cafe_owner(cafe_id) OR public.has_cafe_permission(cafe_id, %L) OR public.has_cafe_permission(cafe_id, %L))',
-      table_name || '_staff_read',
-      table_name,
-      'branda_finance',
-      'reports'
-    );
+    EXECUTE format('CREATE POLICY %I ON public.%I FOR SELECT TO authenticated USING (%s)', table_name || '_staff_read', table_name, cashier_read);
 
     EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', table_name || '_staff_write', table_name);
-    EXECUTE format(
-      'CREATE POLICY %I ON public.%I FOR ALL TO authenticated USING (public.is_cafe_owner(cafe_id) OR public.has_cafe_permission(cafe_id, %L)) WITH CHECK (public.is_cafe_owner(cafe_id) OR public.has_cafe_permission(cafe_id, %L))',
-      table_name || '_staff_write',
-      table_name,
-      'branda_finance',
-      'branda_finance'
-    );
+
+    EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', table_name || '_cashier_safe_insert', table_name);
+    EXECUTE format('CREATE POLICY %I ON public.%I FOR INSERT TO authenticated WITH CHECK (%s)', table_name || '_cashier_safe_insert', table_name, cashier_safe_write);
+
+    EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', table_name || '_cashier_safe_update', table_name);
+    EXECUTE format('CREATE POLICY %I ON public.%I FOR UPDATE TO authenticated USING (%s) WITH CHECK (%s)', table_name || '_cashier_safe_update', table_name, cashier_safe_write, cashier_safe_write);
+
+    EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', table_name || '_staff_delete', table_name);
+    EXECUTE format('CREATE POLICY %I ON public.%I FOR DELETE TO authenticated USING (%s)', table_name || '_staff_delete', table_name, finance_write);
 
     EXECUTE format('DROP TRIGGER IF EXISTS %I ON public.%I', 'set_' || table_name || '_updated_at', table_name);
     EXECUTE format('CREATE TRIGGER %I BEFORE UPDATE ON public.%I FOR EACH ROW EXECUTE FUNCTION public.set_updated_at()', 'set_' || table_name || '_updated_at', table_name);
   END LOOP;
+
+  FOREACH table_name IN ARRAY ARRAY[
+    'finance_accounts',
+    'finance_journal_entries',
+    'finance_journal_entry_lines'
+  ]
+  LOOP
+    EXECUTE format('GRANT SELECT, INSERT, UPDATE, DELETE ON public.%I TO authenticated', table_name);
+    EXECUTE format('GRANT SELECT, INSERT, UPDATE, DELETE ON public.%I TO service_role', table_name);
+    EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY', table_name);
+
+    EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', table_name || '_service_role_all', table_name);
+    EXECUTE format('CREATE POLICY %I ON public.%I FOR ALL TO service_role USING (true) WITH CHECK (true)', table_name || '_service_role_all', table_name);
+
+    EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', table_name || '_platform_admin_all', table_name);
+    EXECUTE format('CREATE POLICY %I ON public.%I FOR ALL TO authenticated USING (public.is_platform_admin()) WITH CHECK (public.is_platform_admin())', table_name || '_platform_admin_all', table_name);
+
+    EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', table_name || '_staff_read', table_name);
+    EXECUTE format('CREATE POLICY %I ON public.%I FOR SELECT TO authenticated USING (%s)', table_name || '_staff_read', table_name, staff_read);
+
+    EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', table_name || '_staff_write', table_name);
+
+    EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', table_name || '_staff_insert', table_name);
+    EXECUTE format('CREATE POLICY %I ON public.%I FOR INSERT TO authenticated WITH CHECK (%s)', table_name || '_staff_insert', table_name, finance_write);
+
+    EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', table_name || '_staff_update', table_name);
+    EXECUTE format('CREATE POLICY %I ON public.%I FOR UPDATE TO authenticated USING (%s) WITH CHECK (%s)', table_name || '_staff_update', table_name, finance_write, finance_write);
+
+    EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', table_name || '_staff_delete', table_name);
+    EXECUTE format('CREATE POLICY %I ON public.%I FOR DELETE TO authenticated USING (%s)', table_name || '_staff_delete', table_name, finance_write);
+
+    EXECUTE format('DROP TRIGGER IF EXISTS %I ON public.%I', 'set_' || table_name || '_updated_at', table_name);
+    EXECUTE format('CREATE TRIGGER %I BEFORE UPDATE ON public.%I FOR EACH ROW EXECUTE FUNCTION public.set_updated_at()', 'set_' || table_name || '_updated_at', table_name);
+  END LOOP;
+
+  GRANT SELECT, INSERT ON public.finance_audit_events TO authenticated;
+  REVOKE UPDATE, DELETE ON public.finance_audit_events FROM authenticated;
+  GRANT SELECT, INSERT, UPDATE, DELETE ON public.finance_audit_events TO service_role;
+  ALTER TABLE public.finance_audit_events ENABLE ROW LEVEL SECURITY;
+
+  DROP POLICY IF EXISTS finance_audit_events_service_role_all ON public.finance_audit_events;
+  CREATE POLICY finance_audit_events_service_role_all
+    ON public.finance_audit_events
+    FOR ALL
+    TO service_role
+    USING (true)
+    WITH CHECK (true);
+
+  DROP POLICY IF EXISTS finance_audit_events_platform_admin_all ON public.finance_audit_events;
+
+  DROP POLICY IF EXISTS finance_audit_events_staff_read ON public.finance_audit_events;
+  CREATE POLICY finance_audit_events_staff_read
+    ON public.finance_audit_events
+    FOR SELECT
+    TO authenticated
+    USING (
+      public.is_cafe_owner(cafe_id)
+      OR public.has_cafe_permission(cafe_id, 'branda_finance')
+      OR public.has_cafe_permission(cafe_id, 'reports')
+    );
+
+  DROP POLICY IF EXISTS finance_audit_events_staff_write ON public.finance_audit_events;
+
+  DROP POLICY IF EXISTS finance_audit_events_staff_insert ON public.finance_audit_events;
+  CREATE POLICY finance_audit_events_staff_insert
+    ON public.finance_audit_events
+    FOR INSERT
+    TO authenticated
+    WITH CHECK (
+      public.is_cafe_owner(cafe_id)
+      OR public.has_cafe_permission(cafe_id, 'branda_finance')
+    );
 END $$;

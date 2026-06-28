@@ -19,11 +19,13 @@ type CashierCartPanelProps = {
   items: CartItem[];
   customer: FinanceCustomer;
   branch: FinanceBranch;
-  warehouse: FinanceWarehouse;
+  warehouse?: FinanceWarehouse | null;
   paymentMethod: FinancePaymentMethod["id"] | "";
   paymentMethods: FinancePaymentMethod[];
   loyaltyCode: string;
+  loyaltyEnabled?: boolean;
   invoicePreviewReady: boolean;
+  realInvoicePersistenceReady?: boolean;
   onPaymentMethodChange: (method: FinancePaymentMethod["id"]) => void;
   onIncrease: (productId: string) => void;
   onDecrease: (productId: string) => void;
@@ -37,7 +39,7 @@ type CashierCartPanelProps = {
 export function cartTotals(items: CartItem[]) {
   const subtotal = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
   const vat = items.reduce((sum, item) => sum + item.product.price * item.quantity * (item.product.vatRate / 100), 0);
-  const earnedPoints = items.reduce((sum, item) => sum + (item.product.loyaltyPointsEarned ?? Math.max(1, Math.round(item.product.price / 10))) * item.quantity, 0);
+  const earnedPoints = items.reduce((sum, item) => sum + (item.product.loyaltyPointsEarned ?? 0) * item.quantity, 0);
   return { subtotal, vat, total: subtotal + vat, earnedPoints };
 }
 
@@ -49,7 +51,9 @@ export function CashierCartPanel({
   paymentMethod,
   paymentMethods,
   loyaltyCode,
+  loyaltyEnabled = false,
   invoicePreviewReady,
+  realInvoicePersistenceReady = false,
   onPaymentMethodChange,
   onIncrease,
   onDecrease,
@@ -60,19 +64,17 @@ export function CashierCartPanel({
   onOpenLoyalty,
 }: CashierCartPanelProps) {
   const totals = cartTotals(items);
-  const customerPointsBalance = loyaltyCode ? 320 : 180;
-  const redeemPoints = paymentMethod === "loyalty_points" ? Math.min(customerPointsBalance, Math.floor(totals.total * 4)) : 0;
-  const loyaltyDiscount = redeemPoints * 0.25;
-  const payableTotal = Math.max(0, totals.total - loyaltyDiscount);
+  const loyaltyDiscount = 0;
+  const payableTotal = totals.total;
   const methodLabel = paymentMethods.find((method) => method.id === paymentMethod)?.name ?? "غير محدد";
-  const canCreateInvoice = Boolean(items.length && paymentMethod);
+  const canCreateInvoice = realInvoicePersistenceReady && Boolean(items.length && paymentMethod);
 
   return (
     <aside className="w-full max-w-full min-w-0 overflow-hidden rounded-[8px] border border-[#D8C3A2] bg-[#FFFDF8] p-3 shadow-[0_16px_38px_rgba(69,43,28,0.10)] lg:sticky lg:top-5">
       <div className="flex min-w-0 items-start justify-between gap-3 border-b border-[#E8D8C2] pb-3">
         <div className="min-w-0">
           <p className="text-xs font-black text-[#9C6B2E]">فاتورة الكاشير</p>
-          <h2 className="mt-1 truncate text-lg font-black text-[#2F241D]">مسودة بيع مباشر</h2>
+          <h2 className="mt-1 truncate text-lg font-black text-[#2F241D]">مسودة بيع مباشرة</h2>
         </div>
         <ReceiptText className="h-7 w-7 text-[#5B3926]" />
       </div>
@@ -80,7 +82,7 @@ export function CashierCartPanel({
       <div className="mt-3 grid gap-2 text-[11px] font-bold text-[#6D5544]">
         <SummaryLine label="العميل" value={customer.name} />
         <SummaryLine label="الفرع" value={branch.displayName || branch.name} />
-        <SummaryLine label="المستودع" value={warehouse.name} />
+        <SummaryLine label="المستودع" value={warehouse?.name ?? "لا توجد مستودعات مرتبطة بعد"} />
       </div>
 
       <div className="mt-3 max-h-[42vh] space-y-2 overflow-y-auto overflow-x-hidden pr-0.5">
@@ -91,7 +93,7 @@ export function CashierCartPanel({
                 <div className="min-w-0">
                   <h3 className="line-clamp-1 text-sm font-black text-[#2F241D]">{item.product.name}</h3>
                   <p className="mt-1 text-xs font-bold text-[#806A58]" dir="ltr">
-                    {item.product.sku} · {item.product.barcode}
+                    {item.product.sku} - {item.product.barcode}
                   </p>
                 </div>
                 <button
@@ -133,7 +135,7 @@ export function CashierCartPanel({
           ))
         ) : (
           <div className="rounded-[8px] border border-dashed border-[#D8C3A2] bg-[#FAF3E8] p-6 text-center text-sm font-black text-[#7D6654]">
-            اختر منتجًا لإضافته إلى الفاتورة.
+            اختر منتجًا حقيقيًا من القائمة لإضافته إلى الفاتورة.
           </div>
         )}
       </div>
@@ -157,32 +159,30 @@ export function CashierCartPanel({
           ))}
         </div>
         <p className="mt-2 text-[11px] font-bold leading-5 text-[#806A58]">
-          مدى والبطاقات تتطلب مزود دفع رسمي. الاختيار هنا محلي للمعاينة فقط.
+          مدى والبطاقات تتطلب مزود دفع رسمي. الاختيار هنا محلي ولا يرحل أي عملية مالية.
         </p>
       </div>
 
-      <div className="mt-3 rounded-[8px] border border-[#D6B677] bg-[#FFF8EA] p-3 text-[12px]">
-        <div className="flex justify-between gap-3 font-black text-[#6B431C]">
-          <span>رصيد نقاط العميل</span>
-          <span>{customerPointsBalance} نقطة</span>
+      {loyaltyEnabled ? (
+        <div className="mt-3 rounded-[8px] border border-[#D6B677] bg-[#FFF8EA] p-3 text-[12px]">
+          <div className="flex justify-between gap-3 font-black text-[#6B431C]">
+            <span>بطاقة الولاء</span>
+            <span>{loyaltyCode || "غير مرتبطة"}</span>
+          </div>
+          <div className="mt-2 flex justify-between gap-3 font-bold text-[#6B431C]">
+            <span>النقاط المكتسبة من الفاتورة</span>
+            <span>{totals.earnedPoints} نقطة</span>
+          </div>
+          <p className="mt-2 text-[11px] font-bold leading-5 text-[#806A58]">
+            لا يتم تسجيل نقاط حقيقية من شاشة برندة المالية الآن.
+          </p>
         </div>
-        <div className="mt-2 flex justify-between gap-3 font-bold text-[#6B431C]">
-          <span>النقاط المكتسبة من الفاتورة</span>
-          <span>{totals.earnedPoints} نقطة</span>
-        </div>
-        <div className="mt-2 flex justify-between gap-3 font-bold text-[#6B431C]">
-          <span>خصم نقاط الولاء</span>
-          <span dir="ltr">{formatFinanceAmount(loyaltyDiscount)}</span>
-        </div>
-        <p className="mt-2 text-[11px] font-bold leading-5 text-[#806A58]">
-          سيتم ربطها لاحقًا بمحفظة الولاء وقاعدة البيانات. التطبيق الحالي محلي للمعاينة.
-        </p>
-      </div>
+      ) : null}
 
       <div className="mt-3 space-y-2 rounded-[8px] border border-[#E6D7C3] bg-[#FAF3E8] p-3 text-[12px]">
         <TotalLine label="الإجمالي الفرعي" value={totals.subtotal} />
         <TotalLine label="VAT 15%" value={totals.vat} />
-        <TotalLine label="خصم الولاء" value={-loyaltyDiscount} />
+        {loyaltyEnabled ? <TotalLine label="خصم الولاء" value={-loyaltyDiscount} /> : null}
         <TotalLine label="الإجمالي" value={payableTotal} strong />
       </div>
 
@@ -193,11 +193,11 @@ export function CashierCartPanel({
         </div>
         <p className="text-xs font-bold leading-6 text-[#806A58]">
           {items.length} بند، إجمالي {formatFinanceAmount(payableTotal)}، العميل {customer.name}.
-          {loyaltyCode ? ` بطاقة الولاء: ${loyaltyCode}.` : ""}
+          {loyaltyEnabled && loyaltyCode ? ` بطاقة الولاء: ${loyaltyCode}.` : ""}
         </p>
         {invoicePreviewReady ? (
           <div className="mt-3 rounded-[8px] border border-[#CFE2D8] bg-[#EDF7F2] p-3 text-xs font-bold leading-6 text-[#2F5D50]">
-            تم تجهيز ملخص فاتورة محليًا فقط بدون كتابة في قاعدة البيانات. يمكنك فتح صفحة إنشاء الفاتورة لإكمال بياناتها.
+            تم تجهيز ملخص محلي فقط بدون كتابة في قاعدة البيانات.
             <Link
               href="/dashboard/branda-finance/invoicing/create?source=cashier"
               className="mt-3 inline-flex h-10 items-center justify-center rounded-[8px] bg-[#2F5D50] px-4 text-xs font-black text-white"
@@ -218,10 +218,15 @@ export function CashierCartPanel({
           <ReceiptText className="h-4 w-4" />
           إنشاء فاتورة
         </button>
+        {!realInvoicePersistenceReady ? (
+          <p className="rounded-[8px] border border-[#D6B677] bg-[#FFF8EA] p-2 text-center text-[11px] font-bold leading-5 text-[#6B431C]">
+            إنشاء الفاتورة الحقيقي معطل حتى تفعيل جداول الفواتير بعد مراجعة قاعدة البيانات.
+          </p>
+        ) : null}
         <button
           type="button"
           disabled
-          title="قريبًا / يتطلب ربط قاعدة البيانات"
+          title="يتطلب ربط قاعدة البيانات"
           className="inline-flex h-9 cursor-not-allowed items-center justify-center gap-1.5 rounded-[8px] border border-[#D8C7B2] bg-white text-[12px] font-black text-[#5B3926] opacity-60"
         >
           حفظ كمسودة - يتطلب ربط قاعدة البيانات
@@ -229,20 +234,22 @@ export function CashierCartPanel({
         <button
           type="button"
           disabled
-          title="قريبًا / يتطلب جهاز طباعة"
+          title="يتطلب جهاز طباعة"
           className="inline-flex h-9 cursor-not-allowed items-center justify-center gap-1.5 rounded-[8px] border border-[#D8C7B2] bg-white text-[12px] font-black text-[#5B3926] opacity-60"
         >
           <Printer className="h-4 w-4" />
           طباعة - تتطلب جهاز
         </button>
-        <button
-          type="button"
-          onClick={onOpenLoyalty}
-          className="inline-flex h-9 items-center justify-center gap-1.5 rounded-[8px] border border-[#D6B677] bg-[#F8E8C9] text-[12px] font-black text-[#6B431C]"
-        >
-          <ScanLine className="h-4 w-4" />
-          قراءة باركود الولاء
-        </button>
+        {loyaltyEnabled ? (
+          <button
+            type="button"
+            onClick={onOpenLoyalty}
+            className="inline-flex h-9 items-center justify-center gap-1.5 rounded-[8px] border border-[#D6B677] bg-[#F8E8C9] text-[12px] font-black text-[#6B431C]"
+          >
+            <ScanLine className="h-4 w-4" />
+            قراءة باركود الولاء
+          </button>
+        ) : null}
       </div>
     </aside>
   );

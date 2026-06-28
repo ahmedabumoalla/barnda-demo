@@ -6,7 +6,7 @@ import { featureCodesAllow } from "@/lib/platform/feature-gates";
 export default async function LoyaltyCardsPage() {
   const features = await getOwnerFeatureCodes().catch(() => []);
   if (!featureCodesAllow(features, "loyalty")) {
-    return <DashboardFeatureBlockedState title="الولاء والمكافآت" />;
+    return <DashboardFeatureBlockedState title="الولاء غير مفعل في هذه الباقة" backHref="/dashboard" />;
   }
 
   return <LoyaltyDashboardPage />;

@@ -1,9 +1,7 @@
 "use client";
 
-import { Download, UserRound, WalletCards } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { SharedLoyaltyCard } from "@/components/loyalty/shared-loyalty-card";
-import { useLoyaltyDemoState } from "@/components/loyalty/use-loyalty-demo-state";
+import { UserRound, WalletCards } from "lucide-react";
+import { useEffect, useState } from "react";
 import { getCustomerLoginHref } from "@/lib/cafe/theme-links";
 import { getCustomerSession } from "@/lib/customer/session";
 
@@ -25,11 +23,8 @@ type Props = {
 };
 
 export function PublicLoyaltyCardSection({ slug, cafeName, program }: Props) {
-  const [demoState] = useLoyaltyDemoState();
-  const [cardCode, setCardCode] = useState("");
   const [hasCustomerSession, setHasCustomerSession] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
-  const [message, setMessage] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -47,34 +42,7 @@ export function PublicLoyaltyCardSection({ slug, cafeName, program }: Props) {
     };
   }, [slug]);
 
-  const demoCardCode = demoState.card.sampleCode || "BARNDAKSA-2408";
-  const displayCode = cardCode || demoCardCode;
-  const pointsBalance = demoState.points.enabled ? demoState.points.customerPointsBalance : 320;
-  const pointValueSar = demoState.points.enabled ? demoState.points.pointValueSar : 0.25;
-  const effectiveStampsRequired = demoState.card.stampsRequired || program?.purchasesRequired || 8;
-  const completedStamps = useMemo(
-    () => Math.min(effectiveStampsRequired, cardCode ? 5 : 3),
-    [cardCode, effectiveStampsRequired]
-  );
-
-  if (!program?.enabled || !demoState.card.enabled) return null;
-
-  const previewCard = {
-    ...demoState.card,
-    brandName: cafeName,
-    cardTitle: demoState.card.cardTitle || program.cardTitle,
-    subtitle: demoState.card.subtitle || program.cardSubtitle,
-    rewardTitle: demoState.card.rewardTitle || program.rewardName,
-    stampsRequired: effectiveStampsRequired,
-    completedStamps,
-    sampleCode: displayCode,
-    pointsBadgeVisible: demoState.points.enabled && demoState.card.pointsBadgeVisible,
-  };
-
-  function showCard() {
-    setCardCode(demoCardCode);
-    setMessage("\u0647\u0630\u0647 \u0645\u0639\u0627\u064a\u0646\u0629 \u0628\u0637\u0627\u0642\u0629 \u0627\u0644\u0648\u0644\u0627\u0621 \u062f\u0627\u062e\u0644 \u0627\u0644\u062f\u064a\u0645\u0648 \u0628\u062f\u0648\u0646 \u0625\u0646\u0634\u0627\u0621 \u0628\u064a\u0627\u0646\u0627\u062a \u062d\u0642\u064a\u0642\u064a\u0629.");
-  }
+  if (!program?.enabled) return null;
 
   return (
     <section id="loyalty-card" dir="rtl" className="mt-6 scroll-mt-28">
@@ -84,22 +52,25 @@ export function PublicLoyaltyCardSection({ slug, cafeName, program }: Props) {
             <WalletCards className="h-5 w-5" />
           </span>
           <div>
-            <p className="text-sm font-black text-[var(--ci-accent-bg,#D9A33F)]">{"\u0628\u0637\u0627\u0642\u0629 \u0627\u0644\u0648\u0644\u0627\u0621"}</p>
-            <h2 className="text-2xl font-black text-[var(--ci-page-fg,#311912)]">{previewCard.cardTitle}</h2>
+            <p className="text-sm font-black text-[var(--ci-accent-bg,#D9A33F)]">بطاقة الولاء</p>
+            <h2 className="text-2xl font-black text-[var(--ci-page-fg,#311912)]">
+              {program.cardTitle || `بطاقة ${cafeName}`}
+            </h2>
           </div>
         </div>
 
         <p className="mt-3 text-sm font-bold leading-7 text-[var(--ci-muted-fg,#806A5E)]">
-          {"\u062a\u0638\u0647\u0631 \u0647\u0630\u0647 \u0627\u0644\u0628\u0637\u0627\u0642\u0629 \u0628\u0646\u0641\u0633 \u0623\u0644\u0648\u0627\u0646 \u0648\u0645\u0648\u0627\u0636\u0639 \u062a\u0635\u0645\u064a\u0645 \u0628\u0637\u0627\u0642\u0629 \u0627\u0644\u0648\u0644\u0627\u0621 \u0627\u0644\u0645\u062d\u0641\u0648\u0638\u0629 \u0641\u064a \u0644\u0648\u062d\u0629 \u0627\u0644\u062f\u064a\u0645\u0648."}
+          تظهر بطاقة الولاء الحقيقية فقط عند توفر كود بطاقة صادر للعميل من قاعدة البيانات.
         </p>
 
-        <div className="mt-5">
-          <SharedLoyaltyCard
-            card={previewCard}
-            pointsBalance={pointsBalance}
-            pointValueSar={pointValueSar}
-            compact
-          />
+        <div className="mt-5 rounded-[22px] border border-dashed border-[var(--ci-border,#E7D7C6)] bg-[var(--ci-page-bg,#FCF8F3)] p-5 text-center">
+          <WalletCards className="mx-auto h-9 w-9 text-[var(--ci-button-bg,#6B3A25)]" />
+          <p className="mt-3 text-sm font-black text-[var(--ci-page-fg,#311912)]">
+            لا توجد بطاقة حقيقية متاحة للعرض الآن
+          </p>
+          <p className="mt-2 text-xs font-bold leading-6 text-[var(--ci-muted-fg,#806A5E)]">
+            تم إيقاف كود المعاينة والرصيد التجريبي في الواجهة العامة.
+          </p>
         </div>
 
         <div className="mt-5 grid gap-3">
@@ -110,37 +81,23 @@ export function PublicLoyaltyCardSection({ slug, cafeName, program }: Props) {
               className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--ci-button-bg,#6B3A25)] px-5 py-4 font-black text-[var(--ci-button-fg,#FCF8F3)] opacity-60"
             >
               <UserRound className="h-5 w-5" />
-              {"\u062c\u0627\u0631 \u0627\u0644\u062a\u062d\u0642\u0642 \u0645\u0646 \u0627\u0644\u062f\u062e\u0648\u0644"}
+              جاري التحقق من الدخول
             </button>
           ) : hasCustomerSession ? (
-            <button
-              type="button"
-              onClick={showCard}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--ci-button-bg,#6B3A25)] px-5 py-4 font-black text-[var(--ci-button-fg,#FCF8F3)]"
-            >
-              <Download className="h-5 w-5" />
-              {cardCode ? "\u062a\u062d\u062f\u064a\u062b \u0645\u0639\u0627\u064a\u0646\u0629 \u0627\u0644\u0628\u0637\u0627\u0642\u0629" : "\u0639\u0631\u0636 \u0628\u0637\u0627\u0642\u0629 \u0627\u0644\u0648\u0644\u0627\u0621"}
-            </button>
+            <div className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[var(--ci-button-bg,#6B3A25)] px-5 py-4 font-black text-[var(--ci-button-bg,#6B3A25)]">
+              <WalletCards className="h-5 w-5" />
+              ستظهر البطاقة عند توفرها في حسابك
+            </div>
           ) : (
             <a
               href={getCustomerLoginHref(slug, `/c/${slug}`)}
               className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[var(--ci-button-bg,#6B3A25)] px-5 py-4 font-black text-[var(--ci-button-fg,#FCF8F3)]"
             >
               <UserRound className="h-5 w-5" />
-              {"\u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u062f\u062e\u0648\u0644 \u0644\u0639\u0631\u0636 \u0627\u0644\u0628\u0637\u0627\u0642\u0629"}
+              تسجيل الدخول لعرض البطاقة
             </a>
           )}
-
-          <a
-            href={`/loyalty-card/${encodeURIComponent(displayCode)}`}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[var(--ci-button-bg,#6B3A25)] px-5 py-4 font-black text-[var(--ci-button-bg,#6B3A25)]"
-          >
-            <WalletCards className="h-5 w-5" />
-            {"\u0641\u062a\u062d QR \u0627\u0644\u0628\u0637\u0627\u0642\u0629"}
-          </a>
         </div>
-
-        {message ? <p className="mt-3 text-center font-bold text-[var(--ci-button-bg,#6B3A25)]">{message}</p> : null}
       </div>
     </section>
   );

@@ -6,7 +6,7 @@ import { featureCodesAllow } from "@/lib/platform/feature-gates";
 export default async function BrandaFinanceLoyaltyPointsPage() {
   const features = await getOwnerFeatureCodes().catch(() => []);
   if (!featureCodesAllow(features, "loyalty")) {
-    return <DashboardFeatureBlockedState title="نقاط الولاء" />;
+    return <DashboardFeatureBlockedState title="الولاء غير مفعل في هذه الباقة" />;
   }
 
   return <LoyaltyPointsWorkspace />;

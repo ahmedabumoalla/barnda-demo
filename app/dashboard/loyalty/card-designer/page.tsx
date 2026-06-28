@@ -6,7 +6,7 @@ import { featureCodesAllow } from "@/lib/platform/feature-gates";
 export default async function LoyaltyCardDesignerRoute() {
   const features = await getOwnerFeatureCodes().catch(() => []);
   if (!featureCodesAllow(features, "loyalty")) {
-    return <DashboardFeatureBlockedState title="مصمم بطاقة الولاء" />;
+    return <DashboardFeatureBlockedState title="الولاء غير مفعل في هذه الباقة" backHref="/dashboard" />;
   }
 
   return <LoyaltyCardDesignerPage />;

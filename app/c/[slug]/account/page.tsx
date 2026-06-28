@@ -36,7 +36,7 @@ import type { CustomerLoyaltyCardView } from "@/lib/data/loyalty-cards";
 import type { CustomerExperienceReward } from "@/lib/data/experience-rewards";
 import { SharedLoyaltyCard } from "@/components/loyalty/shared-loyalty-card";
 import { SecureQrCode } from "@/components/loyalty/secure-qr-code";
-import { useLoyaltyDemoState } from "@/components/loyalty/use-loyalty-demo-state";
+import type { LoyaltyCardDesign, LoyaltyTextElementId } from "@/lib/loyalty/types";
 import {
   Bell,
   Eye,
@@ -329,6 +329,101 @@ function fetchCustomerAccountSnapshotOnce(slug: string, cacheKey: string) {
   return promise;
 }
 
+function accountCardTextElement(
+  id: LoyaltyTextElementId,
+  text: string,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  fontSize: number,
+  color: string,
+  enabled = true,
+) {
+  return {
+    id,
+    text,
+    x,
+    y,
+    width,
+    height,
+    fontSize,
+    fontWeight: 800,
+    color,
+    align: "right" as const,
+    enabled,
+  };
+}
+
+function buildAccountLoyaltyCardDesign({
+  view,
+  fallbackReward,
+}: {
+  view: CustomerLoyaltyCardView;
+  fallbackReward: string;
+}): LoyaltyCardDesign {
+  const program = view.program;
+  const card = view.card;
+  const required = Math.max(1, Number(program.purchasesRequired || 7));
+  const current = Math.min(required, Math.max(0, Number(card.stampsInCycle || 0)));
+  const background = program.cardBackground || "#4A281D";
+  const foreground = program.cardForeground || "#FFF7ED";
+  const accent = program.cardAccent || "#D9A33F";
+
+  return {
+    enabled: true,
+    brandName: view.cafeName || "",
+    cardTitle: program.cardTitle || "بطاقة الولاء",
+    subtitle: program.cardSubtitle || "",
+    rewardTitle: program.rewardName || fallbackReward,
+    supportingText: "",
+    stampLabel: "ختم",
+    terms: "",
+    stampsRequired: required,
+    completedStamps: current,
+    cardBackground: background,
+    cardForeground: foreground,
+    cardAccent: accent,
+    logoRemoveLightBackground: false,
+    logoBackgroundTolerance: 24,
+    logoPlacement: "top-right",
+    logoSize: 64,
+    logoOffsetX: 0,
+    logoOffsetY: 0,
+    logoX: 74,
+    logoY: 8,
+    logoWidth: 16,
+    logoHeight: 16,
+    progressIcon: "star",
+    barcodeVisible: true,
+    barcodeX: 8,
+    barcodeY: 72,
+    barcodeWidth: 46,
+    barcodeHeight: 16,
+    qrX: 8,
+    qrY: 30,
+    qrWidth: 28,
+    qrHeight: 34,
+    pointsBadgeVisible: false,
+    pointsBadgeX: 8,
+    pointsBadgeY: 8,
+    pointsBadgeWidth: 28,
+    pointsBadgeHeight: 16,
+    sampleCode: card.cardCode,
+    textElements: {
+      brand: accountCardTextElement("brand", view.cafeName || "", 44, 10, 34, 8, 16, foreground),
+      title: accountCardTextElement("title", program.cardTitle || "بطاقة الولاء", 42, 22, 48, 12, 24, foreground),
+      subtitle: accountCardTextElement("subtitle", program.cardSubtitle || "", 42, 35, 46, 8, 14, foreground, Boolean(program.cardSubtitle)),
+      reward: accountCardTextElement("reward", program.rewardName || fallbackReward, 42, 48, 46, 10, 18, accent),
+      helper: accountCardTextElement("helper", "اعرض البطاقة عند الشراء", 42, 60, 46, 8, 13, foreground),
+      pointsLabel: accountCardTextElement("pointsLabel", "", 0, 0, 1, 1, 10, foreground, false),
+      pointsValue: accountCardTextElement("pointsValue", "", 0, 0, 1, 1, 10, foreground, false),
+      pointsValueSar: accountCardTextElement("pointsValueSar", "", 0, 0, 1, 1, 10, foreground, false),
+      barcodeLabel: accountCardTextElement("barcodeLabel", card.cardCode, 8, 88, 46, 6, 11, foreground),
+    },
+  };
+}
+
 function CustomerCoffeeLoyaltyCard({
   view,
   homeHref,
@@ -342,32 +437,35 @@ function CustomerCoffeeLoyaltyCard({
   loading: boolean;
   businessCategory?: string;
 }) {
-  const [demoState] = useLoyaltyDemoState();
   const copy = getBusinessCopy(businessCategory);
   const program = view?.program;
   const card = view?.card;
   const required = Math.max(1, Number(program?.purchasesRequired ?? 7));
   const lit = Math.min(required, Number(card?.stampsInCycle ?? 0));
-  const previewCard = {
-    ...demoState.card,
-    cardTitle: demoState.card.cardTitle || program?.cardTitle || "\u0628\u0637\u0627\u0642\u0629 \u0627\u0644\u0648\u0644\u0627\u0621",
-    subtitle: demoState.card.subtitle || program?.cardSubtitle || "",
-    rewardTitle: demoState.card.rewardTitle || program?.rewardName || copy.freeRewardName,
-    sampleCode: card?.cardCode || demoState.card.sampleCode,
-    stampsRequired: Math.max(1, Number(demoState.card.stampsRequired || required)),
-    completedStamps: Math.min(Math.max(1, Number(demoState.card.stampsRequired || required)), lit),
-    pointsBadgeVisible: demoState.points.enabled && demoState.card.pointsBadgeVisible,
-  };
+  const realCardDesign =
+    view && card?.cardCode
+      ? buildAccountLoyaltyCardDesign({ view, fallbackReward: copy.freeRewardName })
+      : null;
 
   return (
     <section className="barndaksa-premium-card mb-6 overflow-hidden rounded-[36px] border border-[var(--ci-border,var(--barndaksa-border-sand))] bg-[var(--ci-surface-bg,#fff)] p-4 shadow-[0_24px_80px_rgba(49,25,18,0.12)] sm:p-5">
       <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
         <div className="min-w-0 overflow-hidden rounded-[30px]">
-          <SharedLoyaltyCard
-            card={previewCard}
-            pointsBalance={demoState.points.customerPointsBalance}
-            pointValueSar={demoState.points.pointValueSar}
-          />
+          {realCardDesign ? (
+            <SharedLoyaltyCard card={realCardDesign} pointsBalance={0} pointValueSar={0} />
+          ) : (
+            <div className="flex min-h-[280px] items-center justify-center rounded-[30px] border border-dashed border-[var(--ci-border,#E7D7C6)] bg-[var(--ci-page-bg,#FCF8F3)] p-6 text-center">
+              <div>
+                <QrCode className="mx-auto h-10 w-10 text-[var(--ci-button-bg,#6B3A25)]" />
+                <p className="mt-3 text-sm font-black text-[var(--ci-page-fg,#311912)]">
+                  {loading ? "جاري تحميل بطاقة الولاء..." : "لا توجد بطاقة ولاء حقيقية متاحة الآن"}
+                </p>
+                <p className="mt-2 text-xs font-bold leading-6 text-[var(--ci-muted-fg,#806A5E)]">
+                  لا يتم عرض بطاقة أو QR تجريبي في حساب العميل.
+                </p>
+              </div>
+            </div>
+          )}
         </div>
 
         <div>

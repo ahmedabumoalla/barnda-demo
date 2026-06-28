@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ArrowRight, Gift, Home, WalletCards } from "lucide-react";
 import { SharedLoyaltyCard } from "@/components/loyalty/shared-loyalty-card";
-import { useLoyaltyDemoState } from "@/components/loyalty/use-loyalty-demo-state";
+import type { LoyaltyCardDesign, LoyaltyTextElementId } from "@/lib/loyalty/types";
 
 type Props = {
   cardCode: string;
@@ -21,6 +21,94 @@ type Props = {
   loyaltyUnitPlural: string;
 };
 
+function textElement(
+  id: LoyaltyTextElementId,
+  text: string,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  fontSize: number,
+  enabled = true,
+) {
+  return {
+    id,
+    text,
+    x,
+    y,
+    width,
+    height,
+    fontSize,
+    fontWeight: 900,
+    color: "#FCF8F3",
+    align: "right" as const,
+    enabled,
+  };
+}
+
+function publicCardDesign(input: {
+  cafeName: string;
+  cardCode: string;
+  cardTitle: string;
+  cardSubtitle: string;
+  rewardName: string;
+  required: number;
+  lit: number;
+}): LoyaltyCardDesign {
+  return {
+    enabled: true,
+    brandName: input.cafeName,
+    cardTitle: input.cardTitle,
+    subtitle: input.cardSubtitle,
+    rewardTitle: input.rewardName,
+    supportingText: "اعرض البطاقة عند الكاشير",
+    stampLabel: "ختم",
+    terms: "",
+    stampsRequired: input.required,
+    completedStamps: input.lit,
+    cardBackground: "linear-gradient(135deg,#3A2117 0%,#6B3A25 58%,#B88334 100%)",
+    cardForeground: "#FCF8F3",
+    cardAccent: "#D9A33F",
+    logoRemoveLightBackground: false,
+    logoBackgroundTolerance: 20,
+    logoPlacement: "top-right",
+    logoSize: 18,
+    logoOffsetX: 0,
+    logoOffsetY: 0,
+    logoX: 73,
+    logoY: 8,
+    logoWidth: 16,
+    logoHeight: 16,
+    progressIcon: "star",
+    barcodeVisible: true,
+    barcodeX: 8,
+    barcodeY: 73,
+    barcodeWidth: 34,
+    barcodeHeight: 15,
+    qrX: 8,
+    qrY: 8,
+    qrWidth: 18,
+    qrHeight: 18,
+    pointsBadgeVisible: false,
+    pointsBadgeX: 8,
+    pointsBadgeY: 62,
+    pointsBadgeWidth: 24,
+    pointsBadgeHeight: 10,
+    sampleCode: input.cardCode,
+    textElements: {
+      brand: textElement("brand", input.cafeName, 42, 10, 28, 8, 22),
+      title: textElement("title", input.cardTitle, 42, 20, 34, 10, 34),
+      subtitle: textElement("subtitle", input.cardSubtitle, 42, 31, 34, 8, 20),
+      reward: textElement("reward", input.rewardName, 42, 42, 34, 8, 18),
+      helper: textElement("helper", "{{code}}", 44, 73, 28, 8, 18),
+      pointsLabel: textElement("pointsLabel", "النقاط", 0, 0, 1, 1, 1, false),
+      pointsValue: textElement("pointsValue", "{{points}}", 0, 0, 1, 1, 1, false),
+      pointsValueSar: textElement("pointsValueSar", "{{value}}", 0, 0, 1, 1, 1, false),
+      barcodeLabel: textElement("barcodeLabel", "رمز البطاقة", 8, 68, 34, 5, 14),
+    },
+  };
+}
+
 export function PublicLoyaltyCardView({
   cardCode,
   cafeName,
@@ -36,18 +124,15 @@ export function PublicLoyaltyCardView({
   loyaltyUnitLit,
   loyaltyUnitPlural,
 }: Props) {
-  const [demoState] = useLoyaltyDemoState();
-  const previewCard = {
-    ...demoState.card,
-    brandName: cafeName,
-    cardTitle: demoState.card.cardTitle || cardTitle,
-    subtitle: demoState.card.subtitle || cardSubtitle,
-    rewardTitle: demoState.card.rewardTitle || rewardName,
-    stampsRequired: required,
-    completedStamps: lit,
-    sampleCode: cardCode,
-    pointsBadgeVisible: demoState.points.enabled && demoState.card.pointsBadgeVisible,
-  };
+  const previewCard = publicCardDesign({
+    cafeName,
+    cardCode,
+    cardTitle,
+    cardSubtitle,
+    rewardName,
+    required,
+    lit,
+  });
 
   return (
     <main dir="rtl" className="min-h-screen bg-[#F6F0E7] px-4 py-8 text-[#17212B]">
@@ -73,8 +158,8 @@ export function PublicLoyaltyCardView({
           <section>
             <SharedLoyaltyCard
               card={previewCard}
-              pointsBalance={demoState.points.customerPointsBalance}
-              pointValueSar={demoState.points.pointValueSar}
+              pointsBalance={0}
+              pointValueSar={0}
             />
           </section>
 

@@ -33,7 +33,12 @@ export function AddCustomerModal({ open, onClose, onSave }: AddCustomerModalProp
     <div className="fixed inset-0 z-50 flex max-w-full items-center justify-center overflow-hidden bg-[#24160F]/45 p-3">
       <form action={handleSubmit} className="max-h-[calc(100vh-24px)] w-full max-w-[min(96vw,760px)] min-w-0 overflow-hidden rounded-[8px] border border-[#E3CFB0] bg-[#FFFDF8] shadow-2xl">
         <div className="flex items-center justify-between border-b border-[#E8D8C2] px-4 py-3">
-          <h2 className="text-lg font-black text-[#2F241D]">إضافة عميل</h2>
+          <div>
+            <h2 className="text-lg font-black text-[#2F241D]">إضافة عميل</h2>
+            <p className="mt-1 text-[11px] font-bold text-[#806A58]">
+              هذه إضافة محلية داخل الواجهة فقط ولا تنشئ سجل عميل في قاعدة البيانات.
+            </p>
+          </div>
           <button type="button" onClick={onClose} className="h-9 w-9 rounded-[8px] border border-[#E3CFB0] font-black text-[#6B3F22]">
             ×
           </button>

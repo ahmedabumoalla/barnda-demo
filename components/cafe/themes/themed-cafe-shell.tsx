@@ -162,7 +162,7 @@ function ThemedCafeShellInner({
               isCustomer: customerChecked ? Boolean(customer) : true,
               hasProducts: hasFeature("menu"),
               hasReservations: hasFeature("reservations"),
-              hasLoyalty: hasFeature("loyalty") || hasFeature("experience_reviews"),
+              hasLoyalty: hasFeature("loyalty"),
               active: activeDockItem,
             })}
           />

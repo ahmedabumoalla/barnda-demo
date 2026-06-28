@@ -4,14 +4,20 @@ import type { FinanceProduct } from "@/lib/branda-finance/invoice-types";
 type ProductGridProps = {
   products: FinanceProduct[];
   showTranslationPreview: boolean;
+  emptyMessage?: string;
   onAdd: (product: FinanceProduct) => void;
 };
 
-export function ProductGrid({ products, showTranslationPreview, onAdd }: ProductGridProps) {
+export function ProductGrid({
+  products,
+  showTranslationPreview,
+  emptyMessage = "لا توجد منتجات مطابقة للبحث الحالي.",
+  onAdd,
+}: ProductGridProps) {
   if (!products.length) {
     return (
       <div className="flex min-h-[220px] min-w-0 items-center justify-center rounded-[8px] border border-dashed border-[#D8C3A2] bg-[#FFFDF8] p-6 text-center">
-        <p className="text-sm font-black text-[#7D6654]">لا توجد منتجات مطابقة للبحث الحالي.</p>
+        <p className="text-sm font-black text-[#7D6654]">{emptyMessage}</p>
       </div>
     );
   }

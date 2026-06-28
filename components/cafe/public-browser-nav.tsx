@@ -50,7 +50,7 @@ export function PublicBrowserNav({
       href: getCafePath(slug, "rewards", previewThemeId),
       label: "المكافآت",
       icon: WalletCards,
-      anyFeature: ["loyalty", "experience_reviews"],
+      anyFeature: ["loyalty"],
     },
     {
       key: "account",

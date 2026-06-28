@@ -23,7 +23,11 @@ import type {
 
 type InvoiceWorkspaceProps = {
   data: FinanceWorkspaceData;
+  realPersistenceReady?: boolean;
 };
+
+const REAL_PERSISTENCE_DISABLED_MESSAGE =
+  "الحفظ الحقيقي يحتاج تفعيل جداول الفواتير بعد مراجعة قاعدة البيانات";
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
@@ -46,13 +50,13 @@ function createItemFromProduct(data: FinanceWorkspaceData, productIndex = 0): Fi
     price: product?.price ?? 0,
     discount: 0,
     taxRate: product?.vatRate ?? 15,
-    accountId: product?.accountId ?? data.accounts[0]?.id ?? "sales-food",
+    accountId: product?.accountId ?? data.accounts[0]?.id ?? "",
     warehouseId: data.warehouses[0]?.id,
     revenueRecognition: product?.revenueRecognition ?? "عند إصدار الفاتورة",
   };
 }
 
-export function InvoiceWorkspace({ data }: InvoiceWorkspaceProps) {
+export function InvoiceWorkspace({ data, realPersistenceReady = false }: InvoiceWorkspaceProps) {
   const [branches, setBranches] = useState(data.branches);
   const [customers, setCustomers] = useState(data.customers);
   const [customFields, setCustomFields] = useState(data.customFields);
@@ -72,11 +76,8 @@ export function InvoiceWorkspace({ data }: InvoiceWorkspaceProps) {
   const [branchModalOpen, setBranchModalOpen] = useState(false);
   const [customFieldModalOpen, setCustomFieldModalOpen] = useState(false);
   const [productModalOpen, setProductModalOpen] = useState(false);
-  const [statusMessage, setStatusMessage] = useState("مسودة محلية فقط، بدون ترحيل أو حفظ في قاعدة البيانات");
-  const [items, setItems] = useState<FinanceInvoiceItem[]>(() => [
-    { ...createItemFromProduct(data, 0), id: "item-seed-1" },
-    { ...createItemFromProduct(data, 1), id: "item-seed-2" },
-  ]);
+  const [statusMessage, setStatusMessage] = useState(REAL_PERSISTENCE_DISABLED_MESSAGE);
+  const [items, setItems] = useState<FinanceInvoiceItem[]>([]);
 
   const totals = useMemo(() => calculateInvoiceTotals(items, discount, amountPaid), [amountPaid, discount, items]);
   const selectedBranch = branches.find((branch) => branch.id === selectedBranchId) ?? branches[0];
@@ -90,6 +91,11 @@ export function InvoiceWorkspace({ data }: InvoiceWorkspaceProps) {
   }
 
   function addItem() {
+    if (!data.products.length) {
+      setStatusMessage("لا توجد بيانات مرتبطة بعد");
+      return;
+    }
+
     setItems((current) => [
       ...current,
       { ...createItemFromProduct(data, current.length), id: `item-${Date.now()}-${current.length}` },
@@ -97,7 +103,7 @@ export function InvoiceWorkspace({ data }: InvoiceWorkspaceProps) {
   }
 
   function removeItem(id: string) {
-    setItems((current) => (current.length > 1 ? current.filter((item) => item.id !== id) : current));
+    setItems((current) => current.filter((item) => item.id !== id));
   }
 
   function changePaymentMethod(id: FinancePaymentMethod["id"]) {
@@ -167,22 +173,32 @@ export function InvoiceWorkspace({ data }: InvoiceWorkspaceProps) {
             <div className="flex min-w-0 flex-wrap gap-1.5 xl:justify-end">
               <button
                 type="button"
+                disabled={!realPersistenceReady}
                 onClick={() => {
+                  if (!realPersistenceReady) {
+                    setStatusMessage(REAL_PERSISTENCE_DISABLED_MESSAGE);
+                    return;
+                  }
                   setInvoiceStatus("جاهزة للاعتماد");
                   setStatusMessage("تم اعتماد الفاتورة تجريبيًا داخل الواجهة فقط");
                 }}
-                className="inline-flex h-9 max-w-full items-center gap-1.5 rounded-[8px] bg-[#2F5D50] px-3 text-[12px] font-black text-white"
+                className="inline-flex h-9 max-w-full items-center gap-1.5 rounded-[8px] bg-[#2F5D50] px-3 text-[12px] font-black text-white disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <FileCheck2 className="h-4 w-4" />
                 اعتماد الفاتورة
               </button>
               <button
                 type="button"
+                disabled={!realPersistenceReady}
                 onClick={() => {
+                  if (!realPersistenceReady) {
+                    setStatusMessage(REAL_PERSISTENCE_DISABLED_MESSAGE);
+                    return;
+                  }
                   setInvoiceStatus("مسودة");
                   setStatusMessage("تم حفظ المسودة محليًا داخل واجهة الديمو");
                 }}
-                className="inline-flex h-9 max-w-full items-center gap-1.5 rounded-[8px] border border-[#D6B677] bg-[#F8E8C9] px-3 text-[12px] font-black text-[#6B431C]"
+                className="inline-flex h-9 max-w-full items-center gap-1.5 rounded-[8px] border border-[#D6B677] bg-[#F8E8C9] px-3 text-[12px] font-black text-[#6B431C] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Save className="h-4 w-4" />
                 حفظ كمسودة
@@ -223,6 +239,14 @@ export function InvoiceWorkspace({ data }: InvoiceWorkspaceProps) {
         </div>
 
         <div className="grid min-w-0 gap-4 overflow-hidden">
+          <div className="rounded-[8px] border border-[#D6B677] bg-[#FFF8EA] p-3 text-[12px] font-bold leading-6 text-[#6B431C]">
+            {REAL_PERSISTENCE_DISABLED_MESSAGE}. يتم عرض المنتجات والفروع والعملاء الحقيقيين المتاحين فقط، وأي نقص في الجداول يظهر كحالة فارغة بدل بيانات وهمية.
+          </div>
+          {!data.products.length ? (
+            <div className="rounded-[8px] border border-dashed border-[#D8C3A2] bg-[#FFFDF8] p-4 text-center text-sm font-black text-[#7D6654]">
+              لا توجد بيانات مرتبطة بعد
+            </div>
+          ) : null}
           <InvoiceForm
             data={{ ...data, products }}
             branches={branches}
@@ -254,7 +278,7 @@ export function InvoiceWorkspace({ data }: InvoiceWorkspaceProps) {
             onOpenCustomerModal={() => setCustomerModalOpen(true)}
             onOpenBranchModal={() => setBranchModalOpen(true)}
             onOpenCustomFieldModal={() => setCustomFieldModalOpen(true)}
-            onOpenProductModal={() => setProductModalOpen(true)}
+            onOpenProductModal={undefined}
             onChangeItem={changeItem}
             onAddItem={addItem}
             onRemoveItem={removeItem}

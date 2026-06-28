@@ -1,7 +1,17 @@
-import { PurchaseInvoiceWorkspace } from "@/components/branda-finance/purchase-invoice-workspace";
-import { getBrandaFinanceInvoiceDemoData } from "@/lib/branda-finance/invoice-demo-data";
+import { FinanceEmptyState } from "@/components/branda-finance/finance-empty-state";
+import { FinancePageShell } from "@/components/branda-finance/finance-page-shell";
 
-export default async function BrandaFinancePurchasesPage() {
-  const data = await getBrandaFinanceInvoiceDemoData();
-  return <PurchaseInvoiceWorkspace data={data} />;
+export default function BrandaFinancePurchasesPage() {
+  return (
+    <FinancePageShell
+      title="فواتير المشتريات"
+      description="تم إيقاف نموذج مشتريات الديمو في هذه الشاشة إلى أن تتوفر جداول الموردين وفواتير المشتريات وبنودها."
+      status="بانتظار قاعدة البيانات"
+    >
+      <FinanceEmptyState
+        title="لا توجد مشتريات حقيقية متاحة بعد"
+        detail="الربط الآمن القادم يحتاج جداول الموردين، فواتير المشتريات، بنود المشتريات، وربطها بالمخزون والحسابات قبل تفعيل الحفظ."
+      />
+    </FinancePageShell>
+  );
 }

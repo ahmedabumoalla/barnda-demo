@@ -23,8 +23,8 @@ import { CafeLogo } from "@/components/cafe/cafe-logo";
 import { ProductMediaDisplay } from "@/components/cafe/product-image";
 import { SharedLoyaltyCard } from "@/components/loyalty/shared-loyalty-card";
 import { BrandaLogo } from "@/components/ui/branda-logo";
-import { useLoyaltyDemoState } from "@/components/loyalty/use-loyalty-demo-state";
 import { formatSar } from "@/lib/format";
+import type { LoyaltyCardDesign, LoyaltyTextElementId } from "@/lib/loyalty/types";
 import {
   isPromoActive,
   productFinalPrice,
@@ -34,6 +34,94 @@ import {
 import { getBusinessCopy } from "@/lib/platform/business-copy";
 
 export type CustomerDockKey = "home" | "orders" | "menu" | "rewards" | "account";
+
+function textElement(
+  id: LoyaltyTextElementId,
+  text: string,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  fontSize: number,
+  enabled = true,
+) {
+  return {
+    id,
+    text,
+    x,
+    y,
+    width,
+    height,
+    fontSize,
+    fontWeight: 900,
+    color: "#FCF8F3",
+    align: "right" as const,
+    enabled,
+  };
+}
+
+function publicLoyaltyCardDesign(input: {
+  customerName?: string;
+  code: string;
+  current: number;
+  required: number;
+  businessCategory?: string;
+}): LoyaltyCardDesign {
+  const copy = getBusinessCopy(input.businessCategory);
+
+  return {
+    enabled: true,
+    brandName: input.customerName || "عميل العلامة",
+    cardTitle: "بطاقة الولاء",
+    subtitle: copy.kind === "events" ? "مكافآت الحضور" : "مكافآت العميل",
+    rewardTitle: "مكافأة جاهزة",
+    supportingText: "اعرض البطاقة عند الكاشير",
+    stampLabel: copy.loyaltyUnitLit,
+    terms: "",
+    stampsRequired: input.required,
+    completedStamps: input.current,
+    cardBackground: "linear-gradient(135deg,#3A2117 0%,#6B3A25 58%,#B88334 100%)",
+    cardForeground: "#FCF8F3",
+    cardAccent: "#D9A33F",
+    logoRemoveLightBackground: false,
+    logoBackgroundTolerance: 20,
+    logoPlacement: "top-right",
+    logoSize: 18,
+    logoOffsetX: 0,
+    logoOffsetY: 0,
+    logoX: 73,
+    logoY: 8,
+    logoWidth: 16,
+    logoHeight: 16,
+    progressIcon: "star",
+    barcodeVisible: true,
+    barcodeX: 8,
+    barcodeY: 73,
+    barcodeWidth: 34,
+    barcodeHeight: 15,
+    qrX: 8,
+    qrY: 8,
+    qrWidth: 18,
+    qrHeight: 18,
+    pointsBadgeVisible: false,
+    pointsBadgeX: 8,
+    pointsBadgeY: 62,
+    pointsBadgeWidth: 24,
+    pointsBadgeHeight: 10,
+    sampleCode: input.code,
+    textElements: {
+      brand: textElement("brand", input.customerName || "عميل العلامة", 42, 10, 28, 8, 22),
+      title: textElement("title", "بطاقة الولاء", 42, 20, 34, 10, 34),
+      subtitle: textElement("subtitle", copy.loyaltyUnitPlural, 42, 31, 34, 8, 20),
+      reward: textElement("reward", "اعرضها عند الكاشير", 42, 42, 34, 8, 18),
+      helper: textElement("helper", "{{code}}", 44, 73, 28, 8, 18),
+      pointsLabel: textElement("pointsLabel", "النقاط", 0, 0, 1, 1, 1, false),
+      pointsValue: textElement("pointsValue", "{{points}}", 0, 0, 1, 1, 1, false),
+      pointsValueSar: textElement("pointsValueSar", "{{value}}", 0, 0, 1, 1, 1, false),
+      barcodeLabel: textElement("barcodeLabel", "رمز البطاقة", 8, 68, 34, 5, 14),
+    },
+  };
+}
 
 export function BrandaMadeByMark({ className = "" }: { className?: string }) {
   return (
@@ -90,30 +178,36 @@ export function AppLoyaltyCard({
   loginHref?: string;
   businessCategory?: string;
 }) {
-  const [demoState] = useLoyaltyDemoState();
   const safeRequired = Math.max(1, Math.min(60, Number(required || 7)));
-  const effectiveRequired = Math.max(1, Math.min(60, Number(demoState.card.stampsRequired || safeRequired)));
-  const completedStamps = Math.max(0, Math.min(effectiveRequired, Number(current || demoState.card.completedStamps || 0)));
-  const effectiveCode = code?.trim() || demoState.card.sampleCode || "BARNDAKSA-2408";
-  const previewCard = {
-    ...demoState.card,
-    brandName: demoState.card.brandName || customerName || "\u0639\u0645\u064a\u0644 \u0627\u0644\u0639\u0644\u0627\u0645\u0629",
-    sampleCode: effectiveCode,
-    stampsRequired: effectiveRequired,
-    completedStamps,
-    pointsBadgeVisible: demoState.points.enabled && demoState.card.pointsBadgeVisible,
-  };
-  const pointsBalance = demoState.points.enabled ? demoState.points.customerPointsBalance : points;
-  const pointValueSar = demoState.points.enabled ? demoState.points.pointValueSar : 0.25;
+  const completedStamps = Math.max(0, Math.min(safeRequired, Number(current || 0)));
+  const effectiveCode = code?.trim();
+  const previewCard = effectiveCode
+    ? publicLoyaltyCardDesign({
+        customerName,
+        code: effectiveCode,
+        current: completedStamps,
+        required: safeRequired,
+        businessCategory,
+      })
+    : null;
 
   const content = (
     <article className="barndaksa-premium-card relative isolate overflow-hidden rounded-[22px]">
-      <SharedLoyaltyCard
-        card={isAuthenticated ? previewCard : { ...previewCard, completedStamps: 0 }}
-        pointsBalance={pointsBalance}
-        pointValueSar={pointValueSar}
-        compact
-      />
+      {previewCard ? (
+        <SharedLoyaltyCard
+          card={isAuthenticated ? previewCard : { ...previewCard, completedStamps: 0 }}
+          pointsBalance={points}
+          pointValueSar={0}
+          compact
+        />
+      ) : (
+        <div className="rounded-[22px] border border-[var(--ci-border,#E7D7C6)] bg-white p-5 text-center shadow-sm">
+          <WalletCards className="mx-auto h-8 w-8 text-[var(--ci-button-bg,#6B3A25)]" />
+          <h2 className="mt-3 text-sm font-black text-[#17212B]">
+            {isAuthenticated ? "لا توجد بطاقة ولاء مرتبطة بحسابك بعد" : "سجل دخولك لعرض بطاقة الولاء الخاصة بك"}
+          </h2>
+        </div>
+      )}
       {!isAuthenticated && loginHref ? (
         <div className="absolute inset-x-3 bottom-3 z-30 rounded-2xl bg-white/92 p-3 text-center shadow-[0_12px_30px_rgba(23,33,43,0.16)] backdrop-blur">
           <h2 className="text-sm font-black text-[#17212B]">{"\u0633\u062c\u0644 \u062f\u062e\u0648\u0644\u0643 \u0644\u0631\u0628\u0637 \u0628\u0637\u0627\u0642\u0629 \u0627\u0644\u0648\u0644\u0627\u0621 \u0627\u0644\u062e\u0627\u0635\u0629 \u0628\u0643"}</h2>

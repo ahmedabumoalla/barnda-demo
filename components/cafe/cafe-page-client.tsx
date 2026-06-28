@@ -866,7 +866,7 @@ function CafePageInner({ slug }: { slug: string }) {
           isCustomer: Boolean(customer),
           hasProducts: hasFeature("menu"),
           hasOrders: hasFeature("reservations") || hasFeature("menu"),
-          hasRewards: hasFeature("loyalty") || hasFeature("experience_reviews"),
+          hasRewards: hasFeature("loyalty"),
           businessCategory: settings.businessCategory,
           active: "home",
         })}

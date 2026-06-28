@@ -12,6 +12,8 @@ import type { FinancePaymentMethod, FinanceProduct, FinanceWorkspaceData } from 
 
 type CashierSalesWorkspaceProps = {
   data: FinanceWorkspaceData;
+  loyaltyEnabled?: boolean;
+  realInvoicePersistenceReady?: boolean;
 };
 
 function searchProduct(product: FinanceProduct, query: string) {
@@ -23,7 +25,11 @@ function searchProduct(product: FinanceProduct, query: string) {
     .some((value) => String(value).toLowerCase().includes(normalized));
 }
 
-export function CashierSalesWorkspace({ data }: CashierSalesWorkspaceProps) {
+export function CashierSalesWorkspace({
+  data,
+  loyaltyEnabled = false,
+  realInvoicePersistenceReady = false,
+}: CashierSalesWorkspaceProps) {
   const [selectedBranchId, setSelectedBranchId] = useState(data.branches[0]?.id ?? "");
   const [selectedWarehouseId, setSelectedWarehouseId] = useState(data.warehouses[0]?.id ?? "");
   const [selectedCustomerId, setSelectedCustomerId] = useState(data.customers[0]?.id ?? "");
@@ -40,7 +46,7 @@ export function CashierSalesWorkspace({ data }: CashierSalesWorkspaceProps) {
   const selectedWarehouse = data.warehouses.find((warehouse) => warehouse.id === selectedWarehouseId) ?? data.warehouses[0];
   const selectedCustomer = data.customers.find((customer) => customer.id === selectedCustomerId) ?? data.customers[0];
   const cashierPaymentMethods = data.paymentMethods.filter((method) =>
-    ["cash", "card", "mada", "transfer", "credit", "loyalty_points"].includes(method.id),
+    ["cash", "card", "mada", "transfer", "credit", ...(loyaltyEnabled ? ["loyalty_points"] : [])].includes(method.id),
   );
 
   const filteredProducts = useMemo(
@@ -170,14 +176,16 @@ export function CashierSalesWorkspace({ data }: CashierSalesWorkspaceProps) {
                   <Languages className="h-4 w-4" />
                   ترجمة ذكية
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setLoyaltyOpen(true)}
-                  className="inline-flex h-9 items-center justify-center gap-1.5 rounded-[8px] border border-[#CFE2D8] bg-[#EDF7F2] px-3 text-[12px] font-black text-[#2F5D50]"
-                >
-                  <ScanLine className="h-4 w-4" />
-                  قراءة باركود الولاء
-                </button>
+                {loyaltyEnabled ? (
+                  <button
+                    type="button"
+                    onClick={() => setLoyaltyOpen(true)}
+                    className="inline-flex h-9 items-center justify-center gap-1.5 rounded-[8px] border border-[#CFE2D8] bg-[#EDF7F2] px-3 text-[12px] font-black text-[#2F5D50]"
+                  >
+                    <ScanLine className="h-4 w-4" />
+                    قراءة باركود الولاء
+                  </button>
+                ) : null}
               </div>
             </div>
           </header>
@@ -214,10 +222,15 @@ export function CashierSalesWorkspace({ data }: CashierSalesWorkspaceProps) {
             </div>
           ) : null}
 
-          <ProductGrid products={filteredProducts} showTranslationPreview={translationPreview} onAdd={addToCart} />
+          <ProductGrid
+            products={filteredProducts}
+            showTranslationPreview={translationPreview}
+            emptyMessage={data.products.length ? "لا توجد منتجات مطابقة للبحث الحالي." : "لا توجد منتجات مربوطة بهذه العلامة بعد"}
+            onAdd={addToCart}
+          />
         </section>
 
-        {selectedCustomer && selectedBranch && selectedWarehouse ? (
+        {selectedCustomer && selectedBranch ? (
           <CashierCartPanel
             items={cart}
             customer={selectedCustomer}
@@ -226,7 +239,9 @@ export function CashierSalesWorkspace({ data }: CashierSalesWorkspaceProps) {
             paymentMethod={paymentMethod}
             paymentMethods={cashierPaymentMethods}
             loyaltyCode={loyaltyCode}
+            loyaltyEnabled={loyaltyEnabled}
             invoicePreviewReady={invoicePreviewReady}
+            realInvoicePersistenceReady={realInvoicePersistenceReady}
             onPaymentMethodChange={setPaymentMethod}
             onIncrease={increase}
             onDecrease={decrease}
@@ -239,7 +254,9 @@ export function CashierSalesWorkspace({ data }: CashierSalesWorkspaceProps) {
         ) : null}
       </div>
 
-      <LoyaltyScanModal open={loyaltyOpen} onClose={() => setLoyaltyOpen(false)} onApply={setLoyaltyCode} />
+      {loyaltyEnabled ? (
+        <LoyaltyScanModal open={loyaltyOpen} onClose={() => setLoyaltyOpen(false)} onApply={setLoyaltyCode} />
+      ) : null}
     </main>
   );
 }

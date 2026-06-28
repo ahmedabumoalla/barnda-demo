@@ -464,7 +464,7 @@ export function ProductDetailClient({ slug, id }: { slug: string; id: string }) 
           active: "menu",
           hasProducts: true,
           hasOrders: true,
-          hasRewards: true,
+          hasRewards: rewardsEnabled,
           businessCategory: settings.businessCategory,
         })}
       />

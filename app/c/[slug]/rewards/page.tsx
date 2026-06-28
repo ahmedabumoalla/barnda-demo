@@ -43,7 +43,6 @@ import { PublicBrowserNav } from "@/components/cafe/public-browser-nav";
 import { PublicFeatureUnavailable } from "@/components/cafe/public-feature-guard";
 import { CustomerPointsSummary } from "@/components/loyalty/customer-points-summary";
 import { SecureQrCode } from "@/components/loyalty/secure-qr-code";
-import { useLoyaltyDemoState } from "@/components/loyalty/use-loyalty-demo-state";
 import { getCafePath, getCustomerLoginHref } from "@/lib/cafe/theme-links";
 import { useResolvedCafeLogoUrl } from "@/lib/cafe/use-resolved-cafe-logo";
 import { publicFeatureAllows } from "@/lib/platform/public-feature-access";
@@ -714,7 +713,6 @@ function RewardsPageInner() {
   const { settings, previewThemeId, features, hydrated } = useCafePageContext(slug);
   const cafeName = settings.cafeName;
   const logoUrl = useResolvedCafeLogoUrl(settings);
-  const [demoState] = useLoyaltyDemoState();
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [loadedSlug, setLoadedSlug] = useState<string | null>(null);
@@ -738,7 +736,7 @@ function RewardsPageInner() {
   const experienceRewardsEnabled = publicFeatureAllows(features, "experience_reviews");
   const productsEnabled = publicFeatureAllows(features, "menu");
   const reservationsEnabled = publicFeatureAllows(features, "reservations");
-  const rewardsPageEnabled = loyaltyEnabled || experienceRewardsEnabled;
+  const rewardsPageEnabled = loyaltyEnabled;
   const loginHref = getCustomerLoginHref(slug, `/c/${slug}/rewards`, previewThemeId);
 
   useEffect(() => {
@@ -786,13 +784,10 @@ function RewardsPageInner() {
   const pageLoading = loading || !hasCurrentSlugData;
   const scopedLoyaltyView = hasCurrentSlugData ? loyaltyView : null;
   const scopedExperienceRewards = hasCurrentSlugData ? experienceRewards : [];
-  const loyaltyPointsBalance = demoState.points.enabled
-    ? demoState.points.customerPointsBalance
-    : Math.max(0, Number(scopedLoyaltyView?.card.availableRewards ?? 0)) * 100;
-  const loyaltyUsedPoints = demoState.points.enabled ? demoState.points.usedPoints : 0;
-  const loyaltyPointValueSar = demoState.points.enabled ? demoState.points.pointValueSar : 0.25;
-  const loyaltyMinimumRedemptionPoints =
-    demoState.points.minimumRedemptionPoints || 100;
+  const loyaltyPointsBalance = 0;
+  const loyaltyUsedPoints = 0;
+  const loyaltyPointValueSar = 0;
+  const loyaltyMinimumRedemptionPoints = 0;
 
   const readyExperienceRewards = useMemo(
     () =>
@@ -966,7 +961,7 @@ function RewardsPageInner() {
           pointValueSar={loyaltyPointValueSar}
           usedPoints={loyaltyUsedPoints}
           minimumRedemptionPoints={loyaltyMinimumRedemptionPoints}
-          preview={!demoState.points.enabled}
+          preview={false}
         />
         <div className="grid gap-2">
           <p className="text-xs font-black text-[var(--ci-muted-fg,#806A5E)]">
@@ -1086,7 +1081,7 @@ function RewardsPageInner() {
               pointValueSar={loyaltyPointValueSar}
               usedPoints={loyaltyUsedPoints}
               minimumRedemptionPoints={loyaltyMinimumRedemptionPoints}
-              preview={!demoState.points.enabled}
+              preview={false}
             />
             <LoyaltyQrPreviewCard
               view={scopedLoyaltyView}
@@ -1139,7 +1134,7 @@ function RewardsPageInner() {
           active: "rewards",
           hasProducts: productsEnabled,
           hasOrders: reservationsEnabled,
-          hasRewards: loyaltyEnabled || experienceRewardsEnabled,
+          hasRewards: loyaltyEnabled,
           isCustomer: true,
           businessCategory: settings.businessCategory,
         })}

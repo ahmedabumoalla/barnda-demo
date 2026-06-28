@@ -99,6 +99,26 @@ export function getEffectiveBrandFeatureAccess(
   });
 }
 
+export function isBrandaFinanceEnabledForBrand(
+  planFeatures: readonly PlatformFeatureCode[] | readonly string[] | null | undefined,
+  brandOverrides: readonly BrandFeatureOverride[] = []
+) {
+  const access = getEffectiveBrandFeatureAccess(planFeatures, brandOverrides).find(
+    (row) => row.feature.id === "branda_finance"
+  );
+  return Boolean(access?.effectiveEnabled);
+}
+
+export function canShowBrandaFinance(context: {
+  planId?: string | null;
+  plans?: readonly Pick<PlatformPlan, "id" | "features">[];
+  features?: readonly PlatformFeatureCode[] | readonly string[] | null;
+  overrides?: readonly BrandFeatureOverride[];
+}) {
+  const planFeatures = context.features ?? getPlanIncludedFeatures(context.planId, context.plans);
+  return isBrandaFinanceEnabledForBrand(planFeatures, context.overrides);
+}
+
 export function getSidebarFeaturesForBrand(context: {
   planId?: string | null;
   plans?: readonly Pick<PlatformPlan, "id" | "features">[];
@@ -115,7 +135,8 @@ export function getSidebarFeaturesForBrand(context: {
     }))
     .filter(({ feature, access }) => {
       if (feature.defaultEnabled) return true;
-      if (feature.id === "cashier" || feature.id === "branda_finance") return true;
+      if (feature.id === "branda_finance") return Boolean(access?.effectiveEnabled);
+      if (feature.id === "cashier") return true;
       return Boolean(access?.effectiveEnabled);
     });
 }

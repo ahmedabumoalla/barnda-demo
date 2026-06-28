@@ -10,14 +10,13 @@ import { FinanceBackButton } from "@/components/branda-finance/finance-back-butt
 import { InvoiceForm } from "@/components/branda-finance/invoice-form";
 import { InvoicePreviewModal } from "@/components/branda-finance/invoice-preview-modal";
 import { calculateInvoiceTotals } from "@/components/branda-finance/invoice-totals";
-import { LocalProductModal } from "@/components/branda-finance/local-product-modal";
+import { BRANDA_FINANCE_REAL_PERSISTENCE_DISABLED_MESSAGE } from "@/lib/branda-finance/db-readiness";
 import type {
   FinanceBranch,
   FinanceCustomField,
   FinanceCustomer,
   FinanceInvoiceItem,
   FinancePaymentMethod,
-  FinanceProduct,
   FinanceWorkspaceData,
 } from "@/lib/branda-finance/invoice-types";
 
@@ -25,9 +24,6 @@ type InvoiceWorkspaceProps = {
   data: FinanceWorkspaceData;
   realPersistenceReady?: boolean;
 };
-
-const REAL_PERSISTENCE_DISABLED_MESSAGE =
-  "الحفظ الحقيقي يحتاج تفعيل جداول الفواتير بعد مراجعة قاعدة البيانات";
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
@@ -60,7 +56,7 @@ export function InvoiceWorkspace({ data, realPersistenceReady = false }: Invoice
   const [branches, setBranches] = useState(data.branches);
   const [customers, setCustomers] = useState(data.customers);
   const [customFields, setCustomFields] = useState(data.customFields);
-  const [products, setProducts] = useState(data.products);
+  const [products] = useState(data.products);
   const [selectedBranchId, setSelectedBranchId] = useState(data.branches[0]?.id ?? "");
   const [selectedWarehouseId, setSelectedWarehouseId] = useState(data.warehouses[0]?.id ?? "");
   const [selectedCustomerId, setSelectedCustomerId] = useState(data.customers[0]?.id ?? "");
@@ -75,8 +71,7 @@ export function InvoiceWorkspace({ data, realPersistenceReady = false }: Invoice
   const [customerModalOpen, setCustomerModalOpen] = useState(false);
   const [branchModalOpen, setBranchModalOpen] = useState(false);
   const [customFieldModalOpen, setCustomFieldModalOpen] = useState(false);
-  const [productModalOpen, setProductModalOpen] = useState(false);
-  const [statusMessage, setStatusMessage] = useState(REAL_PERSISTENCE_DISABLED_MESSAGE);
+  const [statusMessage, setStatusMessage] = useState(BRANDA_FINANCE_REAL_PERSISTENCE_DISABLED_MESSAGE);
   const [items, setItems] = useState<FinanceInvoiceItem[]>([]);
 
   const totals = useMemo(() => calculateInvoiceTotals(items, discount, amountPaid), [amountPaid, discount, items]);
@@ -129,26 +124,6 @@ export function InvoiceWorkspace({ data, realPersistenceReady = false }: Invoice
     setStatusMessage("تمت إضافة الحقل المخصص محليًا داخل الواجهة");
   }
 
-  function saveProduct(product: FinanceProduct) {
-    setProducts((current) => [product, ...current]);
-    setItems((current) => [
-      ...current,
-      {
-        id: `item-product-${Date.now()}`,
-        productId: product.id,
-        description: product.name,
-        quantity: 1,
-        price: product.price,
-        discount: 0,
-        taxRate: product.vatRate,
-        accountId: product.accountId,
-        warehouseId: product.defaultWarehouseId ?? selectedWarehouseId,
-        revenueRecognition: product.revenueRecognition,
-      },
-    ]);
-    setStatusMessage("تمت إضافة المنتج محليًا وأصبح متاحًا داخل جدول الفاتورة");
-  }
-
   return (
     <main dir="rtl" className="min-h-screen w-full max-w-full overflow-x-hidden bg-[#F5EFE6] px-3 py-4 text-right text-[#2F241D] sm:px-4 lg:px-5">
       <div className="mx-auto flex w-full max-w-full min-w-0 flex-col gap-4 overflow-hidden">
@@ -161,8 +136,8 @@ export function InvoiceWorkspace({ data, realPersistenceReady = false }: Invoice
               <p className="text-xs font-black text-[#9C6B2E]">برندا المالية</p>
               <h1 className="mt-1 text-2xl font-black text-[#2F241D] sm:text-3xl">إنشاء فاتورة مبيعات</h1>
               <div className="mt-1 flex min-w-0 flex-wrap items-center gap-2">
-                <span className="rounded-[8px] border border-[#D8BD89] bg-[#F8E8C9] px-2.5 py-1 text-[11px] font-black text-[#6B431C]" dir="ltr">
-                  INV-000101
+                <span className="rounded-[8px] border border-[#D8BD89] bg-[#F8E8C9] px-2.5 py-1 text-[11px] font-black text-[#6B431C]">
+                  رقم الفاتورة يصدر بعد التفعيل
                 </span>
                 <span className="rounded-[8px] border border-[#CFE2D8] bg-[#EDF7F2] px-2.5 py-1 text-[11px] font-black text-[#2F5D50]">
                   {invoiceStatus}
@@ -176,11 +151,11 @@ export function InvoiceWorkspace({ data, realPersistenceReady = false }: Invoice
                 disabled={!realPersistenceReady}
                 onClick={() => {
                   if (!realPersistenceReady) {
-                    setStatusMessage(REAL_PERSISTENCE_DISABLED_MESSAGE);
+                    setStatusMessage(BRANDA_FINANCE_REAL_PERSISTENCE_DISABLED_MESSAGE);
                     return;
                   }
                   setInvoiceStatus("جاهزة للاعتماد");
-                  setStatusMessage("تم اعتماد الفاتورة تجريبيًا داخل الواجهة فقط");
+                  setStatusMessage("تم اعتماد الفاتورة داخل الواجهة بدون كتابة دائمة");
                 }}
                 className="inline-flex h-9 max-w-full items-center gap-1.5 rounded-[8px] bg-[#2F5D50] px-3 text-[12px] font-black text-white disabled:cursor-not-allowed disabled:opacity-50"
               >
@@ -192,11 +167,11 @@ export function InvoiceWorkspace({ data, realPersistenceReady = false }: Invoice
                 disabled={!realPersistenceReady}
                 onClick={() => {
                   if (!realPersistenceReady) {
-                    setStatusMessage(REAL_PERSISTENCE_DISABLED_MESSAGE);
+                    setStatusMessage(BRANDA_FINANCE_REAL_PERSISTENCE_DISABLED_MESSAGE);
                     return;
                   }
                   setInvoiceStatus("مسودة");
-                  setStatusMessage("تم حفظ المسودة محليًا داخل واجهة الديمو");
+                  setStatusMessage("تم حفظ المسودة داخل الواجهة بدون كتابة دائمة");
                 }}
                 className="inline-flex h-9 max-w-full items-center gap-1.5 rounded-[8px] border border-[#D6B677] bg-[#F8E8C9] px-3 text-[12px] font-black text-[#6B431C] disabled:cursor-not-allowed disabled:opacity-50"
               >
@@ -220,7 +195,7 @@ export function InvoiceWorkspace({ data, realPersistenceReady = false }: Invoice
               </button>
               <button
                 type="button"
-                onClick={() => setStatusMessage("المرفقات محلية في الديمو ولا يتم رفع أي ملفات الآن")}
+                onClick={() => setStatusMessage("المرفقات محلية ولا يتم رفع أي ملفات الآن")}
                 className="inline-flex h-9 max-w-full items-center gap-1.5 rounded-[8px] border border-[#D8C7B2] bg-white px-3 text-[12px] font-black text-[#5B3926]"
               >
                 <Paperclip className="h-4 w-4" />
@@ -228,7 +203,7 @@ export function InvoiceWorkspace({ data, realPersistenceReady = false }: Invoice
               </button>
               <button
                 type="button"
-                onClick={() => setStatusMessage("تم إغلاق مساحة العمل تجريبيًا بدون انتقال أو حفظ دائم")}
+                onClick={() => setStatusMessage("تم إغلاق مساحة العمل بدون انتقال أو حفظ دائم")}
                 className="inline-flex h-9 max-w-full items-center gap-1.5 rounded-[8px] border border-[#E6CFC8] bg-[#FFF7F4] px-3 text-[12px] font-black text-[#9B3327]"
               >
                 <X className="h-4 w-4" />
@@ -240,7 +215,7 @@ export function InvoiceWorkspace({ data, realPersistenceReady = false }: Invoice
 
         <div className="grid min-w-0 gap-4 overflow-hidden">
           <div className="rounded-[8px] border border-[#D6B677] bg-[#FFF8EA] p-3 text-[12px] font-bold leading-6 text-[#6B431C]">
-            {REAL_PERSISTENCE_DISABLED_MESSAGE}. يتم عرض المنتجات والفروع والعملاء الحقيقيين المتاحين فقط، وأي نقص في الجداول يظهر كحالة فارغة بدل بيانات وهمية.
+            {BRANDA_FINANCE_REAL_PERSISTENCE_DISABLED_MESSAGE}. يتم عرض المنتجات والفروع والعملاء الحقيقيين المتاحين فقط، وأي نقص في الجداول يظهر كحالة فارغة بدل بيانات محلية مصطنعة.
           </div>
           {!data.products.length ? (
             <div className="rounded-[8px] border border-dashed border-[#D8C3A2] bg-[#FFFDF8] p-4 text-center text-sm font-black text-[#7D6654]">
@@ -289,17 +264,6 @@ export function InvoiceWorkspace({ data, realPersistenceReady = false }: Invoice
       <AddCustomerModal open={customerModalOpen} onClose={() => setCustomerModalOpen(false)} onSave={saveCustomer} />
       <AddBranchModal open={branchModalOpen} onClose={() => setBranchModalOpen(false)} onSave={saveBranch} />
       <CustomFieldModal open={customFieldModalOpen} onClose={() => setCustomFieldModalOpen(false)} onSave={saveCustomField} />
-      <LocalProductModal
-        open={productModalOpen}
-        mode="sales"
-        categories={data.categories}
-        accounts={data.accounts}
-        warehouses={data.warehouses}
-        taxRates={data.taxRates}
-        suppliers={data.suppliers}
-        onClose={() => setProductModalOpen(false)}
-        onSave={saveProduct}
-      />
       {selectedBranch && selectedWarehouse && selectedCustomer && selectedPaymentMethod ? (
         <InvoicePreviewModal
           open={previewOpen}

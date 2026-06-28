@@ -38,7 +38,7 @@ export function GeneralLedgerReport() {
                   </span>
                   <div>
                     <p className="text-xs font-extrabold text-[#9A6A2F]">دفتر محاسبي</p>
-                    <p className="mt-1 text-sm font-black text-[#3B2417]">واجهة تجريبية فقط</p>
+                    <p className="mt-1 text-sm font-black text-[#3B2417]">واجهة معاينة فقط</p>
                   </div>
                 </div>
               </div>

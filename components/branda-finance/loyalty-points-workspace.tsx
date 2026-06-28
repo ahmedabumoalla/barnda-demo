@@ -20,14 +20,14 @@ export function LoyaltyPointsWorkspace() {
   const [minimumOrder, setMinimumOrder] = useState(30);
   const [minimumRedeem, setMinimumRedeem] = useState(50);
   const [maxRedemptionPercent, setMaxRedemptionPercent] = useState(35);
-  const [terms, setTerms] = useState("النقاط صالحة حسب سياسة العلامة، ولا تشمل الضرائب أو المنتجات المخفضة في الديمو.");
+  const [terms, setTerms] = useState("النقاط صالحة حسب سياسة العلامة، ولا تشمل الضرائب أو المنتجات المخفضة في المعاينة المحلية.");
 
-  const sampleInvoice = 186;
-  const earnedPoints = useMemo(() => (sampleInvoice >= minimumOrder ? Math.floor(sampleInvoice * pointsPerSar) : 0), [minimumOrder, pointsPerSar]);
-  const redeemableSar = useMemo(() => Math.min(earnedPoints * pointValue, sampleInvoice * (maxRedemptionPercent / 100)), [earnedPoints, maxRedemptionPercent, pointValue]);
+  const previewInvoiceAmount = 186;
+  const earnedPoints = useMemo(() => (previewInvoiceAmount >= minimumOrder ? Math.floor(previewInvoiceAmount * pointsPerSar) : 0), [minimumOrder, pointsPerSar]);
+  const redeemableSar = useMemo(() => Math.min(earnedPoints * pointValue, previewInvoiceAmount * (maxRedemptionPercent / 100)), [earnedPoints, maxRedemptionPercent, pointValue]);
 
   return (
-    <FinancePageShell title="نقاط الولاء المتقدمة" description="إعداد نقاط الولاء للمنتجات والفواتير مع معاينة الكسب والاستبدال وربط محاسبي ديمو." status="محلي فقط" actions={[{ label: "الكاشير", href: "/dashboard/branda-finance/sales", primary: true }, { label: "بطاقات الولاء", href: "/dashboard/loyalty" }]}>
+    <FinancePageShell title="نقاط الولاء المتقدمة" description="إعداد نقاط الولاء للمنتجات والفواتير مع معاينة الكسب والاستبدال وربط محاسبي محلي." status="محلي فقط" actions={[{ label: "الكاشير", href: "/dashboard/branda-finance/sales", primary: true }, { label: "بطاقات الولاء", href: "/dashboard/loyalty" }]}>
       <section className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <FinanceStatCard label="حالة البرنامج" value={enabled ? "مفعل" : "موقوف"} tone={enabled ? "green" : "red"} />
         <FinanceStatCard label="كل 1 ريال" value={`${pointsPerSar} نقطة`} tone="gold" />
@@ -73,7 +73,7 @@ export function LoyaltyPointsWorkspace() {
               <h2 className="text-[14px] font-black text-[#2F241D]">معاينة فاتورة</h2>
             </div>
             <div className="mt-3 space-y-2 text-[12px] font-bold">
-              <Line label="قيمة الفاتورة" value={financeAmount(sampleInvoice)} />
+              <Line label="قيمة الفاتورة" value={financeAmount(previewInvoiceAmount)} />
               <Line label="النقاط المكتسبة" value={`${earnedPoints} نقطة`} />
               <Line label="خصم الاستبدال" value={financeAmount(redeemableSar)} />
               <Line label="قيد الولاء" value="Dr marketing / Cr receivable" />

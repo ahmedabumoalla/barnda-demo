@@ -44,7 +44,7 @@ export function calculateStockImpactPreview(invoice: FinanceDemoInvoice) {
   return invoice.items.map((item) => ({
     productId: item.productId,
     quantityOut: item.quantity,
-    note: "خصم محلي تجريبي من المخزون عند اعتماد الفاتورة لاحقا",
+    note: "خصم محلي من المخزون عند اعتماد الفاتورة لاحقا",
   }));
 }
 

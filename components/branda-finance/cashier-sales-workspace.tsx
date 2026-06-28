@@ -115,7 +115,7 @@ export function CashierSalesWorkspace({
                 <div className="flex min-w-0 flex-wrap gap-1.5">
                   <div className="inline-flex h-9 w-fit items-center gap-1.5 rounded-[8px] border border-[#CFE2D8] bg-[#EDF7F2] px-2.5 text-[11px] font-black text-[#2F5D50]">
                     <ShieldCheck className="h-4 w-4" />
-                    جلسة كاشير تجريبية نشطة
+                    جلسة كاشير محلية بدون حفظ
                   </div>
                   <Link
                     href="/dashboard/branda-finance/invoicing/create?source=cashier"

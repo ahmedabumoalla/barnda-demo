@@ -51,7 +51,7 @@ export function LoyaltyPointsSettings({ value, onChange }: Props) {
               <NeumoInput type="number" min={0} value={value.minimumRedemptionPoints} onChange={(event) => patch({ minimumRedemptionPoints: Number(event.target.value) || 0 })} />
             </label>
             <label className="space-y-2">
-              <span className="text-xs font-black text-[#6B3A25]">رصيد عميل تجريبي</span>
+              <span className="text-xs font-black text-[#6B3A25]">رصيد عميل للمعاينة</span>
               <NeumoInput type="number" min={0} value={value.customerPointsBalance} onChange={(event) => patch({ customerPointsBalance: Number(event.target.value) || 0 })} />
             </label>
             <label className="space-y-2">

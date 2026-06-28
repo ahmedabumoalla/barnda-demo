@@ -97,7 +97,7 @@ export function ChartOfAccountsWorkspace() {
             <button type="button" onClick={() => { setEditing(account); setModalOpen(true); }} className="flex h-8 w-8 items-center justify-center rounded-[8px] border border-[#D8C7B2] bg-white text-[#5B3926]" title="تعديل">
               <Edit3 className="h-4 w-4" />
             </button>
-            <button type="button" disabled title="الحذف معطل في الديمو لأن الحساب قد يكون مستخدماً" className="flex h-8 w-8 cursor-not-allowed items-center justify-center rounded-[8px] border border-[#E6CFC8] bg-[#FFF7F4] text-[#9B3327] opacity-60">
+            <button type="button" disabled title="الحذف معطل لأن الحساب قد يكون مستخدماً" className="flex h-8 w-8 cursor-not-allowed items-center justify-center rounded-[8px] border border-[#E6CFC8] bg-[#FFF7F4] text-[#9B3327] opacity-60">
               <Trash2 className="h-4 w-4" />
             </button>
           </div>,

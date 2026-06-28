@@ -15,7 +15,7 @@ export default async function BrandaFinanceStatementDetailPage({
 
   if (!statement) {
     return (
-      <FinancePageShell title="كشف غير متاح" description="لم يتم العثور على الكيان المطلوب داخل بيانات الديمو." status="غير متاح" backHref="/dashboard/branda-finance/statements">
+      <FinancePageShell title="كشف غير متاح" description="لم يتم العثور على الكيان المطلوب داخل بيانات المعاينة." status="غير متاح" backHref="/dashboard/branda-finance/statements">
         <FinanceEmptyState title="لا يوجد كشف لهذا المسار" detail="المسار يعمل بشكل آمن ويعرض هذه الحالة بدلاً من كسر الصفحة." />
       </FinancePageShell>
     );

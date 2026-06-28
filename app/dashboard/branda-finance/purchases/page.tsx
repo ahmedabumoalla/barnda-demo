@@ -5,7 +5,7 @@ export default function BrandaFinancePurchasesPage() {
   return (
     <FinancePageShell
       title="فواتير المشتريات"
-      description="تم إيقاف نموذج مشتريات الديمو في هذه الشاشة إلى أن تتوفر جداول الموردين وفواتير المشتريات وبنودها."
+      description="تم إيقاف نموذج المشتريات المحلي في هذه الشاشة إلى أن تتوفر جداول الموردين وفواتير المشتريات وبنودها."
       status="بانتظار قاعدة البيانات"
     >
       <FinanceEmptyState

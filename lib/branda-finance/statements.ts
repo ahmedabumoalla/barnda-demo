@@ -72,7 +72,7 @@ export function getFinanceStatement(entityType: FinanceStatementEntityType, enti
       entityType,
       entityId,
       title: `كشف حساب ${supplier.name}`,
-      description: "حركة المورد حسب فواتير الشراء والمدفوعات التجريبية.",
+      description: "حركة المورد حسب فواتير الشراء والمدفوعات المحلية.",
       summary: buildSummary(0, debit, credit),
       headers: ["التاريخ", "المرجع", "المستند", "الوصف", "مدين", "دائن", "الرصيد", "الفرع", "مركز التكلفة"],
       rows: invoices.map((invoice) => {

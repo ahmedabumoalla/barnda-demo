@@ -20,7 +20,7 @@ export default function BrandaFinanceReportsRoutePage() {
         <FinanceStatCard label="عدد التقارير" value={String(brandaFinanceReports.length)} hint="كلها Routes حقيقية" tone="green" />
         <FinanceStatCard label="تقارير محاسبية" value="4" hint="دفتر وميزان وكشوف" tone="brown" />
         <FinanceStatCard label="الأقسام" value={String(brandaFinanceReportSections.length)} hint="مبيعات ومشتريات ومخزون" tone="gold" />
-        <FinanceStatCard label="مصدر البيانات" value="محلي" hint="typed demo data" tone="brown" />
+        <FinanceStatCard label="مصدر البيانات" value="محلي" hint="بيانات معاينة typed" tone="brown" />
       </section>
 
       <section className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">

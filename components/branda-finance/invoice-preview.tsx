@@ -43,9 +43,9 @@ export function InvoicePreview({
     >
       <div className="mb-3 flex min-w-0 items-center justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-xs font-black text-[#9C6B2E]">معاينة غير نهائية</p>
-          <h2 className="mt-1 truncate text-xl font-black text-[#2F241D]">فاتورة ضريبية</h2>
-          <p className="mt-1 text-xs font-bold text-[#806A58]">INV-000101</p>
+          <p className="text-xs font-black text-[#9C6B2E]">معاينة غير محفوظة</p>
+          <h2 className="mt-1 truncate text-xl font-black text-[#2F241D]">فاتورة مبيعات</h2>
+          <p className="mt-1 text-xs font-bold text-[#806A58]">بانتظار إصدار رقم</p>
         </div>
         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[8px] border border-[#D8BD89] bg-[#F2E0BF] text-base font-black text-[#5B3926]">
           B
@@ -57,7 +57,7 @@ export function InvoicePreview({
           <PreviewLine label="البائع" value={branch.displayName || branch.name} />
           <PreviewLine label="الفرع" value={branch.city} />
           <PreviewLine label="المستودع" value={warehouse.name} />
-          <PreviewLine label="رقم الفاتورة" value="INV-000101" />
+          <PreviewLine label="رقم الفاتورة" value="غير صادر" />
           <PreviewLine label="تاريخ الإصدار" value={issueDate} />
           <PreviewLine label="تاريخ الاستحقاق" value={dueDate} />
           <PreviewLine label="العميل" value={customer.name} />
@@ -114,10 +114,10 @@ export function InvoicePreview({
 
       <div className="mt-3 grid min-w-0 gap-2 sm:grid-cols-[96px_minmax(0,1fr)]">
         <div className="flex aspect-square items-center justify-center rounded-[8px] border border-dashed border-[#CFA85F] bg-[#FFF8EA] text-center text-xs font-black leading-5 text-[#6B431C]">
-          QR تجريبي وليس QR زاتكا
+          QR غير مفعل
         </div>
         <div className="min-w-0 rounded-[8px] border border-dashed border-[#CFA85F] bg-[#FFF8EA] p-3 text-xs font-bold leading-6 text-[#6B431C]">
-          هذه المعاينة محلية لغرض تجربة إنشاء فواتير المبيعات. لا يوجد اعتماد زاتكا أو ترحيل محاسبي أو طباعة فعلية في هذا الديمو.
+          هذه المعاينة محلية لإنشاء فواتير المبيعات بدون حفظ دائم. لا يوجد اعتماد زاتكا أو ترحيل محاسبي أو طباعة فعلية قبل تفعيل الجداول.
         </div>
       </div>
     </aside>

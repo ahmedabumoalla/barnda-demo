@@ -69,7 +69,7 @@ export function PublicLoyaltyCardSection({ slug, cafeName, program }: Props) {
             لا توجد بطاقة حقيقية متاحة للعرض الآن
           </p>
           <p className="mt-2 text-xs font-bold leading-6 text-[var(--ci-muted-fg,#806A5E)]">
-            تم إيقاف كود المعاينة والرصيد التجريبي في الواجهة العامة.
+            تم إيقاف كود المعاينة والرصيد المحلي في الواجهة العامة.
           </p>
         </div>
 

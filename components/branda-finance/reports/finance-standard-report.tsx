@@ -93,7 +93,7 @@ function buildReport(kind: StandardReportKind): ReportConfig {
       ["1301", "المخزون", "أصول", financeAmount(inventoryValue), financeAmount(0)],
       ["2101", "الذمم الدائنة", "التزامات", financeAmount(0), financeAmount(purchaseTotal)],
       ["2205", "ضريبة القيمة المضافة", "التزامات", financeAmount(0), financeAmount(salesVat)],
-      ["3101", "رأس المال التجريبي", "حقوق ملكية", financeAmount(0), financeAmount(equity)],
+      ["3101", "رأس المال المحلي", "حقوق ملكية", financeAmount(0), financeAmount(equity)],
       ["4101", "إيرادات المبيعات", "إيرادات", financeAmount(0), financeAmount(salesTotal)],
       ["5101", "تكلفة البضاعة المباعة", "مصروفات", financeAmount(estimatedCost), financeAmount(0)],
       ["6101", "مصروفات تشغيلية", "مصروفات", financeAmount(operatingExpenses), financeAmount(0)],
@@ -128,7 +128,7 @@ function buildReport(kind: StandardReportKind): ReportConfig {
     return {
       title: "كشف الحساب",
       description: "حركة حساب عميل أو مورد مع الرصيد الافتتاحي والحركات والرصيد الختامي داخل جدول محصور.",
-      filters: [...commonFilters, `الحساب: ${customer?.name ?? "عميل تجريبي"}`],
+      filters: [...commonFilters, `الحساب: ${customer?.name ?? "عميل للمعاينة"}`],
       kpis: [
         { label: "الرصيد الافتتاحي", value: financeAmount(0), tone: "brown" },
         { label: "الحركات المدينة", value: financeAmount(salesTotal), tone: "green" },
@@ -193,7 +193,7 @@ function buildReport(kind: StandardReportKind): ReportConfig {
 
     return {
       title: "تسوية مصرفية",
-      description: "مقارنة رصيد البنك مع رصيد الدفتر وإظهار الفروقات المقترحة بشكل تجريبي.",
+      description: "مقارنة رصيد البنك مع رصيد الدفتر وإظهار الفروقات المقترحة محلياً.",
       filters: [...commonFilters, "البنك: كل الحسابات"],
       kpis: [
         { label: "رصيد البنك", value: financeAmount(bankTotal), tone: "green" },
@@ -233,7 +233,7 @@ function buildReport(kind: StandardReportKind): ReportConfig {
     const rows = [
       ["مبيعات خاضعة", financeAmount(salesTotal - salesVat), "15%", financeAmount(salesVat)],
       ["مشتريات خاضعة", financeAmount(purchaseTotal - purchaseVat), "15%", financeAmount(purchaseVat)],
-      ["صافي الضريبة", "مستحق تجريبي", "-", financeAmount(salesVat - purchaseVat)],
+      ["صافي الضريبة", "مستحق محلي", "-", financeAmount(salesVat - purchaseVat)],
     ];
 
     return {

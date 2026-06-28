@@ -10,7 +10,7 @@ export default async function BrandaFinanceInvoicingPage() {
   return (
     <FinancePageShell
       title="فواتير المبيعات"
-      description="قائمة الفواتير التشغيلية لا تعرض بيانات وهمية. إنشاء الفواتير يقرأ المنتجات والفروع والعملاء الحقيقيين، لكن الحفظ معطل إلى أن تتوفر جداول الفواتير وبنودها."
+      description="قائمة الفواتير التشغيلية لا تعرض بيانات مصطنعة. إنشاء الفواتير يقرأ المنتجات والفروع والعملاء الحقيقيين، لكن الحفظ معطل إلى أن تتوفر جداول الفواتير وبنودها."
       status="بانتظار قاعدة البيانات"
       actions={[
         { label: "إنشاء فاتورة", href: "/dashboard/branda-finance/invoicing/create", primary: true },
@@ -28,7 +28,7 @@ export default async function BrandaFinanceInvoicingPage() {
         <div className="min-w-0 space-y-3">
           <FinanceEmptyState
             title="لا توجد قائمة فواتير حقيقية بعد"
-            detail="تم إيقاف عرض فواتير الديمو في هذه الشاشة. عند إضافة جداول فواتير المبيعات وبنودها يمكن ربط هذه القائمة بالقراءة الحقيقية مع RLS وفلاتر الفرع والعميل والحالة."
+            detail="تم إيقاف عرض الفواتير المحلية في هذه الشاشة. عند إضافة جداول فواتير المبيعات وبنودها يمكن ربط هذه القائمة بالقراءة الحقيقية مع RLS وفلاتر الفرع والعميل والحالة."
           />
           <div className="rounded-[8px] border border-[#D8C3A2] bg-[#FFFDF8] p-3">
             <h2 className="text-[14px] font-black text-[#2F241D]">مصادر النموذج المتاحة</h2>

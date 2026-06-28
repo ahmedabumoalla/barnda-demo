@@ -60,7 +60,7 @@ async function readBranches(notes: string[]): Promise<FinanceBranch[]> {
   try {
     const branches = await getOwnerBranches();
     if (!branches.length) {
-      notes.push("لم يتم العثور على فروع فعلية، تم استخدام فروع تجريبية.");
+      notes.push("لم يتم العثور على فروع فعلية، تم استخدام فروع محلية للمعاينة.");
       return financeMockBranches;
     }
 
@@ -76,7 +76,7 @@ async function readBranches(notes: string[]): Promise<FinanceBranch[]> {
       })),
     );
   } catch {
-    notes.push("تعذرت قراءة الفروع الحالية، تم استخدام فروع محلية تجريبية.");
+    notes.push("تعذرت قراءة الفروع الحالية، تم استخدام فروع محلية للمعاينة.");
     return financeMockBranches;
   }
 }
@@ -85,7 +85,7 @@ async function readCustomers(notes: string[]): Promise<FinanceCustomer[]> {
   try {
     const customers = await getCafeCustomers();
     if (!customers.length) {
-      notes.push("لم يتم العثور على عملاء فعليين، تم استخدام عملاء تجريبيين.");
+      notes.push("لم يتم العثور على عملاء فعليين، تم استخدام عملاء محليين للمعاينة.");
       return financeMockCustomers;
     }
 
@@ -103,7 +103,7 @@ async function readCustomers(notes: string[]): Promise<FinanceCustomer[]> {
       paymentTerms: "فوري",
     }));
   } catch {
-    notes.push("تعذرت قراءة العملاء الحاليين، تم استخدام عملاء محليين تجريبيين.");
+    notes.push("تعذرت قراءة العملاء الحاليين، تم استخدام عملاء محليين للمعاينة.");
     return financeMockCustomers;
   }
 }
@@ -121,7 +121,7 @@ async function readMenuProducts(notes: string[]): Promise<{
     }));
 
     if (!products.length) {
-      notes.push("لم يتم العثور على منتجات فعلية، تم استخدام منتجات تجريبية.");
+      notes.push("لم يتم العثور على منتجات فعلية، تم استخدام منتجات محلية للمعاينة.");
       return { products: financeMockProducts, categories: financeMockCategories };
     }
 
@@ -131,7 +131,7 @@ async function readMenuProducts(notes: string[]): Promise<{
       categories: categories.length ? categories : financeMockCategories,
     };
   } catch {
-    notes.push("تعذرت قراءة المنتجات الحالية، تم استخدام منتجات محلية تجريبية.");
+    notes.push("تعذرت قراءة المنتجات الحالية، تم استخدام منتجات محلية للمعاينة.");
     return { products: financeMockProducts, categories: financeMockCategories };
   }
 }

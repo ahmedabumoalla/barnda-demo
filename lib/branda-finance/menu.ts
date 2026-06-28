@@ -30,7 +30,7 @@ const ready = "جاهز";
 const local = "محلي";
 
 export const brandaFinanceMenuItems: BrandaFinanceMenuItem[] = [
-  { title: "التقارير المالية", icon: "reports", description: "مركز تقارير مالية مترابط مع الديمو", href: "/dashboard/branda-finance/reports", badge: ready },
+  { title: "التقارير المالية", icon: "reports", description: "مركز تقارير مالية بمعاينات محلية", href: "/dashboard/branda-finance/reports", badge: ready },
   { title: "المبيعات", icon: "sales", description: "شاشة كاشير ومبيعات مرتبطة بالفواتير", href: "/dashboard/branda-finance/sales", badge: ready },
   { title: "طلبات الصالة", icon: "sales", description: "تدفق ويتر وطاولات وتحويل محلي لفاتورة", href: "/dashboard/branda-finance/hall-orders", badge: local },
   { title: "الفواتير", icon: "invoices", description: "قائمة فواتير المبيعات وإنشاء فاتورة", href: "/dashboard/branda-finance/invoicing", badge: ready },
@@ -39,7 +39,7 @@ export const brandaFinanceMenuItems: BrandaFinanceMenuItem[] = [
   { title: "العملاء والموردين", icon: "contacts", description: "أرصدة وكشوف حساب وأعمار ديون", href: "/dashboard/branda-finance/parties", badge: local },
   { title: "الرواتب والموظفين", icon: "payroll", description: "رواتب وعهد وسلف واستقطاعات", href: "/dashboard/branda-finance/payroll", badge: local },
   { title: "المنتجات والخدمات والمخزون", icon: "inventory", description: "منتجات وخدمات ومستودعات وتنبيهات", href: "/dashboard/branda-finance/catalog", badge: local },
-  { title: "للمحاسب", icon: "accountant", description: "شجرة حسابات وقيود وتسويات تجريبية", href: "/dashboard/branda-finance/accountant", badge: local },
+  { title: "للمحاسب", icon: "accountant", description: "شجرة حسابات وقيود وتسويات محلية", href: "/dashboard/branda-finance/accountant", badge: local },
   { title: "نقاط الولاء", icon: "contacts", description: "قواعد كسب واستبدال النقاط وربطها بالكاشير", href: "/dashboard/branda-finance/loyalty-points", badge: local },
   { title: "الحسابات البنكية", icon: "banking", description: "صناديق وبنوك وإغلاق يومي", href: "/dashboard/branda-finance/banking", badge: local },
   { title: "الأصول الثابتة", icon: "assets", description: "سجل أصول وإهلاك وصيانة", href: "/dashboard/branda-finance/assets", badge: local },

@@ -89,7 +89,7 @@ export function PublicLoyaltyCardSection({ slug, cafeName, program }: Props) {
           <div>
             <WalletCards className="mx-auto h-10 w-10 text-[var(--ci-button-bg,#6B3A25)]" />
             <p className="mt-3 text-sm font-black leading-6 text-[var(--ci-page-fg,#17212B)]">
-              لا يتم عرض بطاقة أو QR تجريبي هنا.
+              لا يتم عرض بطاقة أو QR غير موثق هنا.
             </p>
             <p className="mt-2 text-xs font-bold leading-6 text-[var(--ci-muted-fg,#806A5E)]">
               الربط الحقيقي يأتي من بطاقة العميل عند توفرها.

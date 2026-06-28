@@ -16,7 +16,7 @@ export function AddBranchModal({ open, onClose, onSave }: AddBranchModalProps) {
       name,
       displayName: String(formData.get("displayName") ?? "").trim() || name,
       city: String(formData.get("city") ?? "").trim() || "الرياض",
-      address: String(formData.get("address") ?? "").trim() || "عنوان تجريبي",
+      address: String(formData.get("address") ?? "").trim(),
       phone: String(formData.get("phone") ?? "").trim() || undefined,
       licenseType: String(formData.get("licenseType") ?? "").trim() || undefined,
       licenseNumber: String(formData.get("licenseNumber") ?? "").trim() || undefined,
@@ -34,6 +34,9 @@ export function AddBranchModal({ open, onClose, onSave }: AddBranchModalProps) {
           </button>
         </div>
         <div className="grid max-h-[calc(100vh-150px)] min-w-0 gap-3 overflow-y-auto overflow-x-hidden p-4 sm:grid-cols-2">
+          <p className="rounded-[8px] border border-[#D6B677] bg-[#FFF8EA] p-3 text-[12px] font-bold leading-6 text-[#6B431C] sm:col-span-2">
+            الحفظ هنا محلي داخل الواجهة فقط ولا يضيف فرعًا إلى قاعدة البيانات.
+          </p>
           <TextField name="displayName" label="اسم العرض" />
           <TextField name="name" label="اسم الفرع" />
           <TextField name="phone" label="الهاتف" />

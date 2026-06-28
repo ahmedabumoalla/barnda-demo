@@ -33,8 +33,8 @@ const moduleMeta: Record<FinanceModuleKind, { title: string; description: string
   catalog: { title: "المنتجات والخدمات والمخزون", description: "قائمة منتجات وخدمات وتنبيهات مخزون وتكلفة وربحية.", status: "محلي فقط" },
   accountant: { title: "للمحاسب", description: "شجرة الحسابات، قيود اليومية، معاينة الترحيل والإغلاق المحاسبي.", status: "جاهز للربط" },
   banking: { title: "الحسابات البنكية والصناديق", description: "صناديق وبنوك وتحصيلات كاش وبطاقة وتسوية وإغلاق يومي.", status: "محلي فقط" },
-  payroll: { title: "الرواتب والموظفين", description: "رواتب وسلف وعهد واستقطاعات وتجهيز ملف بنك تجريبي.", status: "محلي فقط" },
-  assets: { title: "الأصول الثابتة", description: "سجل أصول وإهلاك وصيانة واستبعاد تجريبي.", status: "محلي فقط" },
+  payroll: { title: "الرواتب والموظفين", description: "رواتب وسلف وعهد واستقطاعات وتجهيز ملف بنك للمعاينة.", status: "محلي فقط" },
+  assets: { title: "الأصول الثابتة", description: "سجل أصول وإهلاك وصيانة واستبعاد للمعاينة.", status: "محلي فقط" },
   costCenters: { title: "مراكز التكلفة", description: "توزيع الإيرادات والمصروفات على مراكز التكلفة.", status: "محلي فقط" },
   projects: { title: "المشاريع", description: "إيرادات وتكاليف وهوامش مشاريع مع ربط الفواتير والمشتريات.", status: "محلي فقط" },
   branches: { title: "الفروع", description: "أداء مالي لكل فرع مع مبيعات وصندوق ومخزون وضريبة.", status: "محلي فقط" },
@@ -54,8 +54,8 @@ function moduleStats(kind: FinanceModuleKind) {
   const bank = data.bankAccounts.reduce((sum, account) => sum + account.balance, 0);
 
   const shared = [
-    { label: "مبيعات اليوم", value: financeAmount(invoiceTotals.reduce((sum, total) => sum + total.total, 0)), hint: "من بيانات الديمو", tone: "green" as const },
-    { label: "فواتير غير مدفوعة", value: financeAmount(unpaid), hint: "ذمم تجريبية", tone: "gold" as const },
+    { label: "مبيعات اليوم", value: financeAmount(invoiceTotals.reduce((sum, total) => sum + total.total, 0)), hint: "من بيانات المعاينة", tone: "green" as const },
+    { label: "فواتير غير مدفوعة", value: financeAmount(unpaid), hint: "ذمم محلية", tone: "gold" as const },
     { label: "مشتريات الشهر", value: financeAmount(purchases), hint: "غير مرحلة", tone: "brown" as const },
     { label: "نقدية الصندوق", value: financeAmount(cash), hint: "إغلاق يومي محلي", tone: "green" as const },
   ];
@@ -63,7 +63,7 @@ function moduleStats(kind: FinanceModuleKind) {
   if (kind === "banking") return [...shared.slice(0, 2), { label: "رصيد البنك", value: financeAmount(bank), hint: "بدون ربط بنكي", tone: "brown" as const }, shared[3]];
   if (kind === "catalog") return [
     { label: "المنتجات", value: String(data.products.length), hint: "منتجات وخدمات", tone: "brown" as const },
-    { label: "تنبيهات المخزون", value: String(data.products.filter((product) => product.stock <= 10).length), hint: "حد تجريبي", tone: "gold" as const },
+    { label: "تنبيهات المخزون", value: String(data.products.filter((product) => product.stock <= 10).length), hint: "حد محلي", tone: "gold" as const },
     { label: "المستودعات", value: String(data.warehouses.length), hint: "فروع مرتبطة", tone: "green" as const },
     { label: "متوسط الهامش", value: "58%", hint: "تقدير محلي", tone: "brown" as const },
   ];
@@ -257,7 +257,7 @@ export function FinanceModulePage({ kind }: { kind: FinanceModuleKind }) {
             detail={brandaFinanceWorkflowBoundaries.join(" ")}
           />
           <div className="rounded-[8px] border border-[#E8D8C2] bg-[#FFFDF8] p-3">
-            <h2 className="text-[13px] font-black text-[#2F241D]">حالة الديمو</h2>
+            <h2 className="text-[13px] font-black text-[#2F241D]">حالة المعاينة</h2>
             <div className="mt-2 flex flex-wrap gap-1.5">
               <FinanceStatusBadge tone="gold">محلي فقط</FinanceStatusBadge>
               <FinanceStatusBadge tone="red">لا تكاملات حقيقية</FinanceStatusBadge>

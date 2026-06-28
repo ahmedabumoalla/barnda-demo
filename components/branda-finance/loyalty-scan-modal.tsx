@@ -10,7 +10,7 @@ export function LoyaltyScanModal({ open, onClose, onApply }: LoyaltyScanModalPro
   function handleSubmit(formData: FormData) {
     const code = String(formData.get("code") ?? "").trim();
     const customerName = String(formData.get("customerName") ?? "").trim();
-    const discount = formData.get("demoDiscount") ? "خصم تجريبي" : "";
+    const discount = formData.get("localDiscount") ? "خصم محلي" : "";
     onApply([code, customerName, discount].filter(Boolean).join(" - "));
     onClose();
   }
@@ -34,11 +34,11 @@ export function LoyaltyScanModal({ open, onClose, onApply }: LoyaltyScanModalPro
             <input name="customerName" className="h-9 w-full min-w-0 rounded-[8px] border border-[#E1D1BD] bg-white px-2 text-[12px] font-bold outline-none focus:border-[#B88334] focus:ring-2 focus:ring-[#D9A33F]/20" />
           </label>
           <label className="flex items-center gap-3 rounded-[8px] border border-[#E6D7C3] bg-[#FAF3E8] p-3 text-xs font-black text-[#6B431C]">
-            <input name="demoDiscount" type="checkbox" className="h-4 w-4 accent-[#5B3926]" />
-            تطبيق الخصم التجريبي
+            <input name="localDiscount" type="checkbox" className="h-4 w-4 accent-[#5B3926]" />
+            تطبيق خصم محلي
           </label>
           <div className="rounded-[8px] border border-[#E6D7C3] bg-[#FAF3E8] p-3 text-xs font-bold leading-6 text-[#6B431C]">
-            التطبيق هنا محلي فقط. لا يوجد وصول للكاميرا أو أجهزة قراءة خارجية في نسخة الديمو.
+            التطبيق هنا محلي فقط. لا يوجد وصول للكاميرا أو أجهزة قراءة خارجية في الوضع الحالي.
           </div>
         </div>
         <div className="flex flex-wrap justify-end gap-2 border-t border-[#E8D8C2] px-4 py-3">

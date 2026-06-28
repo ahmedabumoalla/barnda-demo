@@ -108,7 +108,7 @@ export const financeMockProducts: FinanceProduct[] = [
     id: "product-latte",
     name: "لاتيه فاخر",
     englishName: "Signature Latte",
-    details: "مشروب قهوة بالحليب للاستخدام في الفاتورة التجريبية",
+    details: "مشروب قهوة بالحليب للاستخدام في معاينة الفاتورة",
     category: "قهوة",
     sku: "BRD-LAT-001",
     barcode: "6281000000011",
@@ -194,5 +194,5 @@ export const financeMockWorkspaceData: FinanceWorkspaceData = {
   taxRates: financeMockTaxRates,
   paymentMethods: financeMockPaymentMethods,
   customFields: financeMockCustomFields,
-  dataSourceNotes: ["بيانات تجريبية محلية فقط إلى حين ربط جداول الفوترة الفعلية."],
+  dataSourceNotes: ["بيانات معاينة محلية فقط إلى حين ربط جداول الفوترة الفعلية."],
 };

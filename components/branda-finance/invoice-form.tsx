@@ -95,7 +95,7 @@ export function InvoiceForm({
       <div className="mb-4 flex min-w-0 flex-col gap-2 border-b border-[#E8D8C2] pb-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-xs font-black text-[#9C6B2E]">مساحة إنشاء الفاتورة</p>
-          <h2 className="mt-1 text-xl font-black text-[#2F241D]" dir="ltr">INV-000101</h2>
+          <h2 className="mt-1 text-xl font-black text-[#2F241D]">رقم الفاتورة يصدر بعد التفعيل</h2>
           <p className="mt-1 text-xs font-bold text-[#806A58]">عملة الفاتورة: SAR</p>
         </div>
         <button
@@ -219,7 +219,7 @@ export function InvoiceForm({
               <Paperclip className="h-4 w-4" />
               مرفقات وملاحظات
             </div>
-            <p>المرفقات وملفات الدعم تظهر هنا لاحقًا. لا توجد أي عملية رفع فعلية في نسخة الديمو الحالية.</p>
+            <p>المرفقات وملفات الدعم تظهر هنا لاحقًا. لا توجد أي عملية رفع فعلية في الوضع الحالي.</p>
             <p className="mt-2">بيانات الموردين موجودة تمهيديًا لتدفقات المشتريات المستقبلية، وعددها {data.suppliers.length}.</p>
           </div>
 

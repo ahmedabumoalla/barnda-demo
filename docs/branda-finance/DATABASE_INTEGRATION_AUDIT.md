@@ -1,192 +1,175 @@
 # Branda Finance Database Integration Audit
 
 Date: 2026-06-28
-Scope: DEMO workspace only. No Supabase CLI, no SQL execution, no migrations, no package changes.
+Scope: DEMO workspace only. No Supabase CLI, no SQL execution, no applied migrations, no package changes, no commit/push.
 
-## Current Safe Integration State
+## Current Safe State
 
-Branda Finance can safely read these real owner-scoped sources today:
+Branda Finance is database-ready, but real finance writes are still disabled.
+
+- Migration draft created but not applied: `supabase/migrations/061_branda_finance_core.sql`
+- Readiness layer added:
+  - `lib/branda-finance/db-types.ts`
+  - `lib/branda-finance/db-readiness.ts`
+  - `lib/branda-finance/queries.ts`
+  - `lib/branda-finance/actions.ts`
+- Create invoice and cashier sales pages now read readiness from `lib/branda-finance/queries.ts`.
+- Server actions in `lib/branda-finance/actions.ts` intentionally return disabled results until the migration is reviewed and applied.
+
+## Real Data Helpers Used Today
 
 - `getOwnerMenu()` from `lib/data/menu.ts`
-  - Reads `menu_categories` and `menu_products`.
-  - Safe UI fields: product name, category, description, price, availability, image, product id, derived SKU/barcode display.
+  - Reads real `menu_categories` and `menu_products`.
+  - Used for product grid, invoice item product choices, category labels, prices, availability, image, and product ids.
 - `getOwnerBranches()` from `lib/data/branches.ts`
-  - Reads `branches`.
-  - Safe UI fields: branch id, name, city, address, phone.
+  - Reads real `branches`.
+  - Used for branch selectors.
 - `getCafeCustomers()` from `lib/data/customers.ts`
-  - Reads `customer_profiles`.
-  - Safe UI fields: customer id, name, email, phone.
+  - Reads real `customer_profiles`.
+  - Used for customer selectors.
 - `getOwnerFeatureCodes()` from `lib/data/feature-entitlements.ts`
-  - Reads the active subscription and plan features.
-  - Safe use: dashboard/package gates for Branda Finance and loyalty.
+  - Used for owner/package gates, including Branda Finance and loyalty.
 - `getPublicCafeFeatureCodesBySlug()` and `filterPublicCafePayloadByFeatures()`
-  - Safe use: public feature gating, especially loyalty payload removal.
+  - Used to avoid exposing gated public loyalty data.
 - `getLoyaltyCardViewByCode()` and `getCurrentCustomerLoyaltyCardView()`
-  - Safe use: real loyalty card display only after feature access and actual card lookup.
-- `fetchCustomerAccountSnapshotAction()`
-  - Safe use: customer-scoped orders, reservations, loyalty, and experience rewards after session validation and feature checks.
+  - Used for real loyalty card lookups only.
 
-## Existing Tables And Helpers Found
+## Proposed Tables In The Draft Migration
 
-Observed from migrations and helper usage:
+The draft creates these additive tables:
 
-- `menu_products`
-- `menu_categories`
-- `branches`
-- `customer_profiles`
-- `loyalty_cards`
-- `loyalty_card_programs`
-- `loyalty_card_events`
-- legacy loyalty areas such as `loyalty_accounts`, `loyalty_transactions`, `loyalty_rules`, and `loyalty_rewards`
-- `subscriptions`
-- `platform_plans`
-- `platform_discount_coupons`
-- `subscription_payment_events`
+- `finance_customers`
+- `finance_suppliers`
+- `finance_warehouses`
+- `finance_sales_invoices`
+- `finance_sales_invoice_items`
+- `finance_payments`
+- `finance_cash_sessions`
+- `finance_invoice_sequences`
+- `finance_accounts`
+- `finance_journal_entries`
+- `finance_journal_entry_lines`
+- `finance_audit_events`
 
-The migration named like `034_*finance_tables_platform_coupons_plan_limits_exports.sql` is platform subscription finance support. It adds subscription invoice metadata and admin coupon/payment support. It is not an operational Branda Finance sales invoice ledger.
+The draft includes UUID primary keys, `cafe_id`, created/updated metadata, status checks, indexes, RLS enablement, service-role policies, platform-admin policies, staff read/write policies, and `public.set_updated_at()` triggers.
 
-## Fields Connected Safely Now
+## Linked Existing Tables
 
-- Create invoice page:
-  - Products/categories: real `menu_products` and `menu_categories` through `getOwnerMenu()`.
-  - Branches: real `branches` through `getOwnerBranches()`.
-  - Customers: real `customer_profiles` through `getCafeCustomers()`.
-  - Payment method selection: local UI only, no settlement or ledger write.
-  - Save/approve: disabled because invoice persistence is missing.
-- Sales/cashier page:
-  - Product grid: real menu products only.
-  - Branch/customer selectors: real helpers only.
-  - Warehouse display: empty/missing state because no operational warehouse helper exists.
-  - Loyalty scan: rendered only when owner feature access includes `loyalty`.
-  - Create invoice: disabled because invoice persistence is missing.
+The migration references these existing tables:
 
-## Fields Still Preview Or Local State
+- `public.cafes(id)` through `cafe_id`
+- `public.branches(id)` through `branch_id`
+- `public.customer_profiles(id)` through `customer_profile_id`
+- `public.menu_products(id)` through `menu_product_id`
+- `public.cafe_cashiers(id)` through `cashier_id`
+- `auth.users(id)` through `created_by` and audit actor fields
 
-- Invoice number `INV-000101`.
-- Draft status and local status messages.
-- Invoice item edits, discounts, dates, attachments, custom fields, and preview modal.
-- Local add-customer/add-branch/add-custom-field modal entries.
-- Payment method and amount paid.
-- Cashier cart, quantity, notes, and invoice summary.
-- Branda Finance reports, statements, accountant pages, hall orders, purchases, cost centers, and finance loyalty-points module.
+## UI And Data Layer Changes
 
-These areas must not be treated as persisted records until operational finance tables and server actions exist.
+- `app/dashboard/branda-finance/invoicing/create/page.tsx`
+  - Uses `getBrandaFinanceInvoiceWorkspace()`.
+  - Enables persistence only from `readiness.canPersistSalesInvoices`, currently `false`.
+- `app/dashboard/branda-finance/sales/page.tsx`
+  - Uses `getBrandaFinanceSalesWorkspace()`.
+  - Keeps loyalty button behind the real `loyalty` feature gate.
+  - Enables invoice persistence only from readiness, currently `false`.
+- `components/branda-finance/invoice-workspace.tsx`
+  - Removed the unused local product modal from the real-facing sales invoice workspace.
+  - Removed the fixed invoice number from the header.
+  - Uses the shared disabled persistence message.
+- `components/branda-finance/invoice-form.tsx`
+  - Removed the fixed invoice number.
+  - Attachment copy uses current-mode wording.
+- `components/branda-finance/invoice-preview.tsx`
+  - Replaced fixed invoice number and local QR language with non-persistent preview language.
+- `components/branda-finance/cashier-sales-workspace.tsx`
+  - Replaced cashier-session label with local/no-save wording.
+- `components/branda-finance/add-branch-modal.tsx`
+  - Removed the fallback address and added a local-only warning.
 
-## Missing Operational Tables
+## Gating Locations
 
-- Real sales invoices:
-  - `finance_sales_invoices`
-  - Suggested columns: `id`, `cafe_id`, `branch_id`, `customer_id`, `invoice_number`, `status`, `issue_date`, `due_date`, `currency`, subtotal/tax/discount/total/paid/remaining snapshots, payment status, created/updated metadata.
-- Real invoice items:
-  - `finance_sales_invoice_items`
-  - Suggested columns: `id`, `invoice_id`, `cafe_id`, `product_id`, item snapshot name/SKU/barcode, quantity, unit price, discount, tax rate, subtotal, tax, total.
-- Customers/suppliers:
-  - Existing customer profiles can be read, but finance-specific customer tax/address terms need either safe extension fields or a separate finance customer profile table.
-  - `finance_suppliers` is missing.
-- Warehouses:
-  - `finance_warehouses` is missing.
-  - `finance_inventory_movements` is missing.
-- Purchases:
-  - `finance_purchase_invoices` is missing.
-  - `finance_purchase_invoice_items` is missing.
-- Accounting:
-  - `finance_accounts` is missing.
-  - `finance_journal_entries` is missing.
-  - `finance_journal_entry_lines` is missing.
-  - `finance_payments` is missing.
-  - `finance_cash_sessions` is missing.
-  - `finance_invoice_sequences` is missing.
-  - `finance_audit_events` is missing.
+Branda Finance package access:
 
-## Required RLS Considerations
+- `app/dashboard/branda-finance/layout.tsx`
+- `lib/platform/feature-gates.ts`
+- `lib/data/feature-entitlements.ts`
 
-- Every operational finance table should include `cafe_id`.
-- Owners and permitted staff should only read/write rows for their own `cafe_id`.
-- Inserts and updates must verify that referenced branch, customer, product, warehouse, supplier, and account rows belong to the same `cafe_id`.
-- Customer-facing reads should not expose finance invoices unless a separate customer invoice portal is explicitly designed.
-- Service-role helpers should be small, audited, and server-only.
-- Invoice totals, tax totals, and payment balances must be validated server-side.
-- Journal posting should happen transactionally with invoice/payment writes.
-- Audit events should be append-only.
+Loyalty access:
 
-## Required Indexes
+- `app/dashboard/branda-finance/sales/page.tsx`
+- `components/branda-finance/cashier-sales-workspace.tsx`
+- public/customer loyalty helpers that depend on real feature codes and real card lookups
 
-Recommended future indexes, not created in this phase:
+## Remaining Preview-Only Demo Islands
 
-- Sales invoices: `cafe_id`, `branch_id`, `customer_id`, `status`, `issue_date`, `invoice_number`, and a unique brand/branch/year invoice sequence key.
-- Sales invoice items: `invoice_id`, `cafe_id`, `product_id`.
-- Suppliers: `cafe_id`, `vat_number`, `name`.
-- Warehouses: `cafe_id`, `branch_id`.
-- Inventory movements: `cafe_id`, `product_id`, `warehouse_id`, `created_at`.
-- Accounts: `cafe_id`, `code`, `parent_id`.
-- Journal entries: `cafe_id`, `entry_date`, `source_type`, `source_id`.
-- Journal entry lines: `entry_id`, `account_id`, `cafe_id`.
-- Payments: `cafe_id`, `invoice_id`, `payment_method`, `created_at`.
-- Cash sessions: `cafe_id`, `branch_id`, `cashier_id`, `opened_at`, `closed_at`.
+These files/modules still intentionally contain preview/local data or legacy names because they do not yet have matching reviewed persistence:
 
-## Required Foreign Keys
+- `lib/branda-finance/demo-data.ts`
+- `lib/branda-finance/invoice-demo-data.ts`
+- `lib/branda-finance/invoice-mock-data.ts`
+- `lib/branda-finance/workflows.ts`
+- `components/branda-finance/finance-module-page.tsx`
+- `components/branda-finance/reports/finance-standard-report.tsx`
+- `components/branda-finance/general-ledger-report.tsx`
+- `components/branda-finance/hall-orders-workspace.tsx`
+- `components/branda-finance/cost-centers-workspace.tsx`
+- `components/branda-finance/loyalty-points-workspace.tsx`
+- `components/branda-finance/purchase-invoice-workspace.tsx`
+- `app/dashboard/branda-finance/invoicing/page.tsx`
+- `app/dashboard/branda-finance/purchases/page.tsx`
+- `app/dashboard/branda-finance/statements/[entityType]/[entityId]/page.tsx`
 
-Recommended future references, not created in this phase:
+These are not the real-facing sales invoice/cashier persistence path and must stay clearly non-persistent until their own schema and server actions are reviewed.
 
-- `finance_sales_invoices.cafe_id` to cafes/brands table used by existing helpers.
-- `finance_sales_invoices.branch_id` to `branches.id`.
-- `finance_sales_invoices.customer_id` to `customer_profiles.id` or a future finance customer profile table.
-- `finance_sales_invoice_items.invoice_id` to `finance_sales_invoices.id`.
-- `finance_sales_invoice_items.product_id` to `menu_products.id`.
-- `finance_purchase_invoices.supplier_id` to `finance_suppliers.id`.
-- `finance_inventory_movements.product_id` to `menu_products.id`.
-- `finance_inventory_movements.warehouse_id` to `finance_warehouses.id`.
-- `finance_journal_entry_lines.entry_id` to `finance_journal_entries.id`.
-- `finance_journal_entry_lines.account_id` to `finance_accounts.id`.
-- `finance_payments.invoice_id` to `finance_sales_invoices.id`.
+## RLS Risks To Review Before Applying
 
-## Recommended Additive Migration Plan
+- Confirm `public.has_cafe_permission(cafe_id, 'branda_finance')` is a valid permission code in production.
+- Confirm whether `cashier` should be allowed to write all operational tables in the first policy loop, or only invoices, payments, and cash sessions.
+- Confirm cross-table cafe consistency cannot be bypassed by linking a `branch_id`, `customer_profile_id`, `menu_product_id`, warehouse, or account from another cafe.
+- Confirm customer-facing invoice reads are not exposed through these policies.
+- Confirm journal entry writes are restricted to finance/admin staff only.
+- Confirm audit events should be append-only before production use.
+- Confirm invoice numbers are generated transactionally from `finance_invoice_sequences`.
+- Confirm tax totals, payment totals, and journal balance checks are enforced server-side, not trusted from the browser.
 
-Future phase only. Do not create migration files yet.
+## Review Items Before Running The Migration
 
-1. Add read/write tables for sales invoices and items with strict RLS.
-2. Add server actions/helpers for invoice draft creation, approval, and read lists.
-3. Add finance customer tax/address profile support without mutating customer auth/session semantics.
-4. Add suppliers, purchase invoices, warehouses, and inventory movements.
-5. Add chart of accounts and journal entries after invoice persistence is stable.
-6. Add payments, cash sessions, and settlement flows.
-7. Add ZATCA/tax QR support after persisted invoice snapshots exist.
+- Review every `CHECK` status value against product workflows.
+- Decide whether purchase invoices and inventory movement tables should be included in the same rollout or a later migration.
+- Decide whether `finance_customers` should mirror `customer_profiles` or remain a finance-specific profile table.
+- Add stricter same-cafe validation triggers if RLS alone is not enough for foreign-key ownership checks.
+- Run the migration only in a staging database first.
+- Verify RLS with owner, staff, cashier, platform admin, and unrelated authenticated users.
+- Verify indexes against the expected invoice list, customer statement, payment search, and journal report queries.
 
-## Risks If Connected Too Early
+## Production Rollout Checklist
 
-- Browser-local totals could become trusted financial records.
-- Invoice numbers could collide without server-side sequences.
-- Cross-brand data exposure could occur without `cafe_id` checks and RLS.
-- Product/customer/branch rows could be mixed across brands.
-- Loyalty points could be awarded from non-persisted sales.
-- Reports could show demo figures next to real operational figures.
-- Accounting ledgers could become unbalanced if journal entries are not transactional.
-- Tax reports could be misleading before persisted tax snapshots and invoice approvals exist.
+1. Apply `061_branda_finance_core.sql` in staging only.
+2. Seed or create finance accounts, warehouses, and invoice sequences for a test cafe.
+3. Add read queries for the new tables behind readiness detection.
+4. Add write server actions for draft, approve, payment, cash session, and journal posting.
+5. Test RLS with multiple cafes and roles.
+6. Enable `canPersistSalesInvoices` only when the app can verify the schema is present.
+7. Enable cashier invoice creation only after persisted invoice numbers and payment records are transactional.
+8. Enable accounting posting only after balanced journal-entry transactions are tested.
+9. Repeat the same checks in production before turning on real writes.
 
-## UI Changes In This Phase
+## Rollback Plan
 
-- Branda Finance home uses real available counts instead of fake sales/purchase/cash/bank figures.
-- Create invoice reads real products, branches, and customers.
-- Cashier sales reads real products, branches, and customers.
-- Invoice save/approve/create actions are disabled with a clear message until database tables exist.
-- Loyalty points in cashier are visible only when the loyalty feature is enabled for the package.
-- Public/customer loyalty pages no longer use demo card codes or demo point balances where a customer could mistake them for real data.
-- Public rewards navigation now depends on `loyalty`, not `experience_reviews`.
+Because the draft is additive, rollback should prefer disabling the app layer first:
 
-## Remaining Mock/Demo Islands
+- Set readiness back to inactive and keep all write actions disabled.
+- Remove UI enablement flags for invoice persistence, payments, and accounting.
+- If the migration was applied but no production data exists, a DBA can drop the new finance tables in reverse dependency order after backup.
+- If production data exists, do not drop tables. Disable writes, export data, inspect audit events, and apply corrective migrations only after review.
 
-Some Branda Finance modules still use local demo data as non-persistent previews because no matching database tables exist yet:
+## Transfer Checklist From Demo To Production
 
-- reports
-- statements
-- accountant modules
-- hall orders
-- purchases
-- cost centers
-- loyalty-points finance module
-
-These should remain clearly treated as preview-only until the operational finance schema exists. They should not be wired to real persistence without the tables listed above.
-
-## Exact Next Safe Phase
-
-Create a reviewed additive migration plan for only sales invoices and sales invoice items, plus RLS, indexes, foreign keys, and server actions. After review, implement read/write helpers behind the existing Branda Finance package gate, then enable create/approve buttons only when those helpers pass tests against the new schema.
+- Keep the Branda Finance feature gate active before showing the finance pages.
+- Keep loyalty gated separately from finance.
+- Do not migrate local preview values such as fixed invoice numbers, preview QR text, or local cart state.
+- Create real invoice numbers only on the server from `finance_invoice_sequences`.
+- Persist invoice items as snapshots so later menu product edits do not rewrite old invoices.
+- Award loyalty points only after a persisted paid invoice exists.
+- Generate reports only from persisted finance tables once enabled.

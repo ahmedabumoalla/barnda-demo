@@ -58,7 +58,7 @@ export const brandaFinanceDemoData: BrandaFinanceDemoData = {
   invoices: [
     {
       id: "inv-101",
-      number: "INV-000101",
+      number: "LOCAL-000101",
       customerId: "customer-sahara",
       branchId: "branch-main",
       warehouseId: "warehouse-main",
@@ -74,7 +74,7 @@ export const brandaFinanceDemoData: BrandaFinanceDemoData = {
     },
     {
       id: "inv-102",
-      number: "INV-000102",
+      number: "LOCAL-000102",
       customerId: "customer-noura",
       branchId: "branch-north",
       warehouseId: "warehouse-display",
@@ -97,8 +97,8 @@ export const brandaFinanceDemoData: BrandaFinanceDemoData = {
     {
       id: "je-101-preview",
       date: "2026-06-27",
-      source: "INV-000101",
-      memo: "قيد آلي تجريبي من فاتورة مبيعات",
+      source: "LOCAL-000101",
+      memo: "قيد آلي محلي من فاتورة مبيعات",
       lines: [
         { accountCode: "1103", accountName: "الذمم المدينة", debit: 476.1, credit: 0 },
         { accountCode: "4101", accountName: "إيرادات المبيعات", debit: 0, credit: 414 },
@@ -118,7 +118,7 @@ export const brandaFinanceDemoData: BrandaFinanceDemoData = {
   reports: [
     { slug: "profit-loss", title: "الأرباح والخسائر", description: "ملخص الإيرادات والتكاليف والمصروفات" },
     { slug: "cash-flow", title: "التدفق النقدي", description: "حركة النقد والصندوق والبنك" },
-    { slug: "trial-balance", title: "ميزان المراجعة", description: "أرصدة الحسابات التجريبية" },
+    { slug: "trial-balance", title: "ميزان المراجعة", description: "أرصدة الحسابات المحلية" },
     { slug: "general-ledger", title: "دفتر الأستاذ العام", description: "قيود وحركات الحسابات" },
     { slug: "customer-statement", title: "كشف حساب عميل", description: "حركة عميل ورصيد مستحق" },
     { slug: "supplier-statement", title: "كشف حساب مورد", description: "فواتير ومبالغ الموردين" },
@@ -145,8 +145,8 @@ export const brandaFinanceDemoData: BrandaFinanceDemoData = {
   ],
   alerts: [
     { id: "alert-stock", title: "منتجات قاربت النفاد", detail: "باقة ضيافة مصغرة تحت حد التنبيه", severity: "warning" },
-    { id: "alert-receivable", title: "ذمم مستحقة", detail: "فاتورة INV-000101 غير مدفوعة", severity: "info" },
-    { id: "alert-integration", title: "التكاملات غير مفعلة", detail: "كل التكاملات الخارجية معطلة في الديمو", severity: "danger" },
+    { id: "alert-receivable", title: "ذمم مستحقة", detail: "فاتورة LOCAL-000101 غير مدفوعة", severity: "info" },
+    { id: "alert-integration", title: "التكاملات غير مفعلة", detail: "كل التكاملات الخارجية معطلة في المعاينة", severity: "danger" },
   ],
   permissions: [
     { id: "approve-invoice", title: "اعتماد فاتورة", readyFor: "صلاحيات قاعدة البيانات" },

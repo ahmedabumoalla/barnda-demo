@@ -1,7 +1,7 @@
 import { InvoiceWorkspace } from "@/components/branda-finance/invoice-workspace";
-import { getBrandaFinanceRealWorkspaceData } from "@/lib/branda-finance/real-data";
+import { getBrandaFinanceInvoiceWorkspace } from "@/lib/branda-finance/queries";
 
 export default async function BrandaFinanceInvoiceCreatePage() {
-  const data = await getBrandaFinanceRealWorkspaceData();
-  return <InvoiceWorkspace data={data} realPersistenceReady={false} />;
+  const { data, readiness } = await getBrandaFinanceInvoiceWorkspace();
+  return <InvoiceWorkspace data={data} realPersistenceReady={readiness.canPersistSalesInvoices} />;
 }

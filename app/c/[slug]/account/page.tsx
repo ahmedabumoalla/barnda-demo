@@ -461,7 +461,7 @@ function CustomerCoffeeLoyaltyCard({
                   {loading ? "جاري تحميل بطاقة الولاء..." : "لا توجد بطاقة ولاء حقيقية متاحة الآن"}
                 </p>
                 <p className="mt-2 text-xs font-bold leading-6 text-[var(--ci-muted-fg,#806A5E)]">
-                  لا يتم عرض بطاقة أو QR تجريبي في حساب العميل.
+                  لا يتم عرض بطاقة أو QR غير موثق في حساب العميل.
                 </p>
               </div>
             </div>

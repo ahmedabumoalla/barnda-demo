@@ -3,6 +3,7 @@
 import {
   LoyaltyBarcode,
   SharedLoyaltyCard,
+  type LoyaltyGraphicLayer,
   type LoyaltyDesignerLayer,
 } from "@/components/loyalty/shared-loyalty-card";
 import type { LoyaltyCardDesign } from "@/lib/loyalty/types";
@@ -19,6 +20,7 @@ type Props = {
 };
 
 export type { LoyaltyDesignerLayer };
+export type { LoyaltyGraphicLayer };
 export { LoyaltyBarcode };
 
 export function LoyaltyCardPreview(props: Props) {

@@ -1,4 +1,30 @@
 export type LoyaltyProgressIcon = "star" | "cup" | "gift" | "heart" | "crown";
+export type LoyaltyTextElementId =
+  | "brand"
+  | "title"
+  | "subtitle"
+  | "reward"
+  | "helper"
+  | "pointsLabel"
+  | "pointsValue"
+  | "pointsValueSar"
+  | "barcodeLabel";
+
+export type LoyaltyTextAlign = "right" | "center" | "left";
+
+export type LoyaltyCardTextElement = {
+  id: LoyaltyTextElementId;
+  text: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  fontSize: number;
+  fontWeight: number;
+  color: string;
+  align: LoyaltyTextAlign;
+  enabled: boolean;
+};
 
 export type LoyaltyLogoPlacement =
   | "top-right"
@@ -49,6 +75,7 @@ export type LoyaltyCardDesign = {
   pointsBadgeWidth: number;
   pointsBadgeHeight: number;
   sampleCode: string;
+  textElements: Record<LoyaltyTextElementId, LoyaltyCardTextElement>;
 };
 
 export type LoyaltyPointsSettings = {

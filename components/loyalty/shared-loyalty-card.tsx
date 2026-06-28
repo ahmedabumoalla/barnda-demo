@@ -3,9 +3,15 @@
 import { Crown, Gift, Heart, Star, Trophy, WalletCards } from "lucide-react";
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { SecureQrCode } from "@/components/loyalty/secure-qr-code";
-import type { LoyaltyCardDesign, LoyaltyProgressIcon } from "@/lib/loyalty/types";
+import type {
+  LoyaltyCardDesign,
+  LoyaltyCardTextElement,
+  LoyaltyProgressIcon,
+  LoyaltyTextElementId,
+} from "@/lib/loyalty/types";
 
-export type LoyaltyDesignerLayer = "logo" | "points" | "barcode" | "qr";
+export type LoyaltyGraphicLayer = "logo" | "points" | "barcode" | "qr";
+export type LoyaltyDesignerLayer = LoyaltyGraphicLayer | `text:${LoyaltyTextElementId}`;
 
 type Props = {
   card: LoyaltyCardDesign;
@@ -47,7 +53,19 @@ function layerStyle(x: number, y: number, width: number, height: number) {
   };
 }
 
+function isTextLayer(layer: LoyaltyDesignerLayer): layer is `text:${LoyaltyTextElementId}` {
+  return layer.startsWith("text:");
+}
+
+function textLayerId(layer: `text:${LoyaltyTextElementId}`) {
+  return layer.slice(5) as LoyaltyTextElementId;
+}
+
 function getLayerMetrics(card: LoyaltyCardDesign, layer: LoyaltyDesignerLayer) {
+  if (isTextLayer(layer)) {
+    const textElement = card.textElements[textLayerId(layer)];
+    return { width: textElement.width, height: textElement.height };
+  }
   if (layer === "logo") return { width: card.logoWidth, height: card.logoHeight };
   if (layer === "points") return { width: card.pointsBadgeWidth, height: card.pointsBadgeHeight };
   if (layer === "qr") return { width: card.qrWidth, height: card.qrHeight };
@@ -55,13 +73,23 @@ function getLayerMetrics(card: LoyaltyCardDesign, layer: LoyaltyDesignerLayer) {
 }
 
 function applyLayerPosition(card: LoyaltyCardDesign, layer: LoyaltyDesignerLayer, x: number, y: number) {
+  if (isTextLayer(layer)) {
+    const id = textLayerId(layer);
+    return {
+      ...card,
+      textElements: {
+        ...card.textElements,
+        [id]: { ...card.textElements[id], x, y },
+      },
+    };
+  }
   if (layer === "logo") return { ...card, logoX: x, logoY: y };
   if (layer === "points") return { ...card, pointsBadgeX: x, pointsBadgeY: y };
   if (layer === "qr") return { ...card, qrX: x, qrY: y };
   return { ...card, barcodeX: x, barcodeY: y };
 }
 
-export function LoyaltyBarcode({ value, dark = false }: { value: string; dark?: boolean }) {
+export function LoyaltyBarcode({ value, dark = false, showValue = true }: { value: string; dark?: boolean; showValue?: boolean }) {
   return (
     <div className={`flex h-full min-h-0 flex-col justify-center rounded-xl border p-2 ${dark ? "border-white/15 bg-white/90" : "border-[#E7D7C6] bg-white"}`}>
       <div
@@ -72,9 +100,9 @@ export function LoyaltyBarcode({ value, dark = false }: { value: string; dark?: 
         }}
         aria-hidden="true"
       />
-      <p className="mt-1 truncate text-center font-mono text-[10px] font-black tracking-[0.14em] text-[#17100d]">
+      {showValue ? <p className="mt-1 truncate text-center font-mono text-[10px] font-black tracking-[0.14em] text-[#17100d]">
         {value}
-      </p>
+      </p> : null}
     </div>
   );
 }
@@ -96,6 +124,7 @@ export function SharedLoyaltyCard({
   const stamps = Array.from({ length: Math.max(1, card.stampsRequired) });
   const logoVisible = Boolean(card.logoPreviewUrl);
   const showPoints = card.pointsBadgeVisible;
+  const textElements = Object.values(card.textElements);
 
   useEffect(() => {
     const node = cardRef.current;
@@ -154,6 +183,24 @@ export function SharedLoyaltyCard({
     window.addEventListener("pointerup", stop);
   }
 
+  function resolveText(element: LoyaltyCardTextElement) {
+    return element.text
+      .replaceAll("{{points}}", String(pointsBalance))
+      .replaceAll("{{value}}", String(earnedValue))
+      .replaceAll("{{code}}", card.sampleCode);
+  }
+
+  function textStyle(element: LoyaltyCardTextElement) {
+    return {
+      ...layerStyle(element.x, element.y, element.width, element.height),
+      color: element.color,
+      fontSize: element.fontSize,
+      fontWeight: element.fontWeight,
+      textAlign: element.align,
+      lineHeight: 1.25,
+    };
+  }
+
   return (
     <div
       ref={cardRef}
@@ -181,21 +228,14 @@ export function SharedLoyaltyCard({
       >
         <div className="relative z-10 flex h-full flex-col">
           <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0 pe-16">
-            <p className="text-[11px] font-black opacity-75">{card.brandName}</p>
-            <h3 className="mt-2 text-3xl font-black leading-tight">
-              {card.cardTitle}
-            </h3>
-            <p className="mt-1 max-w-[56%] text-sm font-bold leading-5 opacity-80">{card.subtitle}</p>
-          </div>
+          <div className="min-w-0 pe-16" />
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl" style={{ background: card.cardAccent, color: card.cardForeground }}>
             <WalletCards className="h-5 w-5" />
           </div>
         </div>
 
         <div className="mt-auto max-w-[55%] rounded-[14px] bg-white/14 p-3">
-          <p className="text-sm font-black" style={{ color: card.cardAccent }}>{card.rewardTitle}</p>
-          <div className="mt-3 grid grid-cols-8 gap-1.5">
+          <div className="grid grid-cols-8 gap-1.5">
             {stamps.map((_, index) => {
               const filled = index < card.completedStamps;
               return (
@@ -240,9 +280,6 @@ export function SharedLoyaltyCard({
           className={`absolute z-20 flex flex-col justify-center rounded-xl border border-white/15 bg-white/90 px-3 text-[#17100d] shadow-lg ${activeRing("points")}`}
           style={layerStyle(card.pointsBadgeX, card.pointsBadgeY, card.pointsBadgeWidth, card.pointsBadgeHeight)}
         >
-          <p className="truncate text-[10px] font-black text-[#806A5E]">{"\u0646\u0642\u0627\u0637 \u0627\u0644\u0648\u0644\u0627\u0621"}</p>
-          <p className="truncate text-sm font-black">{pointsBalance} {"\u0646\u0642\u0637\u0629"}</p>
-          <p className="truncate text-[10px] font-bold text-[#806A5E]">{earnedValue} {"\u0631.\u0633"}</p>
         </div>
       ) : null}
 
@@ -255,7 +292,7 @@ export function SharedLoyaltyCard({
           className={`absolute z-20 ${activeRing("barcode")}`}
           style={layerStyle(card.barcodeX, card.barcodeY, card.barcodeWidth, card.barcodeHeight)}
         >
-          <LoyaltyBarcode value={card.sampleCode} />
+          <LoyaltyBarcode value={card.sampleCode} showValue={false} />
         </div>
       ) : null}
 
@@ -275,6 +312,26 @@ export function SharedLoyaltyCard({
           className="h-full w-full"
         />
       </div>
+
+      {textElements.map((element) => {
+        if (!element.enabled) return null;
+        if (!showPoints && (element.id === "pointsLabel" || element.id === "pointsValue" || element.id === "pointsValueSar")) return null;
+        if (!card.barcodeVisible && element.id === "barcodeLabel") return null;
+        const layer = `text:${element.id}` as const;
+        return (
+          <div
+            key={element.id}
+            role={editable ? "button" : undefined}
+            tabIndex={editable ? 0 : undefined}
+            onClick={() => selectLayer(layer)}
+            onPointerDown={(event) => startDrag(event, layer)}
+            className={`absolute z-30 overflow-hidden whitespace-pre-wrap break-words ${activeRing(layer)}`}
+            style={textStyle(element)}
+          >
+            {resolveText(element)}
+          </div>
+        );
+      })}
 
       {editable ? (
         <div className="absolute right-4 top-4 z-30 rounded-xl bg-black/35 px-3 py-1 text-[11px] font-black text-white backdrop-blur">

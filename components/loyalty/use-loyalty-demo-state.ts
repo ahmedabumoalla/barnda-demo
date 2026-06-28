@@ -2,7 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { loyaltyDashboardDemoState } from "@/lib/loyalty/demo-data";
-import type { LoyaltyDashboardDemoState } from "@/lib/loyalty/types";
+import type {
+  LoyaltyCardTextElement,
+  LoyaltyDashboardDemoState,
+  LoyaltyTextElementId,
+} from "@/lib/loyalty/types";
 
 export const LOYALTY_CARD_DESIGN_STORAGE_KEY = "barndaksa-loyalty-card-design";
 const LEGACY_STORAGE_KEY = "barndaksa-demo-loyalty-config";
@@ -28,6 +32,14 @@ const FALLBACK_POINTS_TEXT = {
   redemptionRule: loyaltyDashboardDemoState.points.redemptionRule,
   policyText: loyaltyDashboardDemoState.points.policyText,
 };
+const TEXT_ELEMENT_IDS = Object.keys(loyaltyDashboardDemoState.card.textElements) as LoyaltyTextElementId[];
+const LEGACY_TEXT_FIELD_BY_ELEMENT: Partial<Record<LoyaltyTextElementId, keyof typeof FALLBACK_CARD_TEXT>> = {
+  brand: "brandName",
+  title: "cardTitle",
+  subtitle: "subtitle",
+  reward: "rewardTitle",
+  helper: "supportingText",
+};
 
 function hasMojibake(value: string) {
   return /(?:\u0637[\u00b8\u00b7\u00a7\u00a8\u00b1\u00b9\u00ab\u00ac\u00b5\u00b3\u00a9\u00ae\u00af\u06be\u00a3\u00a5]|\u0638[\u2020\u2026\u201e\u02c6\u0679\u2030\u0192\u067e\u201a\u2021\u00b9])|\u00e2|\u0622/.test(value);
@@ -35,6 +47,41 @@ function hasMojibake(value: string) {
 
 function cleanText<T extends string>(value: T, fallback: string): string {
   return hasMojibake(value) ? fallback : value;
+}
+
+function withTextElementDefaults(
+  value: Partial<LoyaltyDashboardDemoState> | null,
+  card: LoyaltyDashboardDemoState["card"],
+) {
+  const stored = (value?.card?.textElements ?? {}) as Partial<LoyaltyDashboardDemoState["card"]["textElements"]>;
+  return TEXT_ELEMENT_IDS.reduce(
+    (next, id) => {
+      const fallback = loyaltyDashboardDemoState.card.textElements[id];
+      const legacyField = LEGACY_TEXT_FIELD_BY_ELEMENT[id];
+      const legacyText = legacyField ? String(card[legacyField] ?? fallback.text) : fallback.text;
+      const item = {
+        ...fallback,
+        ...(stored[id] ?? {}),
+      } as LoyaltyCardTextElement;
+
+      next[id] = {
+        ...item,
+        id,
+        text: cleanText(String(item.text ?? legacyText), legacyText),
+        x: Number.isFinite(Number(item.x)) ? Number(item.x) : fallback.x,
+        y: Number.isFinite(Number(item.y)) ? Number(item.y) : fallback.y,
+        width: Number.isFinite(Number(item.width)) ? Number(item.width) : fallback.width,
+        height: Number.isFinite(Number(item.height)) ? Number(item.height) : fallback.height,
+        fontSize: Number.isFinite(Number(item.fontSize)) ? Number(item.fontSize) : fallback.fontSize,
+        fontWeight: Number.isFinite(Number(item.fontWeight)) ? Number(item.fontWeight) : fallback.fontWeight,
+        color: String(item.color || fallback.color),
+        align: item.align === "left" || item.align === "center" || item.align === "right" ? item.align : fallback.align,
+        enabled: item.enabled !== false,
+      };
+      return next;
+    },
+    {} as LoyaltyDashboardDemoState["card"]["textElements"],
+  );
 }
 
 function withDefaults(value: Partial<LoyaltyDashboardDemoState> | null): LoyaltyDashboardDemoState {
@@ -67,6 +114,12 @@ function withDefaults(value: Partial<LoyaltyDashboardDemoState> | null): Loyalty
   state.card.supportingText = cleanText(state.card.supportingText, FALLBACK_CARD_TEXT.supportingText);
   state.card.stampLabel = cleanText(state.card.stampLabel, FALLBACK_CARD_TEXT.stampLabel);
   state.card.terms = cleanText(state.card.terms, FALLBACK_CARD_TEXT.terms);
+  state.card.textElements = withTextElementDefaults(value, state.card);
+  state.card.brandName = state.card.textElements.brand.text;
+  state.card.cardTitle = state.card.textElements.title.text;
+  state.card.subtitle = state.card.textElements.subtitle.text;
+  state.card.rewardTitle = state.card.textElements.reward.text;
+  state.card.supportingText = state.card.textElements.helper.text;
   state.points.earningRule = cleanText(state.points.earningRule, FALLBACK_POINTS_TEXT.earningRule);
   state.points.redemptionRule = cleanText(state.points.redemptionRule, FALLBACK_POINTS_TEXT.redemptionRule);
   state.points.policyText = cleanText(state.points.policyText, FALLBACK_POINTS_TEXT.policyText);

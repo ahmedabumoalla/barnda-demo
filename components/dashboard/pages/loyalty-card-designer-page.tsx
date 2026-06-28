@@ -20,11 +20,20 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { LoyaltyIconPicker } from "@/components/loyalty/loyalty-icon-picker";
-import { LoyaltyCardPreview, type LoyaltyDesignerLayer } from "@/components/loyalty/loyalty-card-preview";
+import {
+  LoyaltyCardPreview,
+  type LoyaltyDesignerLayer,
+  type LoyaltyGraphicLayer,
+} from "@/components/loyalty/loyalty-card-preview";
 import { LoyaltyLogoUploader } from "@/components/loyalty/loyalty-logo-uploader";
 import { useLoyaltyDemoState } from "@/components/loyalty/use-loyalty-demo-state";
 import { loyaltyDashboardDemoState } from "@/lib/loyalty/demo-data";
-import type { LoyaltyCardDesign, LoyaltyDashboardDemoState } from "@/lib/loyalty/types";
+import type {
+  LoyaltyCardDesign,
+  LoyaltyDashboardDemoState,
+  LoyaltyTextAlign,
+  LoyaltyTextElementId,
+} from "@/lib/loyalty/types";
 
 type DesignerGroup = "texts" | "logo" | "colors" | "stamps" | "barcode" | "qr" | "points" | "settings";
 
@@ -38,7 +47,7 @@ const groups: Array<{
   id: DesignerGroup;
   label: string;
   icon: typeof TextCursorInput;
-  layer?: LoyaltyDesignerLayer;
+  layer?: LoyaltyGraphicLayer;
 }> = [
   { id: "texts", label: "النصوص", icon: TextCursorInput },
   { id: "logo", label: "الشعار", icon: Image, layer: "logo" },
@@ -50,25 +59,69 @@ const groups: Array<{
   { id: "settings", label: "الإعدادات", icon: Settings },
 ];
 
-const layerLabels: Record<LoyaltyDesignerLayer, string> = {
+const layerLabels: Record<LoyaltyGraphicLayer, string> = {
   logo: "الشعار",
   points: "وسم النقاط",
   barcode: "الباركود",
   qr: "رمز QR",
 };
 
-const layerDefaults: Record<LoyaltyDesignerLayer, { x: number; y: number; width: number; height: number }> = {
+const layerDefaults: Record<LoyaltyGraphicLayer, { x: number; y: number; width: number; height: number }> = {
   logo: { x: 74, y: 7, width: 15, height: 17 },
   points: { x: 7, y: 66, width: 25, height: 15 },
   barcode: { x: 56, y: 66, width: 36, height: 22 },
   qr: { x: 7, y: 36, width: 16, height: 24 },
 };
 
+const textElementOrder: LoyaltyTextElementId[] = [
+  "brand",
+  "title",
+  "subtitle",
+  "reward",
+  "helper",
+  "pointsLabel",
+  "pointsValue",
+  "pointsValueSar",
+  "barcodeLabel",
+];
+
+const textElementLabels: Record<LoyaltyTextElementId, string> = {
+  brand: "اسم العلامة",
+  title: "العنوان الرئيسي",
+  subtitle: "النص الوصفي",
+  reward: "نص المكافأة",
+  helper: "النص المساعد",
+  pointsLabel: "نص النقاط",
+  pointsValue: "قيمة النقاط",
+  pointsValueSar: "قيمة النقاط بالريال",
+  barcodeLabel: "نص الباركود",
+};
+
+const legacyFieldByTextElement: Partial<Record<LoyaltyTextElementId, keyof LoyaltyCardDesign>> = {
+  brand: "brandName",
+  title: "cardTitle",
+  subtitle: "subtitle",
+  reward: "rewardTitle",
+  helper: "supportingText",
+};
+
+function isGraphicLayer(layer: LoyaltyDesignerLayer | null): layer is LoyaltyGraphicLayer {
+  return layer === "logo" || layer === "points" || layer === "barcode" || layer === "qr";
+}
+
+function isTextLayer(layer: LoyaltyDesignerLayer | null): layer is `text:${LoyaltyTextElementId}` {
+  return typeof layer === "string" && layer.startsWith("text:");
+}
+
+function textLayerId(layer: `text:${LoyaltyTextElementId}`) {
+  return layer.slice(5) as LoyaltyTextElementId;
+}
+
 export function LoyaltyCardDesignerPage() {
   const [storedState, setStoredState] = useLoyaltyDemoState();
   const [draft, setDraft] = useState<LoyaltyDashboardDemoState>(storedState);
   const [activeGroup, setActiveGroup] = useState<DesignerGroup>("texts");
-  const [activeLayer, setActiveLayer] = useState<LoyaltyDesignerLayer | null>("logo");
+  const [activeLayer, setActiveLayer] = useState<LoyaltyDesignerLayer | null>("text:title");
   const [message, setMessage] = useState("");
 
   useEffect(() => {
@@ -92,7 +145,7 @@ export function LoyaltyCardDesignerPage() {
   function resetPreview() {
     setDraft(loyaltyDashboardDemoState);
     setActiveGroup("texts");
-    setActiveLayer("logo");
+    setActiveLayer("text:title");
     setMessage("تمت إعادة ضبط المعاينة");
     window.setTimeout(() => setMessage(""), 2200);
   }
@@ -103,16 +156,16 @@ export function LoyaltyCardDesignerPage() {
     if (target) setActiveLayer(target);
   }
 
-  function layerPrefix(layer: LoyaltyDesignerLayer) {
+  function layerPrefix(layer: LoyaltyGraphicLayer) {
     return layer === "points" ? "pointsBadge" : layer;
   }
 
-  function getLayerValue(layer: LoyaltyDesignerLayer, field: "X" | "Y" | "Width" | "Height") {
+  function getLayerValue(layer: LoyaltyGraphicLayer, field: "X" | "Y" | "Width" | "Height") {
     const key = `${layerPrefix(layer)}${field}` as keyof LoyaltyCardDesign;
     return Number(draft.card[key] ?? 0);
   }
 
-  function clampLayerValue(layer: LoyaltyDesignerLayer, field: "X" | "Y" | "Width" | "Height", value: number) {
+  function clampLayerValue(layer: LoyaltyGraphicLayer, field: "X" | "Y" | "Width" | "Height", value: number) {
     const width = field === "Width" ? value : getLayerValue(layer, "Width");
     const height = field === "Height" ? value : getLayerValue(layer, "Height");
     const x = field === "X" ? value : getLayerValue(layer, "X");
@@ -127,13 +180,13 @@ export function LoyaltyCardDesignerPage() {
     return Math.max(0, Math.min(100 - height, value));
   }
 
-  function setLayerValue(layer: LoyaltyDesignerLayer, field: "X" | "Y" | "Width" | "Height", value: number) {
+  function setLayerValue(layer: LoyaltyGraphicLayer, field: "X" | "Y" | "Width" | "Height", value: number) {
     const prefix = layerPrefix(layer);
     const key = `${prefix}${field}` as keyof LoyaltyCardDesign;
     patchCard({ [key]: clampLayerValue(layer, field, value) } as Partial<LoyaltyCardDesign>);
   }
 
-  function resetLayer(layer: LoyaltyDesignerLayer) {
+  function resetLayer(layer: LoyaltyGraphicLayer) {
     const defaults = layerDefaults[layer];
     const prefix = layerPrefix(layer);
     patchCard({
@@ -142,6 +195,60 @@ export function LoyaltyCardDesignerPage() {
       [`${prefix}Width`]: defaults.width,
       [`${prefix}Height`]: defaults.height,
     } as Partial<LoyaltyCardDesign>);
+  }
+
+  function patchTextElement(id: LoyaltyTextElementId, next: Partial<LoyaltyCardDesign["textElements"][LoyaltyTextElementId]>) {
+    setDraft((current) => {
+      const currentElement = current.card.textElements[id];
+      const textElements = {
+        ...current.card.textElements,
+        [id]: { ...currentElement, ...next, id },
+      };
+      const legacyField = legacyFieldByTextElement[id];
+      const legacyPatch = legacyField && typeof next.text === "string" ? { [legacyField]: next.text } : {};
+
+      return {
+        ...current,
+        card: {
+          ...current.card,
+          ...legacyPatch,
+          textElements,
+        },
+      };
+    });
+  }
+
+  function getTextElementId() {
+    return isTextLayer(activeLayer) ? textLayerId(activeLayer) : "title";
+  }
+
+  function selectTextElement(id: LoyaltyTextElementId) {
+    setActiveGroup("texts");
+    setActiveLayer(`text:${id}`);
+  }
+
+  function clampTextElementValue(id: LoyaltyTextElementId, field: "x" | "y" | "width" | "height" | "fontSize", value: number) {
+    const element = draft.card.textElements[id];
+    if (field === "fontSize") return Math.max(8, Math.min(42, value));
+
+    const width = field === "width" ? value : element.width;
+    const height = field === "height" ? value : element.height;
+    const x = field === "x" ? value : element.x;
+    const y = field === "y" ? value : element.y;
+
+    if (field === "width") return Math.max(6, Math.min(100 - x, value));
+    if (field === "height") return Math.max(4, Math.min(100 - y, value));
+    if (field === "x") return Math.max(0, Math.min(100 - width, value));
+    return Math.max(0, Math.min(100 - height, value));
+  }
+
+  function setTextElementNumber(id: LoyaltyTextElementId, field: "x" | "y" | "width" | "height" | "fontSize", value: number) {
+    patchTextElement(id, { [field]: clampTextElementValue(id, field, value) });
+  }
+
+  function resetTextElement(id: LoyaltyTextElementId) {
+    const defaults = loyaltyDashboardDemoState.card.textElements[id];
+    patchTextElement(id, defaults);
   }
 
   function CompactToggle({
@@ -174,7 +281,7 @@ export function LoyaltyCardDesignerPage() {
     min = 0,
   }: {
     label: string;
-    layer: LoyaltyDesignerLayer;
+    layer: LoyaltyGraphicLayer;
     field: "X" | "Y" | "Width" | "Height";
     min?: number;
   }) {
@@ -217,8 +324,105 @@ export function LoyaltyCardDesignerPage() {
     );
   }
 
+  function TextSlider({
+    label,
+    id,
+    field,
+    min = 0,
+    max,
+  }: {
+    label: string;
+    id: LoyaltyTextElementId;
+    field: "x" | "y" | "width" | "height" | "fontSize";
+    min?: number;
+    max: number;
+  }) {
+    const value = Number(draft.card.textElements[id][field] ?? 0);
+
+    return (
+      <label className="space-y-1">
+        <span className="flex items-center justify-between text-[11px] font-black text-[#6B3A25]">
+          <span>{label}</span>
+          <span>{Math.round(value)}</span>
+        </span>
+        <span className="grid grid-cols-[minmax(0,1fr)_58px] items-center gap-2">
+          <input
+            type="range"
+            min={min}
+            max={max}
+            value={value}
+            onChange={(event) => setTextElementNumber(id, field, Number(event.target.value))}
+            className="h-5 w-full accent-[#6B3A25]"
+          />
+          <input
+            type="number"
+            min={min}
+            max={max}
+            value={Math.round(value)}
+            onChange={(event) => setTextElementNumber(id, field, Number(event.target.value))}
+            className="h-8 rounded-lg border border-[#D8C3A2] bg-white px-2 text-center text-[12px] font-black text-[#2F241D] outline-none focus:border-[#9C6B2E]"
+          />
+        </span>
+      </label>
+    );
+  }
+
   function renderGroupPanel() {
     if (activeGroup === "texts") {
+      const activeTextId = getTextElementId();
+      const element = draft.card.textElements[activeTextId];
+      const xMax = Math.max(0, 100 - element.width);
+      const yMax = Math.max(0, 100 - element.height);
+      const widthMax = Math.max(6, 100 - element.x);
+      const heightMax = Math.max(4, 100 - element.y);
+
+      return (
+        <div className="grid gap-3">
+          <div className="grid grid-cols-2 gap-1">
+            {textElementOrder.map((id) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => selectTextElement(id)}
+                className={`h-8 rounded-lg px-2 text-[11px] font-black ${
+                  activeTextId === id ? "bg-[#D9A33F] text-[#2F241D]" : "bg-white text-[#6B3A25]"
+                }`}
+              >
+                {textElementLabels[id]}
+              </button>
+            ))}
+          </div>
+
+          <div className="rounded-[12px] bg-white p-3">
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <h2 className="text-sm font-black text-[#2F241D]">{textElementLabels[activeTextId]}</h2>
+              <CompactToggle enabled={element.enabled} label={element.enabled ? "إخفاء" : "إظهار"} onClick={() => patchTextElement(activeTextId, { enabled: !element.enabled })} />
+            </div>
+
+            <label className={labelClass}>النص<textarea className={textareaClass} value={element.text} onChange={(event) => patchTextElement(activeTextId, { text: event.target.value })} /></label>
+
+            <div className="mt-3 grid gap-3">
+              <TextSlider label="الموضع الأفقي / X" id={activeTextId} field="x" max={xMax} />
+              <TextSlider label="الموضع العمودي / Y" id={activeTextId} field="y" max={yMax} />
+              <TextSlider label="العرض" id={activeTextId} field="width" min={6} max={widthMax} />
+              <TextSlider label="الطول" id={activeTextId} field="height" min={4} max={heightMax} />
+              <TextSlider label="حجم الخط" id={activeTextId} field="fontSize" min={8} max={42} />
+            </div>
+
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <label className={labelClass}>لون النص<input className={`${inputClass} p-1`} type="color" value={element.color} onChange={(event) => patchTextElement(activeTextId, { color: event.target.value })} /></label>
+              <label className={labelClass}>المحاذاة<select className={inputClass} value={element.align} onChange={(event) => patchTextElement(activeTextId, { align: event.target.value as LoyaltyTextAlign })}><option value="right">يمين</option><option value="center">وسط</option><option value="left">يسار</option></select></label>
+            </div>
+
+            <button type="button" onClick={() => resetTextElement(activeTextId)} className="mt-3 h-8 rounded-lg border border-[#D8C3A2] bg-[#FFF8EA] px-3 text-[12px] font-black text-[#6B3A25]">
+              إعادة ضبط النص المحدد
+            </button>
+          </div>
+
+          <label className={labelClass}>الشروط<textarea className={textareaClass} value={draft.card.terms} onChange={(event) => patchCard({ terms: event.target.value })} /></label>
+        </div>
+      );
+
       return (
         <div className="grid gap-2">
           <label className={labelClass}>اسم العلامة<input className={inputClass} value={draft.card.brandName} onChange={(event) => patchCard({ brandName: event.target.value })} /></label>
@@ -326,7 +530,7 @@ export function LoyaltyCardDesignerPage() {
     );
   }
 
-  const activeSliderLayer = activeLayer ?? "logo";
+  const activeSliderLayer = isGraphicLayer(activeLayer) ? activeLayer : "logo";
 
   return (
     <main dir="rtl" className="h-[100dvh] max-h-[100dvh] overflow-hidden bg-[#F5EFE6] p-3 text-[#2F241D]">
@@ -401,6 +605,7 @@ export function LoyaltyCardDesignerPage() {
                 activeLayer={activeLayer}
                 onActiveLayerChange={(layer) => {
                   setActiveLayer(layer);
+                  if (isTextLayer(layer)) setActiveGroup("texts");
                   if (layer === "logo") setActiveGroup("logo");
                   if (layer === "points") setActiveGroup("points");
                   if (layer === "barcode") setActiveGroup("barcode");
@@ -421,7 +626,7 @@ export function LoyaltyCardDesignerPage() {
             <div className="shrink-0 border-b border-[#E7D7C6] p-3">
               <p className="text-[12px] font-black text-[#806A5E]">العنصر المحدد</p>
               <div className="mt-2 grid grid-cols-2 gap-1">
-                {(["logo", "points", "barcode", "qr"] as LoyaltyDesignerLayer[]).map((layer) => (
+                {(["logo", "points", "barcode", "qr"] as LoyaltyGraphicLayer[]).map((layer) => (
                   <button
                     key={layer}
                     type="button"

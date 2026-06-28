@@ -408,6 +408,9 @@ export function LoyaltyCardDesignerPage() {
                 }}
                 onCardChange={(card) => setDraft((current) => ({ ...current, card }))}
               />
+              <p className="mt-3 text-center text-[12px] font-black text-[#2F7D69]">
+                يتم تطبيق هذا التصميم على بطاقة العميل العامة بعد حفظ تصميم البطاقة.
+              </p>
               <p className="mt-3 text-center text-[12px] font-black text-[#6B3A25]">
                 اسحب العنصر داخل البطاقة، واستخدم منزلقات اللوحة الجانبية للضبط الدقيق.
               </p>

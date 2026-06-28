@@ -305,9 +305,9 @@ function CafePageInner({ slug }: { slug: string }) {
             cardSubtitle: "اجمع الأختام واحصل على مكافأتك",
             purchasesRequired: 7,
             rewardName: "منتج مجاني",
-            cardBackground: "#4A281D",
-            cardForeground: "#FCF8F3",
-            cardAccent: "#D9A33F",
+            cardBackground: "#F6BE18",
+            cardForeground: "#17212B",
+            cardAccent: "#64BFA9",
           }}
         />
       ) : null}

@@ -9,12 +9,23 @@ import {
   type PublicFeatureKey,
 } from "@/lib/platform/public-feature-access";
 
+type NavKey = "home" | "products" | "product" | "rewards" | "account";
+
 type Props = {
   slug: string;
   previewThemeId?: string | null;
   features: string[];
-  active?: "home" | "products" | "product" | "rewards" | "account";
+  active?: NavKey;
   className?: string;
+};
+
+type NavItem = {
+  key: NavKey;
+  href: string;
+  label: string;
+  icon: typeof Home;
+  feature?: PublicFeatureKey;
+  anyFeature?: PublicFeatureKey[];
 };
 
 export function PublicBrowserNav({
@@ -25,13 +36,7 @@ export function PublicBrowserNav({
   className = "",
 }: Props) {
   const router = useRouter();
-  const items: Array<{
-    key: NonNullable<Props["active"]>;
-    href: string;
-    label: string;
-    icon: typeof Home;
-    feature?: PublicFeatureKey;
-  }> = [
+  const items: NavItem[] = [
     { key: "home", href: getCafePath(slug, "", previewThemeId), label: "الرئيسية", icon: Home },
     {
       key: "products",
@@ -45,7 +50,7 @@ export function PublicBrowserNav({
       href: getCafePath(slug, "rewards", previewThemeId),
       label: "المكافآت",
       icon: WalletCards,
-      feature: "loyalty",
+      anyFeature: ["loyalty", "experience_reviews"],
     },
     {
       key: "account",
@@ -55,7 +60,10 @@ export function PublicBrowserNav({
     },
   ];
 
-  const visibleItems = items.filter((item) => !item.feature || publicFeatureAllows(features, item.feature));
+  const visibleItems = items.filter((item) => {
+    if (item.anyFeature) return item.anyFeature.some((feature) => publicFeatureAllows(features, feature));
+    return !item.feature || publicFeatureAllows(features, item.feature);
+  });
 
   return (
     <nav

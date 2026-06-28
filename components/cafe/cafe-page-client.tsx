@@ -17,6 +17,7 @@ import {
   WalletCards,
 } from "lucide-react";
 import { BrandPwaInstallSection } from "@/components/cafe/brand-pwa-install-section";
+import { PublicBrowserNav } from "@/components/cafe/public-browser-nav";
 import { ProductMediaDisplay } from "@/components/cafe/product-image";
 import { CafeLogo } from "@/components/cafe/cafe-logo";
 import { LocalAssetImage } from "@/components/ui/local-asset-image";
@@ -786,6 +787,8 @@ function CafePageInner({ slug }: { slug: string }) {
 
 
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <PublicBrowserNav slug={slug} previewThemeId={previewThemeId} features={features} active="home" />
+
         <MobileBrandMasthead
           cafeName={cafeName}
           logoUrl={appliedLogoUrl}

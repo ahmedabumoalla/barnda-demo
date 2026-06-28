@@ -799,7 +799,7 @@ function CafePageInner({ slug }: { slug: string }) {
           <div className="mx-auto mt-6 max-w-xl lg:max-w-3xl">
             <AppLoyaltyCard
               customerName={homeLoyalty?.card.customerName || customer?.fullName}
-              code={homeLoyalty?.card.cardCode || customer?.id?.slice(0, 8).toUpperCase()}
+              code={homeLoyalty?.card.cardCode}
               points={homeLoyalty?.card.availableRewards ?? 0}
               current={homeLoyalty?.card.stampsInCycle ?? 0}
               required={homeLoyalty?.program.purchasesRequired ?? 7}

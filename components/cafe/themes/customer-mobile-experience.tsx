@@ -94,10 +94,11 @@ export function AppLoyaltyCard({
   const safeRequired = Math.max(1, Math.min(60, Number(required || 7)));
   const effectiveRequired = Math.max(1, Math.min(60, Number(demoState.card.stampsRequired || safeRequired)));
   const completedStamps = Math.max(0, Math.min(effectiveRequired, Number(current || demoState.card.completedStamps || 0)));
+  const effectiveCode = code?.trim() || demoState.card.sampleCode || "BARNDAKSA-2408";
   const previewCard = {
     ...demoState.card,
     brandName: demoState.card.brandName || customerName || "\u0639\u0645\u064a\u0644 \u0627\u0644\u0639\u0644\u0627\u0645\u0629",
-    sampleCode: code || demoState.card.sampleCode || "BARNDAKSA",
+    sampleCode: effectiveCode,
     stampsRequired: effectiveRequired,
     completedStamps,
     pointsBadgeVisible: demoState.points.enabled && demoState.card.pointsBadgeVisible,

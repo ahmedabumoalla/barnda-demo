@@ -31,11 +31,16 @@ function clamp(value: number, min: number, max: number) {
 }
 
 function layerStyle(x: number, y: number, width: number, height: number) {
+  const safeWidth = clamp(width, 1, 100);
+  const safeHeight = clamp(height, 1, 100);
+  const safeX = clamp(x, 0, 100 - safeWidth);
+  const safeY = clamp(y, 0, 100 - safeHeight);
+
   return {
-    left: `${x}%`,
-    top: `${y}%`,
-    width: `${width}%`,
-    height: `${height}%`,
+    left: `${safeX}%`,
+    top: `${safeY}%`,
+    width: `${safeWidth}%`,
+    height: `${safeHeight}%`,
   };
 }
 
@@ -53,18 +58,18 @@ function applyLayerPosition(card: LoyaltyCardDesign, layer: LoyaltyDesignerLayer
   return { ...card, barcodeX: x, barcodeY: y };
 }
 
-export function LoyaltyBarcode({ value, dark = false }: { value: string; dark?: boolean }) {
+export function LoyaltyBarcode({ value, dark = false, compact = false }: { value: string; dark?: boolean; compact?: boolean }) {
   return (
-    <div className={`h-full min-h-[64px] rounded-xl border p-2 ${dark ? "border-white/15 bg-white/90" : "border-[#E7D7C6] bg-white"}`}>
+    <div className={`flex h-full min-h-0 flex-col justify-center rounded-xl border ${compact ? "p-1.5" : "p-2"} ${dark ? "border-white/15 bg-white/90" : "border-[#E7D7C6] bg-white"}`}>
       <div
-        className="h-[62%] w-full rounded-md"
+        className="min-h-0 flex-1 rounded-md"
         style={{
           background:
             "repeating-linear-gradient(90deg,#17100d 0 2px,transparent 2px 5px,#17100d 5px 8px,transparent 8px 12px,#17100d 12px 13px,transparent 13px 17px)",
         }}
         aria-hidden="true"
       />
-      <p className="mt-1 truncate text-center font-mono text-[10px] font-black tracking-[0.14em] text-[#17100d]">
+      <p className={`truncate text-center font-mono font-black text-[#17100d] ${compact ? "mt-0.5 text-[8px] tracking-[0.08em]" : "mt-1 text-[10px] tracking-[0.14em]"}`}>
         {value}
       </p>
     </div>
@@ -109,7 +114,9 @@ export function SharedLoyaltyCard({
     if (!rect) return;
     const activeRect = rect;
     const updateCard = onCardChange;
-    const { width, height } = getLayerMetrics(card, layer);
+    const metrics = getLayerMetrics(card, layer);
+    const width = clamp(metrics.width, 1, 100);
+    const height = clamp(metrics.height, 1, 100);
 
     function move(moveEvent: globalThis.PointerEvent) {
       const nextX = clamp(((moveEvent.clientX - activeRect.left) / activeRect.width) * 100 - width / 2, 0, 100 - width);
@@ -129,43 +136,45 @@ export function SharedLoyaltyCard({
   return (
     <div
       ref={cardRef}
-      className={`relative mx-auto aspect-[1.58/1] w-full overflow-hidden rounded-[18px] border border-black/10 p-5 text-right shadow-[0_24px_70px_rgba(49,25,18,0.20)] ${
+      className={`relative mx-auto aspect-[1.58/1] w-full overflow-hidden rounded-[18px] border border-black/10 text-right shadow-[0_24px_70px_rgba(49,25,18,0.20)] ${
+        compact ? "p-4" : "p-5"
+      } ${
         compact ? "max-w-[440px]" : "max-w-[860px]"
       } ${editable ? "select-none ring-2 ring-[#D9A33F]/25" : ""}`}
       style={{ background: card.cardBackground, color: card.cardForeground }}
       dir="rtl"
     >
       <div className="relative z-10 flex h-full flex-col">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0 pe-16">
-            <p className="text-[11px] font-black opacity-75">{card.brandName}</p>
-            <h3 className={compact ? "mt-1 text-xl font-black leading-tight" : "mt-2 text-3xl font-black leading-tight"}>
+        <div className={compact ? "flex items-start justify-between gap-2" : "flex items-start justify-between gap-4"}>
+          <div className={compact ? "min-w-0 pe-12" : "min-w-0 pe-16"}>
+            <p className={compact ? "truncate text-[10px] font-black opacity-75" : "text-[11px] font-black opacity-75"}>{card.brandName}</p>
+            <h3 className={compact ? "mt-1 line-clamp-2 text-lg font-black leading-tight" : "mt-2 text-3xl font-black leading-tight"}>
               {card.cardTitle}
             </h3>
-            <p className="mt-1 max-w-[56%] text-xs font-bold leading-5 opacity-80 sm:text-sm">{card.subtitle}</p>
+            <p className={compact ? "mt-1 line-clamp-2 max-w-[58%] text-[10px] font-bold leading-4 opacity-80" : "mt-1 max-w-[56%] text-xs font-bold leading-5 opacity-80 sm:text-sm"}>{card.subtitle}</p>
           </div>
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl" style={{ background: card.cardAccent, color: card.cardForeground }}>
-            <WalletCards className="h-5 w-5" />
+          <div className={compact ? "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl" : "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"} style={{ background: card.cardAccent, color: card.cardForeground }}>
+            <WalletCards className={compact ? "h-4 w-4" : "h-5 w-5"} />
           </div>
         </div>
 
-        <div className="mt-auto max-w-[55%] rounded-[14px] bg-white/14 p-3">
-          <p className="text-xs font-black sm:text-sm" style={{ color: card.cardAccent }}>{card.rewardTitle}</p>
-          <div className="mt-3 grid grid-cols-4 gap-1.5 sm:grid-cols-8">
+        <div className={compact ? "mt-auto max-w-[55%] rounded-[12px] bg-white/14 p-2" : "mt-auto max-w-[55%] rounded-[14px] bg-white/14 p-3"}>
+          <p className={compact ? "line-clamp-2 text-[10px] font-black leading-4" : "text-xs font-black sm:text-sm"} style={{ color: card.cardAccent }}>{card.rewardTitle}</p>
+          <div className={compact ? "mt-2 grid grid-cols-4 gap-1 sm:grid-cols-8" : "mt-3 grid grid-cols-4 gap-1.5 sm:grid-cols-8"}>
             {stamps.map((_, index) => {
               const filled = index < card.completedStamps;
               return (
                 <span
                   key={index}
-                  className={`flex aspect-square items-center justify-center rounded-lg border text-[10px] font-black ${
+                  className={`flex aspect-square items-center justify-center rounded-lg border font-black ${compact ? "text-[8px]" : "text-[10px]"} ${
                     filled ? "border-transparent" : "border-white/30 bg-white/10 opacity-80"
                   }`}
                   style={filled ? { background: card.cardAccent, color: card.cardForeground } : undefined}
                 >
                   {card.customIconPreviewUrl ? (
-                    <img src={card.customIconPreviewUrl} alt="" className="h-4 w-4 object-contain" />
+                    <img src={card.customIconPreviewUrl} alt="" className={compact ? "h-3 w-3 object-contain" : "h-4 w-4 object-contain"} />
                   ) : (
-                    <ProgressIcon className="h-3.5 w-3.5" />
+                    <ProgressIcon className={compact ? "h-3 w-3" : "h-3.5 w-3.5"} />
                   )}
                 </span>
               );
@@ -193,12 +202,12 @@ export function SharedLoyaltyCard({
           tabIndex={editable ? 0 : undefined}
           onClick={() => selectLayer("points")}
           onPointerDown={(event) => startDrag(event, "points")}
-          className={`absolute z-20 flex flex-col justify-center rounded-xl border border-white/15 bg-white/90 px-3 text-[#17100d] shadow-lg ${activeRing("points")}`}
+          className={`absolute z-20 flex flex-col justify-center rounded-xl border border-white/15 bg-white/90 text-[#17100d] shadow-lg ${compact ? "px-2" : "px-3"} ${activeRing("points")}`}
           style={layerStyle(card.pointsBadgeX, card.pointsBadgeY, card.pointsBadgeWidth, card.pointsBadgeHeight)}
         >
-          <p className="truncate text-[10px] font-black text-[#806A5E]">{"\u0646\u0642\u0627\u0637 \u0627\u0644\u0648\u0644\u0627\u0621"}</p>
-          <p className="truncate text-sm font-black">{pointsBalance} {"\u0646\u0642\u0637\u0629"}</p>
-          <p className="truncate text-[10px] font-bold text-[#806A5E]">{earnedValue} {"\u0631.\u0633"}</p>
+          <p className={`${compact ? "text-[8px]" : "text-[10px]"} truncate font-black text-[#806A5E]`}>{"\u0646\u0642\u0627\u0637 \u0627\u0644\u0648\u0644\u0627\u0621"}</p>
+          <p className={`${compact ? "text-[11px]" : "text-sm"} truncate font-black`}>{pointsBalance} {"\u0646\u0642\u0637\u0629"}</p>
+          <p className={`${compact ? "text-[8px]" : "text-[10px]"} truncate font-bold text-[#806A5E]`}>{earnedValue} {"\u0631.\u0633"}</p>
         </div>
       ) : null}
 
@@ -211,7 +220,7 @@ export function SharedLoyaltyCard({
           className={`absolute z-20 ${activeRing("barcode")}`}
           style={layerStyle(card.barcodeX, card.barcodeY, card.barcodeWidth, card.barcodeHeight)}
         >
-          <LoyaltyBarcode value={card.sampleCode} />
+          <LoyaltyBarcode value={card.sampleCode} compact={compact} />
         </div>
       ) : null}
 
@@ -227,11 +236,8 @@ export function SharedLoyaltyCard({
           kind="loyalty-card"
           value={card.sampleCode}
           title={"QR \u0628\u0637\u0627\u0642\u0629 \u0627\u0644\u0648\u0644\u0627\u0621"}
-          size={clamp(
-            Math.min(card.qrWidth * (compact ? 6 : 8), card.qrHeight * (compact ? 3.8 : 5)),
-            compact ? 36 : 48,
-            compact ? 116 : 148
-          )}
+          fit
+          className="h-full w-full"
         />
       </div>
 

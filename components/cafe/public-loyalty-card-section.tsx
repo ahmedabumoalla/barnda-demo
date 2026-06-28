@@ -53,7 +53,8 @@ export function PublicLoyaltyCardSection({ slug, cafeName, program, logoUrl }: P
     };
   }, [slug]);
 
-  const displayCode = cardCode || `${slug.toUpperCase().slice(0, 10)}-LOYALTY`;
+  const demoCardCode = demoState.card.sampleCode || "BARNDAKSA-2408";
+  const displayCode = cardCode || demoCardCode;
   const pointsBalance = demoState.points.enabled
     ? demoState.points.customerPointsBalance
     : cardCode ? 320 : 180;
@@ -81,7 +82,7 @@ export function PublicLoyaltyCardSection({ slug, cafeName, program, logoUrl }: P
   };
 
   function showCard() {
-    setCardCode(`${slug.toUpperCase().slice(0, 8)}-2408`);
+    setCardCode(demoCardCode);
     setMessage("\u0647\u0630\u0647 \u0645\u0639\u0627\u064a\u0646\u0629 \u0628\u0637\u0627\u0642\u0629 \u0627\u0644\u0648\u0644\u0627\u0621 \u062f\u0627\u062e\u0644 \u0627\u0644\u062f\u064a\u0645\u0648 \u0628\u062f\u0648\u0646 \u0625\u0646\u0634\u0627\u0621 \u0628\u064a\u0627\u0646\u0627\u062a \u062d\u0642\u064a\u0642\u064a\u0629.");
   }
 

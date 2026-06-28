@@ -67,10 +67,10 @@ const layerLabels: Record<LoyaltyGraphicLayer, string> = {
 };
 
 const layerDefaults: Record<LoyaltyGraphicLayer, { x: number; y: number; width: number; height: number }> = {
-  logo: { x: 74, y: 7, width: 15, height: 17 },
-  points: { x: 7, y: 66, width: 25, height: 15 },
-  barcode: { x: 56, y: 66, width: 36, height: 22 },
-  qr: { x: 7, y: 36, width: 16, height: 24 },
+  logo: { x: 84, y: 6, width: 10, height: 10 },
+  points: { x: 7, y: 13, width: 29, height: 19 },
+  barcode: { x: 42, y: 45, width: 48, height: 21 },
+  qr: { x: 7, y: 54, width: 25, height: 36 },
 };
 
 const textElementOrder: LoyaltyTextElementId[] = [

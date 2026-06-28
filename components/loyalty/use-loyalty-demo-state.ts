@@ -16,6 +16,11 @@ const OLD_DEFAULT_CARD_COLORS = {
   cardForeground: "#FCF8F3",
   cardAccent: "#D9A33F",
 };
+const PREVIOUS_YELLOW_DEFAULT_LAYOUT = {
+  pointsBadgeY: 66,
+  qrY: 36,
+  titleX: 6,
+};
 
 const FALLBACK_CARD_TEXT = {
   brandName: loyaltyDashboardDemoState.card.brandName,
@@ -100,11 +105,22 @@ function withDefaults(value: Partial<LoyaltyDashboardDemoState> | null): Loyalty
     state.card.cardBackground === OLD_DEFAULT_CARD_COLORS.cardBackground &&
     state.card.cardForeground === OLD_DEFAULT_CARD_COLORS.cardForeground &&
     state.card.cardAccent === OLD_DEFAULT_CARD_COLORS.cardAccent;
+  const missingRequiredTextElements =
+    !value?.card?.textElements ||
+    TEXT_ELEMENT_IDS.some((id) => !value.card?.textElements?.[id]);
+  const usesPreviousYellowDefaultLayout =
+    state.card.cardBackground === loyaltyDashboardDemoState.card.cardBackground &&
+    Number(state.card.pointsBadgeY) === PREVIOUS_YELLOW_DEFAULT_LAYOUT.pointsBadgeY &&
+    Number(state.card.qrY) === PREVIOUS_YELLOW_DEFAULT_LAYOUT.qrY &&
+    Number(value?.card?.textElements?.title?.x) === PREVIOUS_YELLOW_DEFAULT_LAYOUT.titleX;
 
-  if (usesOldDefaultColors) {
-    state.card.cardBackground = loyaltyDashboardDemoState.card.cardBackground;
-    state.card.cardForeground = loyaltyDashboardDemoState.card.cardForeground;
-    state.card.cardAccent = loyaltyDashboardDemoState.card.cardAccent;
+  const shouldResetSavedCard = usesOldDefaultColors || missingRequiredTextElements || usesPreviousYellowDefaultLayout;
+
+  if (shouldResetSavedCard) {
+    state.card = {
+      ...loyaltyDashboardDemoState.card,
+      enabled: state.card.enabled,
+    };
   }
 
   state.card.brandName = cleanText(state.card.brandName, FALLBACK_CARD_TEXT.brandName);
@@ -114,7 +130,7 @@ function withDefaults(value: Partial<LoyaltyDashboardDemoState> | null): Loyalty
   state.card.supportingText = cleanText(state.card.supportingText, FALLBACK_CARD_TEXT.supportingText);
   state.card.stampLabel = cleanText(state.card.stampLabel, FALLBACK_CARD_TEXT.stampLabel);
   state.card.terms = cleanText(state.card.terms, FALLBACK_CARD_TEXT.terms);
-  state.card.textElements = withTextElementDefaults(value, state.card);
+  state.card.textElements = withTextElementDefaults(shouldResetSavedCard ? null : value, state.card);
   state.card.brandName = state.card.textElements.brand.text;
   state.card.cardTitle = state.card.textElements.title.text;
   state.card.subtitle = state.card.textElements.subtitle.text;

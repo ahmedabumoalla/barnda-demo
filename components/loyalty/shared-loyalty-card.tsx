@@ -318,6 +318,8 @@ export function SharedLoyaltyCard({
         if (!showPoints && (element.id === "pointsLabel" || element.id === "pointsValue" || element.id === "pointsValueSar")) return null;
         if (!card.barcodeVisible && element.id === "barcodeLabel") return null;
         const layer = `text:${element.id}` as const;
+        const helperClass =
+          element.id === "helper" ? "flex items-center justify-center rounded-xl bg-black/35 px-3 py-1 backdrop-blur" : "";
         return (
           <div
             key={element.id}
@@ -325,19 +327,13 @@ export function SharedLoyaltyCard({
             tabIndex={editable ? 0 : undefined}
             onClick={() => selectLayer(layer)}
             onPointerDown={(event) => startDrag(event, layer)}
-            className={`absolute z-30 overflow-hidden whitespace-pre-wrap break-words ${activeRing(layer)}`}
+            className={`absolute z-30 overflow-hidden whitespace-pre-wrap break-words ${helperClass} ${activeRing(layer)}`}
             style={textStyle(element)}
           >
             {resolveText(element)}
           </div>
         );
       })}
-
-      {editable ? (
-        <div className="absolute right-4 top-4 z-30 rounded-xl bg-black/35 px-3 py-1 text-[11px] font-black text-white backdrop-blur">
-          {"\u0627\u0633\u062d\u0628 \u0627\u0644\u0639\u0646\u0627\u0635\u0631 \u062f\u0627\u062e\u0644 \u062d\u062f\u0648\u062f \u0627\u0644\u0628\u0637\u0627\u0642\u0629"}
-        </div>
-      ) : null}
       </div>
     </div>
   );

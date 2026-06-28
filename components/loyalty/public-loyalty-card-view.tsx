@@ -58,14 +58,14 @@ export function PublicLoyaltyCardView({
             className="inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-3 font-black text-[#2F7D69] shadow-sm"
           >
             <ArrowRight className="h-4 w-4" />
-            رجوع
+            {"\u0631\u062c\u0648\u0639"}
           </Link>
           <Link
             href={cafeHref}
             className="inline-flex items-center gap-2 rounded-2xl border border-[#2F7D69] px-5 py-3 font-black text-[#2F7D69]"
           >
             <Home className="h-4 w-4" />
-            الصفحة الرئيسية
+            {"\u0627\u0644\u0635\u0641\u062d\u0629 \u0627\u0644\u0631\u0626\u064a\u0633\u064a\u0629"}
           </Link>
         </div>
 
@@ -90,7 +90,7 @@ export function PublicLoyaltyCardView({
             </div>
 
             <p className="mt-4 text-sm font-bold leading-7 text-[#5F6870]">
-              اعرض هذه البطاقة للكاشير عند كل عملية. البطاقة تستخدم نفس تصميم الولاء المحفوظ في لوحة الديمو.
+              {"\u0627\u0639\u0631\u0636 \u0647\u0630\u0647 \u0627\u0644\u0628\u0637\u0627\u0642\u0629 \u0644\u0644\u0643\u0627\u0634\u064a\u0631 \u0639\u0646\u062f \u0643\u0644 \u0639\u0645\u0644\u064a\u0629. \u0627\u0644\u0628\u0637\u0627\u0642\u0629 \u062a\u0633\u062a\u062e\u062f\u0645 \u0646\u0641\u0633 \u062a\u0635\u0645\u064a\u0645 \u0627\u0644\u0648\u0644\u0627\u0621 \u0627\u0644\u0645\u062d\u0641\u0648\u0638 \u0641\u064a \u0644\u0648\u062d\u0629 \u0627\u0644\u062f\u064a\u0645\u0648."}
             </p>
 
             <div className="mt-6 grid gap-3 sm:grid-cols-3">
@@ -104,18 +104,18 @@ export function PublicLoyaltyCardView({
               </div>
               <div className="rounded-2xl bg-[#F6F0E7] p-5 text-center">
                 <p className="text-3xl font-black">{availableRewards}</p>
-                <p className="mt-1 text-xs font-bold text-[#5F6870]">مكافآت جاهزة</p>
+                <p className="mt-1 text-xs font-bold text-[#5F6870]">{"\u0645\u0643\u0627\u0641\u0622\u062a \u062c\u0627\u0647\u0632\u0629"}</p>
               </div>
             </div>
 
             {availableRewards > 0 ? (
               <div className="mt-5 flex items-center gap-3 rounded-2xl bg-[#F6BE18] p-5 font-black text-[#17212B]">
                 <Gift className="h-6 w-6" />
-                اكتملت البطاقة، لديك {rewardName}
+                {"\u0627\u0643\u062a\u0645\u0644\u062a \u0627\u0644\u0628\u0637\u0627\u0642\u0629\u060c \u0644\u062f\u064a\u0643"} {rewardName}
               </div>
             ) : (
               <div className="mt-5 rounded-2xl border border-[#E7D7C6] p-5 font-bold leading-7 text-[#5F6870]">
-                المتبقي {Math.max(0, required - lit)} للوصول إلى {rewardName}
+                {"\u0627\u0644\u0645\u062a\u0628\u0642\u064a"} {Math.max(0, required - lit)} {"\u0644\u0644\u0648\u0635\u0648\u0644 \u0625\u0644\u0649"} {rewardName}
               </div>
             )}
 

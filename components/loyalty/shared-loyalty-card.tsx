@@ -196,9 +196,9 @@ export function SharedLoyaltyCard({
           className={`absolute z-20 flex flex-col justify-center rounded-xl border border-white/15 bg-white/90 px-3 text-[#17100d] shadow-lg ${activeRing("points")}`}
           style={layerStyle(card.pointsBadgeX, card.pointsBadgeY, card.pointsBadgeWidth, card.pointsBadgeHeight)}
         >
-          <p className="truncate text-[10px] font-black text-[#806A5E]">نقاط الولاء</p>
-          <p className="truncate text-sm font-black">{pointsBalance} نقطة</p>
-          <p className="truncate text-[10px] font-bold text-[#806A5E]">{earnedValue} ر.س</p>
+          <p className="truncate text-[10px] font-black text-[#806A5E]">{"\u0646\u0642\u0627\u0637 \u0627\u0644\u0648\u0644\u0627\u0621"}</p>
+          <p className="truncate text-sm font-black">{pointsBalance} {"\u0646\u0642\u0637\u0629"}</p>
+          <p className="truncate text-[10px] font-bold text-[#806A5E]">{earnedValue} {"\u0631.\u0633"}</p>
         </div>
       ) : null}
 
@@ -226,7 +226,7 @@ export function SharedLoyaltyCard({
         <SecureQrCode
           kind="loyalty-card"
           value={card.sampleCode}
-          title="QR بطاقة الولاء"
+          title={"QR \u0628\u0637\u0627\u0642\u0629 \u0627\u0644\u0648\u0644\u0627\u0621"}
           size={clamp(
             Math.min(card.qrWidth * (compact ? 6 : 8), card.qrHeight * (compact ? 3.8 : 5)),
             compact ? 36 : 48,
@@ -237,7 +237,7 @@ export function SharedLoyaltyCard({
 
       {editable ? (
         <div className="absolute right-4 top-4 z-30 rounded-xl bg-black/35 px-3 py-1 text-[11px] font-black text-white backdrop-blur">
-          اسحب العناصر داخل حدود البطاقة
+          {"\u0627\u0633\u062d\u0628 \u0627\u0644\u0639\u0646\u0627\u0635\u0631 \u062f\u0627\u062e\u0644 \u062d\u062f\u0648\u062f \u0627\u0644\u0628\u0637\u0627\u0642\u0629"}
         </div>
       ) : null}
     </div>

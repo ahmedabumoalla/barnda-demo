@@ -350,7 +350,7 @@ function CustomerCoffeeLoyaltyCard({
   const lit = Math.min(required, Number(card?.stampsInCycle ?? 0));
   const previewCard = {
     ...demoState.card,
-    cardTitle: demoState.card.cardTitle || program?.cardTitle || "ط¨ط·ط§ظ‚ط© ط§ظ„ظˆظ„ط§ط،",
+    cardTitle: demoState.card.cardTitle || program?.cardTitle || "\u0628\u0637\u0627\u0642\u0629 \u0627\u0644\u0648\u0644\u0627\u0621",
     subtitle: demoState.card.subtitle || program?.cardSubtitle || "",
     rewardTitle: demoState.card.rewardTitle || program?.rewardName || copy.freeRewardName,
     sampleCode: card?.cardCode || demoState.card.sampleCode,
@@ -371,16 +371,11 @@ function CustomerCoffeeLoyaltyCard({
         </div>
 
         <div>
-          <p className="text-sm font-black text-[var(--ci-accent-bg,var(--barndaksa-gold-accent))]">
-            ط¨ط·ط§ظ‚ط© ط§ظ„ظˆظ„ط§ط، ط§ظ„ط®ط§طµط© ط¨ط§ظ„ط¹ظ„ط§ظ…ط© ط§ظ„طھط¬ط§ط±ظٹط©
-          </p>
+          <p className="text-sm font-black text-[var(--ci-accent-bg,var(--barndaksa-gold-accent))]">{"\u0628\u0637\u0627\u0642\u0629 \u0627\u0644\u0648\u0644\u0627\u0621 \u0627\u0644\u062e\u0627\u0635\u0629 \u0628\u0627\u0644\u0639\u0644\u0627\u0645\u0629 \u0627\u0644\u062a\u062c\u0627\u0631\u064a\u0629"}</p>
           <h2 className="mt-2 text-3xl font-black text-[var(--ci-page-fg,#311912)]">
-            {program?.cardTitle || "ط¨ط·ط§ظ‚ط© ط§ظ„ظˆظ„ط§ط،"}
+            {program?.cardTitle || "\u0628\u0637\u0627\u0642\u0629 \u0627\u0644\u0648\u0644\u0627\u0621"}
           </h2>
-          <p className="mt-3 text-sm font-bold leading-7 text-[var(--ci-muted-fg,#806A5E)]">
-            ظƒظ„ ظ…ط±ط© ظٹظ‚ط±ط£ ط§ظ„ظƒط§ط´ظٹط± QR ط§ظ„ط¨ط·ط§ظ‚ط© ظ…ط¹ QR ط§ظ„ظپط§طھظˆط±ط© ظٹط¶ظٹط، {copy.loyaltyUnitSingular} ط¬ط¯ظٹط¯ ط­طھظ‰
-            طھظƒطھظ…ظ„ {copy.loyaltyUnitPlural} ظˆطھط¸ظ‡ط± ظ…ظƒط§ظپط£ط© {program?.rewardName || copy.freeRewardName}
-          </p>
+          <p className="mt-3 text-sm font-bold leading-7 text-[var(--ci-muted-fg,#806A5E)]">{"\u0643\u0644 \u0645\u0631\u0629 \u064a\u0642\u0631\u0623 \u0627\u0644\u0643\u0627\u0634\u064a\u0631 QR \u0627\u0644\u0628\u0637\u0627\u0642\u0629 \u0645\u0639 QR \u0627\u0644\u0641\u0627\u062a\u0648\u0631\u0629 \u064a\u0636\u064a\u0621"} {copy.loyaltyUnitSingular} {"\u062c\u062f\u064a\u062f \u062d\u062a\u0649 \u062a\u0643\u062a\u0645\u0644"} {copy.loyaltyUnitPlural} {"\u0648\u062a\u0638\u0647\u0631 \u0645\u0643\u0627\u0641\u0623\u0629"} {program?.rewardName || copy.freeRewardName}</p>
 
           <div className="mt-5 grid gap-3 sm:grid-cols-3">
             <div className="rounded-2xl bg-[var(--ci-page-bg,#FCF8F3)] p-4 text-center">
@@ -389,20 +384,20 @@ function CustomerCoffeeLoyaltyCard({
             </div>
             <div className="rounded-2xl bg-[var(--ci-page-bg,#FCF8F3)] p-4 text-center">
               <p className="text-2xl font-black text-[var(--ci-page-fg,#311912)]">{required}</p>
-              <p className="text-xs font-bold text-[var(--ci-muted-fg,#806A5E)]">ط§ظ„ظ…ط·ظ„ظˆط¨</p>
+              <p className="text-xs font-bold text-[var(--ci-muted-fg,#806A5E)]">{"\u0627\u0644\u0645\u0637\u0644\u0648\u0628"}</p>
             </div>
             <div className="rounded-2xl bg-[var(--ci-page-bg,#FCF8F3)] p-4 text-center">
               <p className="text-2xl font-black text-[var(--ci-page-fg,#311912)]">
                 {card?.availableRewards ?? 0}
               </p>
-              <p className="text-xs font-bold text-[var(--ci-muted-fg,#806A5E)]">ظ…ظƒط§ظپط¢طھ ط¬ط§ظ‡ط²ط©</p>
+              <p className="text-xs font-bold text-[var(--ci-muted-fg,#806A5E)]">{"\u0645\u0643\u0627\u0641\u0622\u062a \u062c\u0627\u0647\u0632\u0629"}</p>
             </div>
           </div>
 
           {(card?.availableRewards ?? 0) > 0 ? (
             <div className="mt-4 flex items-center gap-2 rounded-2xl bg-[var(--ci-accent-bg,var(--barndaksa-gold-accent))] p-4 font-black text-[var(--ci-accent-fg,#311912)]">
               <Gift className="h-5 w-5" />
-              ظ„ط¯ظٹظƒ ظ…ظƒط§ظپط£ط© ط¬ط§ظ‡ط²ط© ظ„ظ„طµط±ظپ
+              {"\u0644\u062f\u064a\u0643 \u0645\u0643\u0627\u0641\u0623\u0629 \u062c\u0627\u0647\u0632\u0629 \u0644\u0644\u0635\u0631\u0641"}
             </div>
           ) : null}
 
@@ -412,15 +407,11 @@ function CustomerCoffeeLoyaltyCard({
               onClick={onOpenCard}
               disabled={!card?.cardCode}
               className="rounded-2xl bg-[var(--ci-button-bg,var(--barndaksa-brand-brown))] px-5 py-3 font-black text-[var(--ci-button-fg,#fff)] disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              ظپطھط­ ط§ظ„ط¨ط·ط§ظ‚ط© ظˆط§ظ„ظ€ QR
-            </button>
+            >{"\u0641\u062a\u062d \u0627\u0644\u0628\u0637\u0627\u0642\u0629 \u0648 QR"}</button>
             <a
               href={homeHref}
               className="rounded-2xl border border-[var(--ci-primary-bg,var(--barndaksa-brand-brown))] px-5 py-3 font-black text-[var(--ci-primary-bg,var(--barndaksa-brand-brown))]"
-            >
-              ط±ط¬ظˆط¹ ظ„ظ„طµظپط­ط© ط§ظ„ط±ط¦ظٹط³ظٹط©
-            </a>
+            >{"\u0631\u062c\u0648\u0639 \u0644\u0644\u0635\u0641\u062d\u0629 \u0627\u0644\u0631\u0626\u064a\u0633\u064a\u0629"}</a>
           </div>
         </div>
       </div>

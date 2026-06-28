@@ -13,6 +13,30 @@ const OLD_DEFAULT_CARD_COLORS = {
   cardAccent: "#D9A33F",
 };
 
+const FALLBACK_CARD_TEXT = {
+  brandName: loyaltyDashboardDemoState.card.brandName,
+  cardTitle: loyaltyDashboardDemoState.card.cardTitle,
+  subtitle: loyaltyDashboardDemoState.card.subtitle,
+  rewardTitle: loyaltyDashboardDemoState.card.rewardTitle,
+  supportingText: loyaltyDashboardDemoState.card.supportingText,
+  stampLabel: loyaltyDashboardDemoState.card.stampLabel,
+  terms: loyaltyDashboardDemoState.card.terms,
+};
+
+const FALLBACK_POINTS_TEXT = {
+  earningRule: loyaltyDashboardDemoState.points.earningRule,
+  redemptionRule: loyaltyDashboardDemoState.points.redemptionRule,
+  policyText: loyaltyDashboardDemoState.points.policyText,
+};
+
+function hasMojibake(value: string) {
+  return /(?:\u0637[\u00b8\u00b7\u00a7\u00a8\u00b1\u00b9\u00ab\u00ac\u00b5\u00b3\u00a9\u00ae\u00af\u06be\u00a3\u00a5]|\u0638[\u2020\u2026\u201e\u02c6\u0679\u2030\u0192\u067e\u201a\u2021\u00b9])|\u00e2|\u0622/.test(value);
+}
+
+function cleanText<T extends string>(value: T, fallback: string): string {
+  return hasMojibake(value) ? fallback : value;
+}
+
 function withDefaults(value: Partial<LoyaltyDashboardDemoState> | null): LoyaltyDashboardDemoState {
   const state = {
     card: {
@@ -35,6 +59,17 @@ function withDefaults(value: Partial<LoyaltyDashboardDemoState> | null): Loyalty
     state.card.cardForeground = loyaltyDashboardDemoState.card.cardForeground;
     state.card.cardAccent = loyaltyDashboardDemoState.card.cardAccent;
   }
+
+  state.card.brandName = cleanText(state.card.brandName, FALLBACK_CARD_TEXT.brandName);
+  state.card.cardTitle = cleanText(state.card.cardTitle, FALLBACK_CARD_TEXT.cardTitle);
+  state.card.subtitle = cleanText(state.card.subtitle, FALLBACK_CARD_TEXT.subtitle);
+  state.card.rewardTitle = cleanText(state.card.rewardTitle, FALLBACK_CARD_TEXT.rewardTitle);
+  state.card.supportingText = cleanText(state.card.supportingText, FALLBACK_CARD_TEXT.supportingText);
+  state.card.stampLabel = cleanText(state.card.stampLabel, FALLBACK_CARD_TEXT.stampLabel);
+  state.card.terms = cleanText(state.card.terms, FALLBACK_CARD_TEXT.terms);
+  state.points.earningRule = cleanText(state.points.earningRule, FALLBACK_POINTS_TEXT.earningRule);
+  state.points.redemptionRule = cleanText(state.points.redemptionRule, FALLBACK_POINTS_TEXT.redemptionRule);
+  state.points.policyText = cleanText(state.points.policyText, FALLBACK_POINTS_TEXT.policyText);
 
   return state;
 }

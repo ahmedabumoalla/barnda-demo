@@ -38,7 +38,7 @@ export type CustomerDockKey = "home" | "orders" | "menu" | "rewards" | "account"
 export function BrandaMadeByMark({ className = "" }: { className?: string }) {
   return (
     <div className={`inline-flex items-center justify-center gap-2 rounded-full bg-white/78 px-3 py-1.5 text-[10px] font-black text-[var(--ci-muted-fg,#806A5E)] shadow-sm ring-1 ring-[var(--ci-border,#E7D7C6)] ${className}`}>
-      <span>ط¸â€¦ط·آµط¸â€¦ط¸â€¦ ط·آ¨ط¸ث†ط·آ§ط·آ³ط·آ·ط·آ©</span>
+      <span>{"\u0645\u0635\u0645\u0645 \u0628\u0648\u0627\u0633\u0637\u0629"}</span>
       <BrandaLogo width={46} height={18} className="max-h-[16px]" />
     </div>
   );
@@ -156,7 +156,7 @@ export function BrandAdSlider({
             <button
               key={index}
               type="button"
-              aria-label={`ط·آ¹ط·آ±ط·آ¶ ${index + 1}`}
+              aria-label={`\u0639\u0631\u0636 ${index + 1}`}
               onClick={() => setActive(index)}
               className={`h-2 rounded-full transition-all ${index === active ? "w-8 bg-[var(--ci-button-bg,#2F7A52)]" : "w-2 bg-[var(--ci-muted-fg,#8C8A84)]/28"}`}
             />
@@ -198,7 +198,7 @@ export function ProductPosterCard({
         />
         {product.promo ? (
           <span className="absolute right-2 top-2 rounded-full bg-[var(--ci-button-bg,#2F7A52)] px-2.5 py-1 text-[10px] font-black text-white shadow">
-            {promoOn ? promoBadgeText(product.promo) : "ط·آ¹ط·آ±ط·آ¶"}
+            {promoOn ? promoBadgeText(product.promo) : "\u0639\u0631\u0636"}
           </span>
         ) : null}
       </div>
@@ -233,7 +233,7 @@ export function CustomerBottomDock({
   if (!visible.length) return null;
 
   return (
-    <nav aria-label="ط·ع¾ط¸â€ ط¸â€ڑط¸â€‍ ط·آ§ط¸â€‍ط·آ¹ط¸â€¦ط¸ظ¹ط¸â€‍" className="fixed inset-x-0 bottom-0 z-50 md:hidden">
+    <nav aria-label={"\u062a\u0646\u0642\u0644 \u0627\u0644\u0639\u0645\u064a\u0644"} className="fixed inset-x-0 bottom-0 z-50 md:hidden">
       <div className="mx-auto grid max-w-md grid-cols-5 gap-1 rounded-t-[26px] border-t border-[var(--ci-border,#E7D7C6)] bg-white/94 px-3 pb-[max(0.8rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-18px_50px_rgba(23,20,18,0.12)] backdrop-blur-xl">
         {visible.map((item) => {
           const Icon = item.icon;
@@ -292,11 +292,11 @@ export function defaultCustomerDockItems({
   return {
     active,
     items: [
-      { key: "home" as const, href: `${base}${preview}`, label: "ط·آ§ط¸â€‍ط·آ±ط·آ¦ط¸ظ¹ط·آ³ط¸ظ¹ط·آ©", icon: Home },
-      { key: "menu" as const, href: `${base}/products/popular${preview}`, label: isEvents ? "ط·آ§ط¸â€‍ط·ع¾ط·آ°ط·آ§ط¸ئ’ط·آ±" : "ط·آ§ط¸â€‍ط¸â€¦ط¸â€ ط·ع¾ط·آ¬ط·آ§ط·ع¾", icon: MenuIcon, enabled: hasProducts },
-      { key: "orders" as const, href: isEvents ? `${base}/${isCustomer ? "account" : "login"}${preview}` : `${base}/reserve${preview}`, label: isEvents ? "ط·ع¾ط·آ°ط·آ§ط¸ئ’ط·آ±ط¸ظ¹" : "ط·آ§ط¸â€‍ط·آ­ط·آ¬ط¸ث†ط·آ²ط·آ§ط·ع¾", icon: CalendarDays, enabled: hasOrders },
-      { key: "rewards" as const, href: `${base}/rewards${preview}`, label: "ط·آ§ط¸â€‍ط¸â€¦ط¸ئ’ط·آ§ط¸ظ¾ط·آ¢ط·ع¾", icon: Sparkles, enabled: hasRewards },
-      { key: "account" as const, href: `${base}/${isCustomer ? "account" : "login"}${preview}`, label: "ط·آ§ط¸â€‍ط·آ­ط·آ³ط·آ§ط·آ¨", icon: UserRound },
+      { key: "home" as const, href: `${base}${preview}`, label: "\u0627\u0644\u0631\u0626\u064a\u0633\u064a\u0629", icon: Home },
+      { key: "menu" as const, href: `${base}/products/popular${preview}`, label: isEvents ? "\u0627\u0644\u062a\u0630\u0627\u0643\u0631" : "\u0627\u0644\u0645\u0646\u062a\u062c\u0627\u062a", icon: MenuIcon, enabled: hasProducts },
+      { key: "orders" as const, href: isEvents ? `${base}/${isCustomer ? "account" : "login"}${preview}` : `${base}/reserve${preview}`, label: isEvents ? "\u062a\u0630\u0627\u0643\u0631\u064a" : "\u0627\u0644\u062d\u062c\u0648\u0632\u0627\u062a", icon: CalendarDays, enabled: hasOrders },
+      { key: "rewards" as const, href: `${base}/rewards${preview}`, label: "\u0627\u0644\u0645\u0643\u0627\u0641\u0622\u062a", icon: Sparkles, enabled: hasRewards },
+      { key: "account" as const, href: `${base}/${isCustomer ? "account" : "login"}${preview}`, label: "\u0627\u0644\u062d\u0633\u0627\u0628", icon: UserRound },
     ],
   };
 }

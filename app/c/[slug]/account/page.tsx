@@ -34,11 +34,11 @@ import {
 } from "@/app/actions/experience-rewards";
 import type { CustomerLoyaltyCardView } from "@/lib/data/loyalty-cards";
 import type { CustomerExperienceReward } from "@/lib/data/experience-rewards";
+import { SharedLoyaltyCard } from "@/components/loyalty/shared-loyalty-card";
 import { SecureQrCode } from "@/components/loyalty/secure-qr-code";
+import { useLoyaltyDemoState } from "@/components/loyalty/use-loyalty-demo-state";
 import {
   Bell,
-  CalendarDays,
-  Coffee,
   Eye,
   EyeOff,
   Gift,
@@ -46,8 +46,6 @@ import {
   Link as LinkIcon,
   QrCode,
   Send,
-  Utensils,
-  WalletCards,
   X,
 } from "lucide-react";
 import { getBusinessCopy } from "@/lib/platform/business-copy";
@@ -89,7 +87,7 @@ const ACCOUNT_SNAPSHOT_TIMEOUT_MS = 5_000;
 const AVATAR_MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
 const AVATAR_MAX_DIMENSION = 1024;
 const CUSTOMER_ACCOUNT_LOAD_ERROR =
-  "تعذر تحميل بيانات الحساب. سجّل الدخول مرة أخرى أو أعد المحاولة.";
+  "طھط¹ط°ط± طھط­ظ…ظٹظ„ ط¨ظٹط§ظ†ط§طھ ط§ظ„ط­ط³ط§ط¨. ط³ط¬ظ‘ظ„ ط§ظ„ط¯ط®ظˆظ„ ظ…ط±ط© ط£ط®ط±ظ‰ ط£ظˆ ط£ط¹ط¯ ط§ظ„ظ…ط­ط§ظˆظ„ط©.";
 
 type CompressedAvatar = {
   file: File;
@@ -219,9 +217,9 @@ function isAcceptedAccountStatus(status?: string) {
   return (
     value === "accepted" ||
     value.includes("accepted") ||
-    value.includes("مقبول") ||
-    value.includes("قبول") ||
-    value.includes("تمت الموافقة")
+    value.includes("ظ…ظ‚ط¨ظˆظ„") ||
+    value.includes("ظ‚ط¨ظˆظ„") ||
+    value.includes("طھظ…طھ ط§ظ„ظ…ظˆط§ظپظ‚ط©")
   );
 }
 
@@ -248,8 +246,8 @@ function buildAccountNotifications({
       order.status;
     notifications.push({
       id: `order:${order.id}:${statusMarker}`,
-      title: isEvents ? "تمت الموافقة على شراء التذاكر" : "تمت الموافقة على طلب",
-      body: `${order.items.join("، ") || (isEvents ? "تذاكر" : "طلب منتجات")} - ${formatSar(order.total)}`,
+      title: isEvents ? "طھظ…طھ ط§ظ„ظ…ظˆط§ظپظ‚ط© ط¹ظ„ظ‰ ط´ط±ط§ط، ط§ظ„طھط°ط§ظƒط±" : "طھظ…طھ ط§ظ„ظ…ظˆط§ظپظ‚ط© ط¹ظ„ظ‰ ط·ظ„ط¨",
+      body: `${order.items.join("طŒ ") || (isEvents ? "طھط°ط§ظƒط±" : "ط·ظ„ط¨ ظ…ظ†طھط¬ط§طھ")} - ${formatSar(order.total)}`,
     });
   });
 
@@ -260,8 +258,8 @@ function buildAccountNotifications({
       reservation.status;
     notifications.push({
       id: `reservation:${reservation.id}:${statusMarker}`,
-      title: "تمت الموافقة على حجز",
-      body: `${reservation.type || "حجز"} - ${reservation.date || "-"} ${reservation.time || ""}`.trim(),
+      title: "طھظ…طھ ط§ظ„ظ…ظˆط§ظپظ‚ط© ط¹ظ„ظ‰ ط­ط¬ط²",
+      body: `${reservation.type || "ط­ط¬ط²"} - ${reservation.date || "-"} ${reservation.time || ""}`.trim(),
     });
   });
 
@@ -274,8 +272,8 @@ function buildAccountNotifications({
         reward.status;
       notifications.push({
         id: `experience-reward:${reward.id}:${statusMarker}`,
-        title: "مكافأة توثيق جاهزة",
-        body: reward.items.map((item) => `${item.productName} × ${item.quantity}`).join("، ") || "مكافأة جاهزة للصرف",
+        title: "ظ…ظƒط§ظپط£ط© طھظˆط«ظٹظ‚ ط¬ط§ظ‡ط²ط©",
+        body: reward.items.map((item) => `${item.productName} أ— ${item.quantity}`).join("طŒ ") || "ظ…ظƒط§ظپط£ط© ط¬ط§ظ‡ط²ط© ظ„ظ„طµط±ظپ",
       });
     });
 
@@ -283,8 +281,8 @@ function buildAccountNotifications({
   if (availableRewards > 0) {
     notifications.push({
       id: `loyalty-reward:${loyaltyView?.card.cardCode ?? "card"}:${availableRewards}`,
-      title: "مكافأة بطاقة الولاء جاهزة",
-      body: `${availableRewards} مكافأة متاحة`,
+      title: "ظ…ظƒط§ظپط£ط© ط¨ط·ط§ظ‚ط© ط§ظ„ظˆظ„ط§ط، ط¬ط§ظ‡ط²ط©",
+      body: `${availableRewards} ظ…ظƒط§ظپط£ط© ظ…طھط§ط­ط©`,
     });
   }
 
@@ -344,94 +342,44 @@ function CustomerCoffeeLoyaltyCard({
   loading: boolean;
   businessCategory?: string;
 }) {
+  const [demoState] = useLoyaltyDemoState();
   const copy = getBusinessCopy(businessCategory);
-  const StampIcon = copy.kind === "events" ? CalendarDays : copy.kind === "restaurant" ? Utensils : Coffee;
   const program = view?.program;
   const card = view?.card;
   const required = Math.max(1, Number(program?.purchasesRequired ?? 7));
   const lit = Math.min(required, Number(card?.stampsInCycle ?? 0));
-  const cups = Array.from({ length: required });
+  const previewCard = {
+    ...demoState.card,
+    cardTitle: demoState.card.cardTitle || program?.cardTitle || "ط¨ط·ط§ظ‚ط© ط§ظ„ظˆظ„ط§ط،",
+    subtitle: demoState.card.subtitle || program?.cardSubtitle || "",
+    rewardTitle: demoState.card.rewardTitle || program?.rewardName || copy.freeRewardName,
+    sampleCode: card?.cardCode || demoState.card.sampleCode,
+    stampsRequired: Math.max(1, Number(demoState.card.stampsRequired || required)),
+    completedStamps: Math.min(Math.max(1, Number(demoState.card.stampsRequired || required)), lit),
+    pointsBadgeVisible: demoState.points.enabled && demoState.card.pointsBadgeVisible,
+  };
 
   return (
     <section className="barndaksa-premium-card mb-6 overflow-hidden rounded-[36px] border border-[var(--ci-border,var(--barndaksa-border-sand))] bg-[var(--ci-surface-bg,#fff)] p-4 shadow-[0_24px_80px_rgba(49,25,18,0.12)] sm:p-5">
       <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-        <div className="relative overflow-hidden rounded-[30px] bg-gradient-to-br from-[var(--ci-primary-bg,var(--barndaksa-coffee-brown))] to-[var(--ci-secondary-bg,var(--barndaksa-brand-brown))] p-5 text-[var(--ci-button-fg,#FCF8F3)] shadow-2xl">
-          <div aria-hidden className="absolute inset-x-0 top-0 h-24 bg-white/10" />
-          <div aria-hidden className="absolute -left-16 bottom-8 h-32 w-52 rotate-[-18deg] border-y border-white/15" />
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="font-serif text-2xl font-black uppercase tracking-[0.18em]">
-                Loyalty Card
-              </p>
-              <p className="mt-1 text-xs font-bold text-white/75">
-                اشتر {required} مرات واحصل على{" "}
-                {program?.rewardName || copy.freeRewardName}
-              </p>
-            </div>
-            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--ci-accent-bg,var(--barndaksa-gold-accent))] text-[var(--ci-accent-fg,#311912)]">
-              <WalletCards className="h-6 w-6" />
-            </span>
-          </div>
-
-          <div className="mt-6 grid grid-cols-4 gap-4 sm:grid-cols-7">
-            {cups.map((_, index) => {
-              const active = index < lit;
-              return (
-                <div key={index} className="flex flex-col items-center gap-2">
-                  <div
-                    className={`relative flex h-16 w-14 items-center justify-center rounded-b-2xl rounded-t-md border-2 transition-all ${
-                      active
-                        ? "border-[var(--ci-accent-bg,var(--barndaksa-gold-accent))] bg-[var(--ci-accent-bg,var(--barndaksa-gold-accent))] text-[var(--ci-accent-fg,#311912)] shadow-[0_0_24px_rgba(255,211,107,0.55)]"
-                        : "border-[#8A6B5E] bg-[#6B4A3B] text-[#D8BDAF]"
-                    }`}
-                  >
-                    <StampIcon className="h-7 w-7" />
-                    <span
-                      className={`absolute -top-2 h-2 w-10 rounded-t-xl ${
-                        active ? "bg-[#FFF3C4]" : "bg-[#8A6B5E]"
-                      }`}
-                    />
-                  </div>
-                  <p className="text-[10px] font-black">
-                    {active ? "مضيء" : `${index + 1}`}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="mt-5 rounded-2xl bg-white p-4 text-center text-[#17100d]">
-            <p className="font-mono text-sm font-black tracking-[0.2em]">
-              {card?.cardCode || "BARNDAKSA LOYALTY"}
-            </p>
-            {card?.cardCode ? (
-              <SecureQrCode
-                kind="loyalty-card"
-                value={card.cardCode}
-                title={`QR بطاقة الولاء ${card.cardCode}`}
-                size={160}
-                className="mt-3"
-              />
-            ) : (
-              <div className="mt-3 flex h-36 items-center justify-center rounded-2xl bg-[#FCF8F3] px-4 text-center text-xs font-black leading-6 text-[#806A5E]">
-                {loading
-                  ? "جاري تجهيز QR بطاقة الولاء..."
-                  : "تعذر تحميل QR البطاقة، حدّث الصفحة أو تأكد من تفعيل برنامج الولاء"}
-              </div>
-            )}
-          </div>
+        <div className="min-w-0 overflow-hidden rounded-[30px]">
+          <SharedLoyaltyCard
+            card={previewCard}
+            pointsBalance={demoState.points.customerPointsBalance}
+            pointValueSar={demoState.points.pointValueSar}
+          />
         </div>
 
         <div>
           <p className="text-sm font-black text-[var(--ci-accent-bg,var(--barndaksa-gold-accent))]">
-            بطاقة الولاء الخاصة بالعلامة التجارية
+            ط¨ط·ط§ظ‚ط© ط§ظ„ظˆظ„ط§ط، ط§ظ„ط®ط§طµط© ط¨ط§ظ„ط¹ظ„ط§ظ…ط© ط§ظ„طھط¬ط§ط±ظٹط©
           </p>
           <h2 className="mt-2 text-3xl font-black text-[var(--ci-page-fg,#311912)]">
-            {program?.cardTitle || "بطاقة الولاء"}
+            {program?.cardTitle || "ط¨ط·ط§ظ‚ط© ط§ظ„ظˆظ„ط§ط،"}
           </h2>
           <p className="mt-3 text-sm font-bold leading-7 text-[var(--ci-muted-fg,#806A5E)]">
-            كل مرة يقرأ الكاشير QR البطاقة مع QR الفاتورة يضيء {copy.loyaltyUnitSingular} جديد حتى
-            تكتمل {copy.loyaltyUnitPlural} وتظهر مكافأة {program?.rewardName || copy.freeRewardName}
+            ظƒظ„ ظ…ط±ط© ظٹظ‚ط±ط£ ط§ظ„ظƒط§ط´ظٹط± QR ط§ظ„ط¨ط·ط§ظ‚ط© ظ…ط¹ QR ط§ظ„ظپط§طھظˆط±ط© ظٹط¶ظٹط، {copy.loyaltyUnitSingular} ط¬ط¯ظٹط¯ ط­طھظ‰
+            طھظƒطھظ…ظ„ {copy.loyaltyUnitPlural} ظˆطھط¸ظ‡ط± ظ…ظƒط§ظپط£ط© {program?.rewardName || copy.freeRewardName}
           </p>
 
           <div className="mt-5 grid gap-3 sm:grid-cols-3">
@@ -441,20 +389,20 @@ function CustomerCoffeeLoyaltyCard({
             </div>
             <div className="rounded-2xl bg-[var(--ci-page-bg,#FCF8F3)] p-4 text-center">
               <p className="text-2xl font-black text-[var(--ci-page-fg,#311912)]">{required}</p>
-              <p className="text-xs font-bold text-[var(--ci-muted-fg,#806A5E)]">المطلوب</p>
+              <p className="text-xs font-bold text-[var(--ci-muted-fg,#806A5E)]">ط§ظ„ظ…ط·ظ„ظˆط¨</p>
             </div>
             <div className="rounded-2xl bg-[var(--ci-page-bg,#FCF8F3)] p-4 text-center">
               <p className="text-2xl font-black text-[var(--ci-page-fg,#311912)]">
                 {card?.availableRewards ?? 0}
               </p>
-              <p className="text-xs font-bold text-[var(--ci-muted-fg,#806A5E)]">مكافآت جاهزة</p>
+              <p className="text-xs font-bold text-[var(--ci-muted-fg,#806A5E)]">ظ…ظƒط§ظپط¢طھ ط¬ط§ظ‡ط²ط©</p>
             </div>
           </div>
 
           {(card?.availableRewards ?? 0) > 0 ? (
             <div className="mt-4 flex items-center gap-2 rounded-2xl bg-[var(--ci-accent-bg,var(--barndaksa-gold-accent))] p-4 font-black text-[var(--ci-accent-fg,#311912)]">
               <Gift className="h-5 w-5" />
-              لديك مكافأة جاهزة للصرف
+              ظ„ط¯ظٹظƒ ظ…ظƒط§ظپط£ط© ط¬ط§ظ‡ط²ط© ظ„ظ„طµط±ظپ
             </div>
           ) : null}
 
@@ -465,13 +413,13 @@ function CustomerCoffeeLoyaltyCard({
               disabled={!card?.cardCode}
               className="rounded-2xl bg-[var(--ci-button-bg,var(--barndaksa-brand-brown))] px-5 py-3 font-black text-[var(--ci-button-fg,#fff)] disabled:cursor-not-allowed disabled:opacity-50"
             >
-              فتح البطاقة والـ QR
+              ظپطھط­ ط§ظ„ط¨ط·ط§ظ‚ط© ظˆط§ظ„ظ€ QR
             </button>
             <a
               href={homeHref}
               className="rounded-2xl border border-[var(--ci-primary-bg,var(--barndaksa-brand-brown))] px-5 py-3 font-black text-[var(--ci-primary-bg,var(--barndaksa-brand-brown))]"
             >
-              رجوع للصفحة الرئيسية
+              ط±ط¬ظˆط¹ ظ„ظ„طµظپط­ط© ط§ظ„ط±ط¦ظٹط³ظٹط©
             </a>
           </div>
         </div>
@@ -481,7 +429,7 @@ function CustomerCoffeeLoyaltyCard({
 }
 
 function formatRewardDate(value?: string) {
-  if (!value) return "غير محدد";
+  if (!value) return "ط؛ظٹط± ظ…ط­ط¯ط¯";
   try {
     return new Intl.DateTimeFormat("ar-SA", {
       year: "numeric",
@@ -499,14 +447,14 @@ function ExperienceRewardQrCode({ code }: { code: string }) {
       <SecureQrCode
         kind="experience-reward"
         value={code}
-        title={`QR مكافأة توثيق التجربة ${code}`}
+        title={`QR ظ…ظƒط§ظپط£ط© طھظˆط«ظٹظ‚ ط§ظ„طھط¬ط±ط¨ط© ${code}`}
         size={172}
       />
       <p className="mt-3 select-all rounded-2xl bg-[#FCF8F3] px-3 py-2 text-center font-mono text-sm font-black tracking-[0.18em] text-[#311912]">
         {code}
       </p>
       <p className="mt-2 text-center text-[11px] font-black text-[#806A5E]">
-        QR آمن للصرف من الكاشير أو لوحة العلامة فقط
+        QR ط¢ظ…ظ† ظ„ظ„طµط±ظپ ظ…ظ† ط§ظ„ظƒط§ط´ظٹط± ط£ظˆ ظ„ظˆط­ط© ط§ظ„ط¹ظ„ط§ظ…ط© ظپظ‚ط·
       </p>
     </div>
   );
@@ -557,15 +505,15 @@ function ExperienceProofPanel({
           <div>
             <p className="flex items-center gap-2 text-sm font-black text-[var(--ci-accent-bg,var(--barndaksa-gold-accent))]">
               <Bell className="h-4 w-4" />
-              التنبيهات والمكافآت
+              ط§ظ„طھظ†ط¨ظٹظ‡ط§طھ ظˆط§ظ„ظ…ظƒط§ظپط¢طھ
             </p>
             <h2 className="mt-1 text-2xl font-black text-[var(--ci-page-fg,#311912)]">
-              مكافآت توثيق التجربة
+              ظ…ظƒط§ظپط¢طھ طھظˆط«ظٹظ‚ ط§ظ„طھط¬ط±ط¨ط©
             </h2>
             <p className="mt-2 text-sm font-bold leading-7 text-[var(--ci-muted-fg,#806A5E)]">
-              هنا تظهر مكافآت العلامة بعد اعتماد توثيق تجربتك، ويتم تحديثها
-              تلقائيًا، ومع كل مكافأة QR خاص يستخدم مرة واحدة فقط عند الكاشير أو
-              لوحة العلامة
+              ظ‡ظ†ط§ طھط¸ظ‡ط± ظ…ظƒط§ظپط¢طھ ط§ظ„ط¹ظ„ط§ظ…ط© ط¨ط¹ط¯ ط§ط¹طھظ…ط§ط¯ طھظˆط«ظٹظ‚ طھط¬ط±ط¨طھظƒطŒ ظˆظٹطھظ… طھط­ط¯ظٹط«ظ‡ط§
+              طھظ„ظ‚ط§ط¦ظٹظ‹ط§طŒ ظˆظ…ط¹ ظƒظ„ ظ…ظƒط§ظپط£ط© QR ط®ط§طµ ظٹط³طھط®ط¯ظ… ظ…ط±ط© ظˆط§ط­ط¯ط© ظپظ‚ط· ط¹ظ†ط¯ ط§ظ„ظƒط§ط´ظٹط± ط£ظˆ
+              ظ„ظˆط­ط© ط§ظ„ط¹ظ„ط§ظ…ط©
             </p>
           </div>
           <button
@@ -574,27 +522,27 @@ function ExperienceProofPanel({
             className="inline-flex items-center gap-2 rounded-2xl bg-[var(--ci-button-bg,var(--barndaksa-brand-brown))] px-5 py-3 font-black text-[var(--ci-button-fg,#fff)] transition active:scale-95"
           >
             <LinkIcon className="h-4 w-4" />
-            توثيق تجربة جديدة
+            طھظˆط«ظٹظ‚ طھط¬ط±ط¨ط© ط¬ط¯ظٹط¯ط©
           </button>
         </div>
 
         <div className="mt-5 grid gap-3 sm:grid-cols-3">
           <div className="rounded-3xl bg-[var(--ci-page-bg,#FCF8F3)] p-4">
-            <p className="text-xs font-black text-[var(--ci-muted-fg,#806A5E)]">مكافآت جاهزة</p>
+            <p className="text-xs font-black text-[var(--ci-muted-fg,#806A5E)]">ظ…ظƒط§ظپط¢طھ ط¬ط§ظ‡ط²ط©</p>
             <p className="mt-1 text-3xl font-black text-[var(--ci-page-fg,#311912)]">
               {readyRewards.length}
             </p>
           </div>
           <div className="rounded-3xl bg-[var(--ci-page-bg,#FCF8F3)] p-4">
             <p className="text-xs font-black text-[var(--ci-muted-fg,#806A5E)]">
-              بانتظار المراجعة
+              ط¨ط§ظ†طھط¸ط§ط± ط§ظ„ظ…ط±ط§ط¬ط¹ط©
             </p>
             <p className="mt-1 text-3xl font-black text-[var(--ci-page-fg,#311912)]">
               {pendingRewards}
             </p>
           </div>
           <div className="rounded-3xl bg-[var(--ci-page-bg,#FCF8F3)] p-4">
-            <p className="text-xs font-black text-[var(--ci-muted-fg,#806A5E)]">كل التوثيقات</p>
+            <p className="text-xs font-black text-[var(--ci-muted-fg,#806A5E)]">ظƒظ„ ط§ظ„طھظˆط«ظٹظ‚ط§طھ</p>
             <p className="mt-1 text-3xl font-black text-[var(--ci-page-fg,#311912)]">
               {rewards.length}
             </p>
@@ -609,12 +557,12 @@ function ExperienceProofPanel({
               reward.status === "approved" && Boolean(reward.rewardCode);
             const isRedeemed = reward.status === "redeemed";
             const statusText = isReady
-              ? "لديكم مكافأة جاهزة"
+              ? "ظ„ط¯ظٹظƒظ… ظ…ظƒط§ظپط£ط© ط¬ط§ظ‡ط²ط©"
               : isRedeemed
-                ? "تم صرف المكافأة"
+                ? "طھظ… طµط±ظپ ط§ظ„ظ…ظƒط§ظپط£ط©"
                 : reward.status === "rejected"
-                  ? "تم رفض التوثيق"
-                  : "بانتظار مراجعة العلامة";
+                  ? "طھظ… ط±ظپط¶ ط§ظ„طھظˆط«ظٹظ‚"
+                  : "ط¨ط§ظ†طھط¸ط§ط± ظ…ط±ط§ط¬ط¹ط© ط§ظ„ط¹ظ„ط§ظ…ط©";
 
             return (
               <article
@@ -632,39 +580,39 @@ function ExperienceProofPanel({
                         {statusText}
                       </span>
                       <span className="rounded-2xl bg-white/80 px-3 py-1 text-xs font-black text-[var(--ci-muted-fg,#806A5E)]">
-                        توثيق رقم {reward.id.slice(0, 8)}
+                        طھظˆط«ظٹظ‚ ط±ظ‚ظ… {reward.id.slice(0, 8)}
                       </span>
                     </div>
 
                     <h3 className="mt-4 text-xl font-black text-[var(--ci-page-fg,#311912)]">
                       {isReady
-                        ? `مكافأة مقابل توثيق التجربة رقم ${reward.id.slice(0, 8)}`
-                        : `توثيق تجربة رقم ${reward.id.slice(0, 8)}`}
+                        ? `ظ…ظƒط§ظپط£ط© ظ…ظ‚ط§ط¨ظ„ طھظˆط«ظٹظ‚ ط§ظ„طھط¬ط±ط¨ط© ط±ظ‚ظ… ${reward.id.slice(0, 8)}`
+                        : `طھظˆط«ظٹظ‚ طھط¬ط±ط¨ط© ط±ظ‚ظ… ${reward.id.slice(0, 8)}`}
                     </h3>
 
                     <div className="mt-4 grid gap-3 text-sm font-bold text-[var(--ci-muted-fg,#806A5E)] sm:grid-cols-2">
                       <p>
-                        رابط التوثيق:{" "}
+                        ط±ط§ط¨ط· ط§ظ„طھظˆط«ظٹظ‚:{" "}
                         <a
                           className="font-black text-[var(--ci-primary-bg,var(--barndaksa-brand-brown))] underline"
                           href={reward.experienceUrl}
                           target="_blank"
                           rel="noreferrer"
                         >
-                          فتح الرابط
+                          ظپطھط­ ط§ظ„ط±ط§ط¨ط·
                         </a>
                       </p>
                       <p>
-                        المشاهدات: {reward.currentViews.toLocaleString("ar-SA")}
+                        ط§ظ„ظ…ط´ط§ظ‡ط¯ط§طھ: {reward.currentViews.toLocaleString("ar-SA")}
                       </p>
                       <p>
-                        التعليقات:{" "}
+                        ط§ظ„طھط¹ظ„ظٹظ‚ط§طھ:{" "}
                         {reward.currentComments.toLocaleString("ar-SA")}
                       </p>
-                      <p>تاريخ الإرسال: {formatRewardDate(reward.createdAt)}</p>
+                      <p>طھط§ط±ظٹط® ط§ظ„ط¥ط±ط³ط§ظ„: {formatRewardDate(reward.createdAt)}</p>
                       {reward.rewardExpiresAt ? (
                         <p className="sm:col-span-2">
-                          صلاحية المكافأة: حتى{" "}
+                          طµظ„ط§ط­ظٹط© ط§ظ„ظ…ظƒط§ظپط£ط©: ط­طھظ‰{" "}
                           {formatRewardDate(reward.rewardExpiresAt)}
                         </p>
                       ) : null}
@@ -672,20 +620,20 @@ function ExperienceProofPanel({
 
                     {reward.customerNotes ? (
                       <p className="mt-3 rounded-2xl bg-white/80 px-4 py-3 text-sm font-bold leading-7 text-[var(--ci-muted-fg,#806A5E)]">
-                        ملاحظاتك: {reward.customerNotes}
+                        ظ…ظ„ط§ط­ط¸ط§طھظƒ: {reward.customerNotes}
                       </p>
                     ) : null}
 
                     {reward.reviewNotes ? (
                       <p className="mt-3 rounded-2xl bg-[var(--ci-page-bg,#FCF8F3)] px-4 py-3 text-sm font-bold leading-7 text-[var(--ci-muted-fg,#806A5E)]">
-                        ملاحظات العلامة: {reward.reviewNotes}
+                        ظ…ظ„ط§ط­ط¸ط§طھ ط§ظ„ط¹ظ„ط§ظ…ط©: {reward.reviewNotes}
                       </p>
                     ) : null}
 
                     {reward.items.length ? (
                       <div className="mt-4">
                         <p className="text-sm font-black text-[var(--ci-page-fg,#311912)]">
-                          تفاصيل المكافأة
+                          طھظپط§طµظٹظ„ ط§ظ„ظ…ظƒط§ظپط£ط©
                         </p>
                         <div className="mt-2 flex flex-wrap gap-2">
                           {reward.items.map((item) => (
@@ -693,7 +641,7 @@ function ExperienceProofPanel({
                               key={item.id || `${reward.id}-${item.productId}`}
                               className="rounded-2xl bg-white/80 px-4 py-2 text-sm font-black text-[var(--ci-primary-bg,var(--barndaksa-brand-brown))]"
                             >
-                              {item.productName} × {item.quantity}
+                              {item.productName} أ— {item.quantity}
                             </span>
                           ))}
                         </div>
@@ -707,17 +655,17 @@ function ExperienceProofPanel({
                     <div className="rounded-[24px] border border-[#E7D7C6] bg-[#F8F4EF] p-5 text-center">
                       <QrCode className="mx-auto h-9 w-9 text-[#806A5E]" />
                       <p className="mt-3 font-black text-[#311912]">
-                        تم استخدام QR
+                        طھظ… ط§ط³طھط®ط¯ط§ظ… QR
                       </p>
                       <p className="mt-2 text-xs font-bold text-[#806A5E]">
-                        توقف هذا QR ولا يمكن صرفه مرة أخرى
+                        طھظˆظ‚ظپ ظ‡ط°ط§ QR ظˆظ„ط§ ظٹظ…ظƒظ† طµط±ظپظ‡ ظ…ط±ط© ط£ط®ط±ظ‰
                       </p>
                     </div>
                   ) : (
                     <div className="rounded-[24px] border border-dashed border-[#E7D7C6] bg-[#FCF8F3] p-5 text-center">
                       <QrCode className="mx-auto h-9 w-9 text-[#806A5E]" />
                       <p className="mt-3 font-black text-[#311912]">
-                        QR يظهر بعد اعتماد العلامة
+                        QR ظٹط¸ظ‡ط± ط¨ط¹ط¯ ط§ط¹طھظ…ط§ط¯ ط§ظ„ط¹ظ„ط§ظ…ط©
                       </p>
                     </div>
                   )}
@@ -730,10 +678,10 @@ function ExperienceProofPanel({
         <div className="rounded-[34px] border border-dashed border-[var(--ci-border,var(--barndaksa-border-sand))] bg-[var(--ci-surface-bg,#fff)] p-8 text-center shadow-sm">
           <Gift className="mx-auto h-10 w-10 text-[var(--ci-accent-bg,var(--barndaksa-gold-accent))]" />
           <h3 className="mt-3 text-xl font-black text-[var(--ci-page-fg,#311912)]">
-            لا توجد تنبيهات مكافآت حتى الآن
+            ظ„ط§ طھظˆط¬ط¯ طھظ†ط¨ظٹظ‡ط§طھ ظ…ظƒط§ظپط¢طھ ط­طھظ‰ ط§ظ„ط¢ظ†
           </h3>
           <p className="mt-2 text-sm font-bold text-[var(--ci-muted-fg,#806A5E)]">
-            وثّق تجربتك، وبعد اعتماد العلامة ستظهر المكافأة هنا مع QR الخاص بها
+            ظˆط«ظ‘ظ‚ طھط¬ط±ط¨طھظƒطŒ ظˆط¨ط¹ط¯ ط§ط¹طھظ…ط§ط¯ ط§ظ„ط¹ظ„ط§ظ…ط© ط³طھط¸ظ‡ط± ط§ظ„ظ…ظƒط§ظپط£ط© ظ‡ظ†ط§ ظ…ط¹ QR ط§ظ„ط®ط§طµ ط¨ظ‡ط§
           </p>
         </div>
       )}
@@ -742,7 +690,7 @@ function ExperienceProofPanel({
         <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/50 px-4">
           <div className="w-full max-w-xl rounded-[32px] bg-white p-5 text-[#311912] shadow-2xl">
             <div className="flex items-center justify-between gap-3">
-              <h3 className="text-2xl font-black">إرسال توثيق تجربة</h3>
+              <h3 className="text-2xl font-black">ط¥ط±ط³ط§ظ„ طھظˆط«ظٹظ‚ طھط¬ط±ط¨ط©</h3>
               <button
                 type="button"
                 onClick={onClose}
@@ -755,7 +703,7 @@ function ExperienceProofPanel({
             <div className="mt-5 grid gap-4">
               <label className="grid gap-2">
                 <span className="text-sm font-black text-[#806A5E]">
-                  رابط التجربة
+                  ط±ط§ط¨ط· ط§ظ„طھط¬ط±ط¨ط©
                 </span>
                 <input
                   value={experienceUrl}
@@ -767,7 +715,7 @@ function ExperienceProofPanel({
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="grid gap-2">
                   <span className="text-sm font-black text-[#806A5E]">
-                    عدد المشاهدات الحالية
+                    ط¹ط¯ط¯ ط§ظ„ظ…ط´ط§ظ‡ط¯ط§طھ ط§ظ„ط­ط§ظ„ظٹط©
                   </span>
                   <input
                     value={views}
@@ -778,7 +726,7 @@ function ExperienceProofPanel({
                 </label>
                 <label className="grid gap-2">
                   <span className="text-sm font-black text-[#806A5E]">
-                    عدد التعليقات الحالية
+                    ط¹ط¯ط¯ ط§ظ„طھط¹ظ„ظٹظ‚ط§طھ ط§ظ„ط­ط§ظ„ظٹط©
                   </span>
                   <input
                     value={comments}
@@ -790,7 +738,7 @@ function ExperienceProofPanel({
               </div>
               <label className="grid gap-2">
                 <span className="text-sm font-black text-[#806A5E]">
-                  ملاحظات العميل
+                  ظ…ظ„ط§ط­ط¸ط§طھ ط§ظ„ط¹ظ…ظٹظ„
                 </span>
                 <textarea
                   value={notes}
@@ -808,7 +756,7 @@ function ExperienceProofPanel({
               className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#6B3A25] px-5 py-4 font-black text-white disabled:opacity-60"
             >
               <Send className="h-4 w-4" />
-              إرسال للعلامة للمراجعة
+              ط¥ط±ط³ط§ظ„ ظ„ظ„ط¹ظ„ط§ظ…ط© ظ„ظ„ظ…ط±ط§ط¬ط¹ط©
             </button>
           </div>
         </div>
@@ -846,13 +794,13 @@ function CustomerPasswordField({
           className="h-12 w-full rounded-2xl border border-[#E7D7C6] bg-white px-4 pl-12 font-bold text-[#311912] outline-none"
           required
           minLength={autoComplete === "new-password" ? 8 : undefined}
-          placeholder="••••••••"
+          placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
         />
         <button
           type="button"
           onClick={onToggle}
           className="absolute left-4 top-1/2 -translate-y-1/2 text-[#6B3A25]"
-          aria-label={visible ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
+          aria-label={visible ? "ط¥ط®ظپط§ط، ظƒظ„ظ…ط© ط§ظ„ظ…ط±ظˆط±" : "ط¥ط¸ظ‡ط§ط± ظƒظ„ظ…ط© ط§ظ„ظ…ط±ظˆط±"}
         >
           {visible ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
         </button>
@@ -997,7 +945,7 @@ function AccountPageInner() {
           customerId: o.customerId,
           customerName: o.customerName,
           status: o.status as CustomerOrder["status"],
-          items: Array.isArray(o.items) ? o.items.map((item: any) => typeof item === "string" ? item : `${item.name} × ${item.quantity}`) : [],
+          items: Array.isArray(o.items) ? o.items.map((item: any) => typeof item === "string" ? item : `${item.name} أ— ${item.quantity}`) : [],
           total: o.total,
           createdAt: o.createdAt,
           branchName: o.branchName,
@@ -1086,18 +1034,18 @@ function AccountPageInner() {
     const isEvents = getBusinessCopy(settings.businessCategory).kind === "events";
     const orderActivities = myOrders.map((order) => ({
       id: order.id,
-      title: `${isEvents ? "تذكرة" : "طلب"}: ${order.items.join("، ")}`,
-      desc: `${order.status} • ${formatSar(order.total)}`,
+      title: `${isEvents ? "طھط°ظƒط±ط©" : "ط·ظ„ط¨"}: ${order.items.join("طŒ ")}`,
+      desc: `${order.status} â€¢ ${formatSar(order.total)}`,
       date: order.createdAt,
-      type: isEvents ? "تذكرة" : "طلب",
+      type: isEvents ? "طھط°ظƒط±ط©" : "ط·ظ„ط¨",
     }));
 
     const reservationActivities = myReservations.map((reservation) => ({
       id: reservation.id,
-      title: `حجز ${reservation.type}`,
-      desc: `${reservation.status} • ${reservation.date} • ${reservation.time}`,
+      title: `ط­ط¬ط² ${reservation.type}`,
+      desc: `${reservation.status} â€¢ ${reservation.date} â€¢ ${reservation.time}`,
       date: reservation.createdAt,
-      type: "حجز",
+      type: "ط­ط¬ط²",
     }));
 
     const transactionActivities = myTransactions.map((transaction) => ({
@@ -1211,7 +1159,7 @@ function AccountPageInner() {
     setOptimizingAvatar(true);
     setAvatarMessage({
       type: "success",
-      text: `حجم الصورة الأصلي ${formatFileSize(file.size)}، جاري تجهيزها للرفع.`,
+      text: `ط­ط¬ظ… ط§ظ„طµظˆط±ط© ط§ظ„ط£طµظ„ظٹ ${formatFileSize(file.size)}طŒ ط¬ط§ط±ظٹ طھط¬ظ‡ظٹط²ظ‡ط§ ظ„ظ„ط±ظپط¹.`,
     });
     const previousPreview = customer.avatarUrl || "";
 
@@ -1222,7 +1170,7 @@ function AccountPageInner() {
         setEditAvatarPreview(previousPreview);
         setAvatarMessage({
           type: "error",
-          text: "تعذر ضغط الصورة بما يكفي، جرّب صورة أصغر أو بصيغة JPG/PNG.",
+          text: "طھط¹ط°ط± ط¶ط؛ط· ط§ظ„طµظˆط±ط© ط¨ظ…ط§ ظٹظƒظپظٹطŒ ط¬ط±ظ‘ط¨ طµظˆط±ط© ط£طµط؛ط± ط£ظˆ ط¨طµظٹط؛ط© JPG/PNG.",
         });
         return;
       }
@@ -1243,7 +1191,7 @@ function AccountPageInner() {
         setEditAvatarPreview(previousPreview);
         setAvatarMessage({
           type: "error",
-          text: result.error || "تعذر رفع الصورة. تأكد من أن الملف صورة وبحجم أقل من 5MB.",
+          text: result.error || "طھط¹ط°ط± ط±ظپط¹ ط§ظ„طµظˆط±ط©. طھط£ظƒط¯ ظ…ظ† ط£ظ† ط§ظ„ظ…ظ„ظپ طµظˆط±ط© ظˆط¨ط­ط¬ظ… ط£ظ‚ظ„ ظ…ظ† 5MB.",
         });
         return;
       }
@@ -1265,7 +1213,7 @@ function AccountPageInner() {
       );
       setAvatarMessage({
         type: "success",
-        text: `تم تحديث صورة الحساب بعد ضغطها إلى ${formatFileSize(compressed.file.size)}.`,
+        text: `طھظ… طھط­ط¯ظٹط« طµظˆط±ط© ط§ظ„ط­ط³ط§ط¨ ط¨ط¹ط¯ ط¶ط؛ط·ظ‡ط§ ط¥ظ„ظ‰ ${formatFileSize(compressed.file.size)}.`,
       });
     } catch (err) {
       setEditAvatarPreview(previousPreview);
@@ -1273,8 +1221,8 @@ function AccountPageInner() {
         type: "error",
         text:
           err instanceof Error && err.message === "unsupported_heic"
-            ? "هذه الصيغة غير مدعومة حاليًا، فضلاً ارفع JPG أو PNG."
-            : "تعذر قراءة الصورة، جرّب ملف PNG أو JPG أو WEBP",
+            ? "ظ‡ط°ظ‡ ط§ظ„طµظٹط؛ط© ط؛ظٹط± ظ…ط¯ط¹ظˆظ…ط© ط­ط§ظ„ظٹظ‹ط§طŒ ظپط¶ظ„ط§ظ‹ ط§ط±ظپط¹ JPG ط£ظˆ PNG."
+            : "طھط¹ط°ط± ظ‚ط±ط§ط،ط© ط§ظ„طµظˆط±ط©طŒ ط¬ط±ظ‘ط¨ ظ…ظ„ظپ PNG ط£ظˆ JPG ط£ظˆ WEBP",
       });
     } finally {
       setOptimizingAvatar(false);
@@ -1283,11 +1231,11 @@ function AccountPageInner() {
 
   async function saveSettings() {
     if (!editName.trim()) {
-      alert("اكتب الاسم");
+      alert("ط§ظƒطھط¨ ط§ظ„ط§ط³ظ…");
       return;
     }
     if (!editPhone.trim()) {
-      alert("اكتب رقم الجوال");
+      alert("ط§ظƒطھط¨ ط±ظ‚ظ… ط§ظ„ط¬ظˆط§ظ„");
       return;
     }
     if (!customer) return;
@@ -1300,9 +1248,9 @@ function AccountPageInner() {
 
       setCustomer(session);
       setSettingsOpen(false);
-      alert("تم حفظ بيانات الحساب");
+      alert("طھظ… ط­ظپط¸ ط¨ظٹط§ظ†ط§طھ ط§ظ„ط­ط³ط§ط¨");
     } catch {
-      alert("تعذر حفظ بيانات الحساب");
+      alert("طھط¹ط°ط± ط­ظپط¸ ط¨ظٹط§ظ†ط§طھ ط§ظ„ط­ط³ط§ط¨");
     }
   }
 
@@ -1311,14 +1259,14 @@ function AccountPageInner() {
     setPasswordMessage(null);
 
     if (!passwordForm.currentPassword) {
-      setPasswordMessage({ type: "error", text: "كلمة المرور الحالية مطلوبة." });
+      setPasswordMessage({ type: "error", text: "ظƒظ„ظ…ط© ط§ظ„ظ…ط±ظˆط± ط§ظ„ط­ط§ظ„ظٹط© ظ…ط·ظ„ظˆط¨ط©." });
       return;
     }
 
     if (passwordForm.newPassword.length < 8) {
       setPasswordMessage({
         type: "error",
-        text: "كلمة المرور الجديدة يجب ألا تقل عن 8 أحرف.",
+        text: "ظƒظ„ظ…ط© ط§ظ„ظ…ط±ظˆط± ط§ظ„ط¬ط¯ظٹط¯ط© ظٹط¬ط¨ ط£ظ„ط§ طھظ‚ظ„ ط¹ظ† 8 ط£ط­ط±ظپ.",
       });
       return;
     }
@@ -1326,7 +1274,7 @@ function AccountPageInner() {
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
       setPasswordMessage({
         type: "error",
-        text: "تأكيد كلمة المرور يجب أن يطابق كلمة المرور الجديدة.",
+        text: "طھط£ظƒظٹط¯ ظƒظ„ظ…ط© ط§ظ„ظ…ط±ظˆط± ظٹط¬ط¨ ط£ظ† ظٹط·ط§ط¨ظ‚ ظƒظ„ظ…ط© ط§ظ„ظ…ط±ظˆط± ط§ظ„ط¬ط¯ظٹط¯ط©.",
       });
       return;
     }
@@ -1358,12 +1306,12 @@ function AccountPageInner() {
 
   async function submitExperienceProof() {
     if (!experienceRewardsEnabled) {
-      alert("توثيق التجارب غير مفعّل ضمن باقة هذه العلامة");
+      alert("طھظˆط«ظٹظ‚ ط§ظ„طھط¬ط§ط±ط¨ ط؛ظٹط± ظ…ظپط¹ظ‘ظ„ ط¶ظ…ظ† ط¨ط§ظ‚ط© ظ‡ط°ظ‡ ط§ظ„ط¹ظ„ط§ظ…ط©");
       return;
     }
 
     if (!experienceUrl.trim()) {
-      alert("أدخل رابط التجربة");
+      alert("ط£ط¯ط®ظ„ ط±ط§ط¨ط· ط§ظ„طھط¬ط±ط¨ط©");
       return;
     }
 
@@ -1384,9 +1332,9 @@ function AccountPageInner() {
       setExperienceComments("");
       setExperienceNotes("");
       setExperienceProofOpen(false);
-      alert("تم إرسال التوثيق للعلامة التجارية للمراجعة");
+      alert("طھظ… ط¥ط±ط³ط§ظ„ ط§ظ„طھظˆط«ظٹظ‚ ظ„ظ„ط¹ظ„ط§ظ…ط© ط§ظ„طھط¬ط§ط±ظٹط© ظ„ظ„ظ…ط±ط§ط¬ط¹ط©");
     } catch {
-      alert("تعذر إرسال التوثيق، تأكد من الرابط وحاول مرة أخرى");
+      alert("طھط¹ط°ط± ط¥ط±ط³ط§ظ„ ط§ظ„طھظˆط«ظٹظ‚طŒ طھط£ظƒط¯ ظ…ظ† ط§ظ„ط±ط§ط¨ط· ظˆط­ط§ظˆظ„ ظ…ط±ط© ط£ط®ط±ظ‰");
     } finally {
       setSubmittingExperienceProof(false);
     }
@@ -1396,7 +1344,7 @@ function AccountPageInner() {
     return (
       <div className="rounded-3xl p-8 text-center">
         <p className="font-black text-[var(--ci-page-fg,#311912)]">
-          جاري تحميل بيانات الحساب...
+          ط¬ط§ط±ظٹ طھط­ظ…ظٹظ„ ط¨ظٹط§ظ†ط§طھ ط§ظ„ط­ط³ط§ط¨...
         </p>
       </div>
     );
@@ -1417,13 +1365,13 @@ function AccountPageInner() {
             }}
             className="rounded-2xl bg-[var(--ci-button-bg,var(--barndaksa-brand-brown))] px-5 py-3 font-black text-[var(--ci-button-fg,#fff)]"
           >
-            إعادة المحاولة
+            ط¥ط¹ط§ط¯ط© ط§ظ„ظ…ط­ط§ظˆظ„ط©
           </button>
           <a
             href={accountLoginWithNextHref}
             className="rounded-2xl border border-[var(--ci-primary-bg,var(--barndaksa-brand-brown))] px-5 py-3 font-black text-[var(--ci-primary-bg,var(--barndaksa-brand-brown))]"
           >
-            تسجيل الدخول
+            طھط³ط¬ظٹظ„ ط§ظ„ط¯ط®ظˆظ„
           </a>
         </div>
       </div>
@@ -1435,8 +1383,8 @@ function AccountPageInner() {
       <div className="rounded-3xl p-8 text-center">
         <p className="font-black text-[var(--ci-page-fg,#311912)]">
           {redirectingToLogin
-            ? "تعذر تحميل بيانات الحساب. سجّل الدخول مرة أخرى أو أعد المحاولة."
-            : "لم يتم العثور على جلسة عميل نشطة."}
+            ? "طھط¹ط°ط± طھط­ظ…ظٹظ„ ط¨ظٹط§ظ†ط§طھ ط§ظ„ط­ط³ط§ط¨. ط³ط¬ظ‘ظ„ ط§ظ„ط¯ط®ظˆظ„ ظ…ط±ط© ط£ط®ط±ظ‰ ط£ظˆ ط£ط¹ط¯ ط§ظ„ظ…ط­ط§ظˆظ„ط©."
+            : "ظ„ظ… ظٹطھظ… ط§ظ„ط¹ط«ظˆط± ط¹ظ„ظ‰ ط¬ظ„ط³ط© ط¹ظ…ظٹظ„ ظ†ط´ط·ط©."}
         </p>
         <div className="mt-4 flex flex-wrap justify-center gap-3">
           <button
@@ -1447,13 +1395,13 @@ function AccountPageInner() {
             }}
             className="rounded-2xl bg-[var(--ci-button-bg,var(--barndaksa-brand-brown))] px-5 py-3 font-black text-[var(--ci-button-fg,#fff)]"
           >
-            إعادة المحاولة
+            ط¥ط¹ط§ط¯ط© ط§ظ„ظ…ط­ط§ظˆظ„ط©
           </button>
           <a
             href={accountLoginWithNextHref}
             className="rounded-2xl border border-[var(--ci-primary-bg,var(--barndaksa-brand-brown))] px-5 py-3 font-black text-[var(--ci-primary-bg,var(--barndaksa-brand-brown))]"
           >
-            تسجيل الدخول
+            طھط³ط¬ظٹظ„ ط§ظ„ط¯ط®ظˆظ„
           </a>
         </div>
       </div>
@@ -1543,10 +1491,10 @@ function AccountPageInner() {
           <form onSubmit={changePassword} className="space-y-4">
             <div className="flex items-center gap-2">
               <KeyRound className="h-5 w-5" />
-              <h3 className="text-lg font-black">تغيير كلمة المرور</h3>
+              <h3 className="text-lg font-black">طھط؛ظٹظٹط± ظƒظ„ظ…ط© ط§ظ„ظ…ط±ظˆط±</h3>
             </div>
             <CustomerPasswordField
-              label="كلمة المرور الحالية"
+              label="ظƒظ„ظ…ط© ط§ظ„ظ…ط±ظˆط± ط§ظ„ط­ط§ظ„ظٹط©"
               value={passwordForm.currentPassword}
               visible={passwordVisible.currentPassword}
               autoComplete="current-password"
@@ -1561,7 +1509,7 @@ function AccountPageInner() {
               }
             />
             <CustomerPasswordField
-              label="كلمة المرور الجديدة"
+              label="ظƒظ„ظ…ط© ط§ظ„ظ…ط±ظˆط± ط§ظ„ط¬ط¯ظٹط¯ط©"
               value={passwordForm.newPassword}
               visible={passwordVisible.newPassword}
               autoComplete="new-password"
@@ -1576,7 +1524,7 @@ function AccountPageInner() {
               }
             />
             <CustomerPasswordField
-              label="تأكيد كلمة المرور الجديدة"
+              label="طھط£ظƒظٹط¯ ظƒظ„ظ…ط© ط§ظ„ظ…ط±ظˆط± ط§ظ„ط¬ط¯ظٹط¯ط©"
               value={passwordForm.confirmPassword}
               visible={passwordVisible.confirmPassword}
               autoComplete="new-password"
@@ -1606,7 +1554,7 @@ function AccountPageInner() {
               disabled={passwordSaving}
               className="w-full rounded-2xl bg-[var(--ci-button-bg,var(--barndaksa-brand-brown))] px-5 py-4 font-black text-[var(--ci-button-fg,#fff)] disabled:opacity-60"
             >
-              {passwordSaving ? "جار تغيير كلمة المرور..." : "تغيير كلمة المرور"}
+              {passwordSaving ? "ط¬ط§ط± طھط؛ظٹظٹط± ظƒظ„ظ…ط© ط§ظ„ظ…ط±ظˆط±..." : "طھط؛ظٹظٹط± ظƒظ„ظ…ط© ط§ظ„ظ…ط±ظˆط±"}
             </button>
           </form>
         }
@@ -1630,7 +1578,7 @@ export default function CafeCustomerAccountPage() {
       hideFooter
     >
       <Suspense
-        fallback={<p className="p-8 text-center font-black">جاري التحميل...</p>}
+        fallback={<p className="p-8 text-center font-black">ط¬ط§ط±ظٹ ط§ظ„طھط­ظ…ظٹظ„...</p>}
       >
         <AccountPageInner />
       </Suspense>

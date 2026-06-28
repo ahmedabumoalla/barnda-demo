@@ -227,7 +227,11 @@ export function SharedLoyaltyCard({
           kind="loyalty-card"
           value={card.sampleCode}
           title="QR بطاقة الولاء"
-          size={compact ? 44 : clamp(Math.min(card.qrWidth * 8, card.qrHeight * 5), 48, 148)}
+          size={clamp(
+            Math.min(card.qrWidth * (compact ? 6 : 8), card.qrHeight * (compact ? 3.8 : 5)),
+            compact ? 36 : 48,
+            compact ? 116 : 148
+          )}
         />
       </div>
 
